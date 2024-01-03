@@ -4,6 +4,7 @@ package vikinglab.lumen.controller;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
+import vikinglab.lumen.dto.JwtToken;
 import vikinglab.lumen.json.JsonResult;
 import vikinglab.lumen.service.AdminServiceImpl;
 import vikinglab.lumen.vo.AdminUser;
@@ -44,6 +45,22 @@ public class AdminController {
     }
 
 
+    /*    @PostMapping("/adminloginck")
+        @ResponseBody
+        public JsonResult adminLoginck(@RequestBody AdminUser adminUser) {
+            System.out.println("adminloginck()");
+
+
+            JwtToken jwtToken = adminService.loginck(adminUser);
+
+            System.out.println(jwtToken);
+
+            JsonResult jsonResult = new JsonResult().result(jwtToken).orElseFail("실패");
+
+            System.out.println(jsonResult);
+
+            return jsonResult;
+        }*/
     @PostMapping("/adminloginck")
     @ResponseBody
     public JsonResult adminLoginck(@RequestBody AdminUser adminUser) {

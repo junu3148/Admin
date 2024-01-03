@@ -1,5 +1,6 @@
 package vikinglab.lumen.service;
 
+import vikinglab.lumen.dto.JwtToken;
 import vikinglab.lumen.vo.AdminUser;
 
 public interface AdminService {
