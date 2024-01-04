@@ -1,56 +1,63 @@
 package vikinglab.lumen.service;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseCookie;
 import org.springframework.stereotype.Service;
 import vikinglab.lumen.dao.AdminRepository;
 import vikinglab.lumen.dto.JwtToken;
+import vikinglab.lumen.jwt.JwtTokenProvider;
 import vikinglab.lumen.vo.AdminUser;
+
+import javax.security.sasl.AuthenticationException;
 
 @Service
 @RequiredArgsConstructor
 public class AdminServiceImpl implements AdminService {
 
     private final AdminRepository adminDAO;
+    private final JwtTokenProvider jwtTokenProvider;
 
 
     @Override
     public AdminUser login(AdminUser adminUser) {
         System.out.println("AdminSeviceImpl login()");
-
         return adminDAO.login(adminUser);
-
     }
 
-/*    @Override
-    public JwtToken loginck(AdminUser adminUser) {
-        System.out.println("AdminSeviceImpl loginck()");
+    // 토큰생성 반환 서비스
+    @Override
+    public String loginck(AdminUser adminUser) {
+        AdminUser adminUserDB = adminDAO.loginck(adminUser);
 
-        AdminUser userFromDB = adminDAO.loginck(adminUser);
-
-        if (userFromDB != null && userFromDB.getPassword().equals(adminUser.getPassword())) {
+        if (adminUserDB != null && adminUserDB.getUserName().equals(adminUser.getUserName())) {
             // 사용자 인증이 성공하면 토큰 생성
-            return jwtTokenProvider.generateToken(userFromDB);
-        } else {
-            throw new org.springframework.security.core.AuthenticationException("Authentication failed") {
-            };
+            String token = jwtTokenProvider.generateToken(adminUserDB);
+
+            return token;
         }
-    }*/
-
-    @Override
-    public AdminUser loginck(AdminUser adminUser) {
-        System.out.println("AdminSeviceImpl loginck()");
-
-
-        System.out.println(adminUser);
-
-
-        // 파라미터가 하나일꺼다 조건을 다른게 null일때 로그인2 체키해야함
-
-        return adminUser.getAccountName() != null ? adminDAO.loginck(adminUser) : adminDAO.loginck(adminUser.getUserName());
+        return null; // 인증 실패 시 null 반환
     }
 
-    @Override
-    public AdminUser joinAdminUser(AdminUser adminUser) {
-        return null;
+    // 서비스에서 쿠키에 토큰담기
+    public ResponseCookie loginck2(AdminUser adminUser) {
+        AdminUser adminUserDB = adminDAO.loginck(adminUser);
+
+        if (adminUserDB != null && adminUserDB.getUserName().equals(adminUser.getUserName())) {
+            // 사용자 인증이 성공하면 토큰 생성
+            String token = jwtTokenProvider.generateToken(adminUserDB);
+
+            // 토큰을 쿠키에 담아 반환
+            return ResponseCookie.from("accessToken", token)
+                    .httpOnly(true)
+                    .sameSite("None")
+                    .secure(true)
+                    .path("/")
+                    .maxAge(1800) // 30분
+                    .domain("192.168.0.16")
+                    .build();
+        }
+
+        return null; // 인증 실패 시 null 반환
     }
 }
+

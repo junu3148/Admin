@@ -7,6 +7,7 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import vikinglab.lumen.dao.AdminDAO;
 import vikinglab.lumen.dao.AdminRepository;
+import vikinglab.lumen.jwt.JwtTokenProvider;
 import vikinglab.lumen.service.AdminServiceImpl;
 
 @Configuration
@@ -18,7 +19,7 @@ public class AppConfig {
 
     @Bean
     public AdminServiceImpl adminService() {
-        return new AdminServiceImpl(adminRepository());
+        return new AdminServiceImpl(adminRepository(), jwtTokenProvider());
     }
 
     @Bean
@@ -27,4 +28,9 @@ public class AppConfig {
         return new AdminDAO();
     }
 
+    @Bean
+    public JwtTokenProvider jwtTokenProvider() {
+        return new JwtTokenProvider(secretKey);
+    }
 }
+

@@ -10,12 +10,12 @@ public class AdminDAO implements AdminRepository {
     public AdminUser login(AdminUser adminUser) {
         System.out.println("AdminDAO login()");
 
-        AdminUser adminUser1 = new AdminUser();
-        adminUser1.setId("test");
-        adminUser1.setPassword("123");
-        adminUser1.setIsAdmin(1);
+        AdminUser adminUserDB = new AdminUser();
+        adminUserDB.setId("test");
+        adminUserDB.setPassword("123");
+        adminUserDB.setIsAdmin(1);
 
-        return adminUser.getId().equals(adminUser1.getId()) ? adminUser1 : null;
+        return adminUser.getId().equals(adminUserDB.getId()) && adminUser.getPassword().equals(adminUserDB.getPassword()) ? adminUserDB : null;
 
     }
 
@@ -23,29 +23,27 @@ public class AdminDAO implements AdminRepository {
     public AdminUser loginck(AdminUser adminUser) {
         System.out.println("AdminDAO loginck()");
 
-        System.out.println(adminUser);
+        AdminUser adminUserDB = new AdminUser();
+        adminUserDB.setId("test");
+        adminUserDB.setPassword("123");
+        adminUserDB.setIsAdmin(1);
+        adminUserDB.setUserName("김동규");
+        adminUserDB.setAccountName("신한은행");
+        adminUserDB.setAccountNumber("111");
 
-        AdminUser adminUser1 = new AdminUser();
-        adminUser1.setId("test");
-        adminUser1.setPassword("123");
-        adminUser1.setIsAdmin(1);
-        adminUser1.setUserName("김동규");
-        adminUser1.setAccountName("신한은행");
-        adminUser1.setAccountNumber("111");
-
-        return adminUser.getUserName().equals(adminUser1.getUserName()) ? adminUser1 : null;
+        return adminUser.getUserName().equals(adminUserDB.getUserName()) ? adminUserDB : null;
     }
 
     @Override
     public AdminUser loginck(String userName) {
 
-        AdminUser adminUser1 = new AdminUser();
-        adminUser1.setUserName("임정민");
-        adminUser1.setId("test");
-        adminUser1.setPassword("123");
-        adminUser1.setIsAdmin(0);
+        AdminUser adminUserDB = new AdminUser();
+        adminUserDB.setUserName("임정민");
+        adminUserDB.setId("test");
+        adminUserDB.setPassword("123");
+        adminUserDB.setIsAdmin(0);
 
-        return userName.equals(adminUser1.getUserName()) ? adminUser1 : null;
+        return userName.equals(adminUserDB.getUserName()) ? adminUserDB : null;
     }
 
     @Override
