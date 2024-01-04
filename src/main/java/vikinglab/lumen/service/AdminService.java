@@ -1,7 +1,6 @@
 package vikinglab.lumen.service;
 
 import org.springframework.http.ResponseCookie;
-import vikinglab.lumen.dto.JwtToken;
 import vikinglab.lumen.vo.AdminUser;
 
 public interface AdminService {

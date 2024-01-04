@@ -7,7 +7,6 @@ import io.jsonwebtoken.security.Keys;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import vikinglab.lumen.dto.JwtToken;
 import vikinglab.lumen.vo.AdminUser;
 
 import java.security.Key;

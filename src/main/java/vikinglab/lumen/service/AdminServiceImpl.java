@@ -4,11 +4,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseCookie;
 import org.springframework.stereotype.Service;
 import vikinglab.lumen.dao.AdminRepository;
-import vikinglab.lumen.dto.JwtToken;
 import vikinglab.lumen.jwt.JwtTokenProvider;
 import vikinglab.lumen.vo.AdminUser;
-
-import javax.security.sasl.AuthenticationException;
 
 @Service
 @RequiredArgsConstructor
@@ -31,9 +28,7 @@ public class AdminServiceImpl implements AdminService {
 
         if (adminUserDB != null && adminUserDB.getUserName().equals(adminUser.getUserName())) {
             // 사용자 인증이 성공하면 토큰 생성
-            String token = jwtTokenProvider.generateToken(adminUserDB);
-
-            return token;
+            return jwtTokenProvider.generateToken(adminUserDB);
         }
         return null; // 인증 실패 시 null 반환
     }
