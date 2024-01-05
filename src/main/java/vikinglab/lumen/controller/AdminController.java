@@ -1,14 +1,20 @@
 package vikinglab.lumen.controller;
 
 
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RestController;
 import vikinglab.lumen.json.JsonResult;
+import vikinglab.lumen.service.AdminService;
 import vikinglab.lumen.service.AdminServiceImpl;
 import vikinglab.lumen.vo.AdminUser;
 
@@ -16,46 +22,67 @@ import vikinglab.lumen.vo.AdminUser;
 @RequiredArgsConstructor
 public class AdminController {
 
-    private final AdminServiceImpl adminService;
+    private final AdminService adminService;
 
+    // 관리자 로그인 폼을 반환하는 엔드포인트
     @GetMapping("/adminlogin")
-    public String adminloginform() {
-        System.out.println("adminlogin()");
-        return "adminloginform";
+    public String adminLoginForm() {
+        return "adminLoginForm";
     }
 
-    // 1차 로그인
-    @PostMapping("/adminlogin")
-    @ResponseBody
+    // 1차 로그인 처리를 위한 엔드포인트
+    @PostMapping("/admin-login")
     public JsonResult adminLogin(@RequestBody AdminUser adminUser) {
-        System.out.println("adminlogin()");
-
-        AdminUser adminUserDB = adminService.login(adminUser);
-
-        JsonResult jsonResult = new JsonResult();
-        if (adminUserDB != null) {
-            jsonResult.success(adminUserDB.getIsAdmin());
-        } else {
-            jsonResult.fail("로그인실패");
-        }
-        return jsonResult;
+        return adminService.adminLogin(adminUser);
     }
 
-    // 2차 로그인 서비스에서 쿠키반환
-    @PostMapping("/adminloginck2")
-    public ResponseEntity<String> login(@RequestBody AdminUser adminUser) {
-        ResponseCookie accessCookie = adminService.loginck2(adminUser);
-
-        if (accessCookie != null) {
-            return ResponseEntity.ok()
-                    .header(HttpHeaders.SET_COOKIE, accessCookie.toString())
-                    .body("Exist");
-        } else {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Authentication failed");
+    // 2차 로그인 처리를 위한 엔드포인트
+    @PostMapping("/admin-login-ck")
+    public ResponseEntity<String> adminLoginCk(@RequestBody AdminUser adminUser, HttpSession session) {
+        try {
+            // 2차 로그인 시도 및 세션 설정
+            AdminUser adminUserDB = adminService.adminLoginCk(adminUser);
+            if (adminUserDB != null) {
+                session.setAttribute("adminUser", adminUserDB);
+                System.out.println("Session ID in AdminController: " + session.getId()); // 세션 ID 로그 출력
+                return ResponseEntity.ok("Exist"); // 로그인 성공 응답
+            } else {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Authentication failed"); // 로그인 실패 응답
+            }
+        } catch (Exception e) {
+            return handleException(e); // 예외 처리 메서드 호출
         }
     }
 
-    // 2차 로그인 세션에 토큰저장방법
+    // 로그아웃 처리를 위한 엔드포인트
+    @GetMapping("/admin-logout")
+    public ResponseEntity<String> adminLogout(HttpSession session) {
+        session.removeAttribute("adminUser"); // 세션에서 사용자 정보 삭제
+        session.invalidate();  // 세션 무효화
+        return ResponseEntity.ok("Logged out"); // 로그아웃 성공 응답
+    }
+
+    // 예외 처리 및 로그 출력을 담당하는 메서드
+    private ResponseEntity<String> handleException(Exception e) {
+        System.err.println("Exception occurred: " + e.getMessage()); // 예외 메시지 출력
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred"); // 내부 서버 오류 응답
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  /*  // 2차 로그인 세션에 토큰저장방법
     @PostMapping("/adminloginck")
     public ResponseEntity<String> login(@RequestBody AdminUser adminUser, HttpSession session) {
         String token = adminService.loginck(adminUser);
@@ -71,10 +98,22 @@ public class AdminController {
         } else {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Authentication failed");
         }
-    }
+    }*/
+/*    // 2차 로그인 서비스에서 쿠키반환
+    @PostMapping("/adminloginck2")
+    public ResponseEntity<String> login(@RequestBody AdminUser adminUser) {
+        ResponseCookie accessCookie = adminService.loginck2(adminUser);
 
-    // 2차 로그인 쿠키에 토큰저장
-/*    @PostMapping("/adminloginck")
+        if (accessCookie != null) {
+            return ResponseEntity.ok()
+                    .header(HttpHeaders.SET_COOKIE, accessCookie.toString())
+                    .body("Exist");
+        } else {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Authentication failed");
+        }
+    }*/
+ /*    // 2차 로그인 쿠키에 토큰저장
+   @PostMapping("/adminloginck")
     public ResponseEntity<String> login(@RequestBody AdminUser adminUser, HttpServletResponse response) {
         String token = adminService.loginck(adminUser);
 
@@ -97,20 +136,6 @@ public class AdminController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Authentication failed");
         }
     }*/
-
-
-    // 로그아웃
-    @GetMapping("/adminlogout")
-    public ResponseEntity<String> logout(HttpSession session) {
-        // 세션에서 토큰을 삭제
-        session.removeAttribute("accessToken");
-
-        // 세션을 무효화시킴
-        session.invalidate();
-
-        return ResponseEntity.ok("Logged out");
-    }
-
 }
 
 

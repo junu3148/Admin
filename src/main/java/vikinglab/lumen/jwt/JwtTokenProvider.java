@@ -19,32 +19,37 @@ import java.util.Map;
 public class JwtTokenProvider {
 
     private final Key key;
-    public final Long ACCESS_TOKEN_EXPIRE_COUNT = 30 * 60 * 1000L; // 30분
+    public final long ACCESS_TOKEN_EXPIRE_COUNT = 30 * 60 * 1000L; // 30분
+
+    private static final String TOKEN_TYPE = "JWT";
+    private static final String SIGNATURE_ALGORITHM = "HS256";
+    private static final String CLAIM_ADMIN_USER_ID = "adminUserId";
+    private static final String CLAIM_IS_ADMIN = "isAdmin";
+    private static final String CLAIM_USER_NAME = "userName";
 
     // application.yml에서 secret 값 가져와서 key에 저장
     public JwtTokenProvider(@Value("${jwt.secret}") String secretKey) {
+        if (secretKey == null || secretKey.isEmpty()) {
+            throw new IllegalArgumentException("Secret key cannot be null or empty.");
+        }
         byte[] keyBytes = Decoders.BASE64.decode(secretKey);
         this.key = Keys.hmacShaKeyFor(keyBytes);
     }
 
     public String generateToken(AdminUser adminUser) {
 
-        //Header 부분 설정
+        // Header 부분 설정
         Map<String, Object> headers = new HashMap<>();
-        // 토큰의 유형
-        headers.put("typ", "JWT");
-        // 서명 알고리즘
-        headers.put("alg", "HS256");
+        headers.put("typ", TOKEN_TYPE);       // 토큰의 유형
+        headers.put("alg", SIGNATURE_ALGORITHM); // 서명 알고리즘
 
-        //payload 부분 설정
+        // Payload 부분 설정
         Map<String, Object> payloads = new HashMap<>();
+        payloads.put(CLAIM_ADMIN_USER_ID, adminUser.getId());
+        payloads.put(CLAIM_IS_ADMIN, adminUser.getIsAdmin());
+        payloads.put(CLAIM_USER_NAME, adminUser.getUserName());
 
-        payloads.put("adminUserId", adminUser.getId());
-        payloads.put("isAdmmin", adminUser.getIsAdmin());
-        payloads.put("userName", adminUser.getUserName());
-
-        long now = (new Date()).getTime();
-
+        long now = System.currentTimeMillis();
         // 토큰 Builder
         return Jwts.builder()
                 .setHeader(headers) // Headers 설정

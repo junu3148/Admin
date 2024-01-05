@@ -24,24 +24,6 @@ public class JsonResult {
         this.failMsg = failMsg;
     }
 
-    /* 메소드 get set */
-    public JsonResult result(Object result) {
-        this.data = result;
-        return this;
-    }
-
-    public JsonResult orElseFail(String errorMessage) {
-        if (data != null) {
-            this.result = "success";
-        } else {
-            this.result = "fail";
-            this.failMsg = errorMessage;
-        }
-        return this;
-    }
-
-    /* 메소드 일반 */
-
     //성공했을 시 사용하는 메소드
     public void success(Object data) {
         this.result = "success";
