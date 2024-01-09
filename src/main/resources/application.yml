@@ -26,15 +26,17 @@ spring:
 
   # MySQL 설정
   datasource:
-    url: jdbc:mysql://localhost:3306/mydatabase?serverTimezone=UTC&characterEncoding=UTF-8
-    username: myuser
-    password: mypassword
+    url: jdbc:mysql://localhost:3306/LUMEN?serverTimezone=UTC&characterEncoding=UTF-8
+    username: LUMEN
+    password: VIKING
     driver-class-name: com.mysql.cj.jdbc.Driver
 
 # MyBatis 설정
 mybatis:
   config: mybatis/configuration.xml
   mapper-locations: classpath:mybatis/mapper/*.xml
+  type-aliases-package: com.demo.demoproject.domain
+
 
 # JWT 설정
 jwt:
