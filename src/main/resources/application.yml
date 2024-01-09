@@ -31,11 +31,19 @@ spring:
     password: VIKING
     driver-class-name: com.mysql.cj.jdbc.Driver
 
-# MyBatis 설정
+  # MyBatis 설정
 mybatis:
-  config: mybatis/configuration.xml
-  mapper-locations: classpath:mybatis/mapper/*.xml
-  type-aliases-package: com.demo.demoproject.domain
+  configuration:
+    cache-enabled: false          # 캐시 사용 여부를 비활성화
+    use-generated-keys: true     # 자동 생성 키 사용 설정
+    default-executor-type: REUSE  # SQL 세션 재사용 여부 설정
+    jdbc-type-for-null: NULL      # JDBC에서 NULL 값 타입을 설정
+    map-underscore-to-camel-case: true  # 스네이크 케이스를 카멜 케이스로 매핑
+
+mybatis.type-aliases-package: com.lumen.www.vo  # Type Alias를 찾을 패키지 지정
+mybatis.mapper-locations: classpath:mybatis/mapper/*.xml  # MyBatis XML 매퍼 파일 경로 설정
+
+
 
 
 # JWT 설정

@@ -2,9 +2,20 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
 <mapper namespace="AdminMapper">
-    <select id="getAdminUser" parameterType="com.lumen.www.vo.AdminUser" resultType="com.lumen.www.vo.AdminUser">
-        SELECT admin_id as adminId,
-               admin_password as adminPassword,
+
+    <resultMap id="adminResultMap" type="AdminUser">
+        <!-- 열 이름과 카멜 케이스로 매핑 -->
+        <result column="admin_id" property="adminId"/>
+        <result column="admin_password" property="adminPassword"/>
+        <result column="admin_sq" property="adminSq"/>
+        <result column="admin_name" property="adminName"/>
+        <result column="bank_name" property="bankName"/>
+        <result column="account_number" property="accountNumber"/>
+    </resultMap>
+
+    <select id="getAdminUser" parameterType="AdminUser" resultMap="adminResultMap">
+        SELECT admin_id,
+               admin_password,
                role
         FROM admin
         WHERE admin_id = #{adminId}

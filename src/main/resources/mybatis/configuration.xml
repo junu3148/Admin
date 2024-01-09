@@ -2,17 +2,5 @@
 <!DOCTYPE configuration PUBLIC "-//mybatis.org//DTD Config 3.0//EN" "http://mybatis.org/dtd/mybatis-3-config.dtd">
 
 <configuration>
-    <settings>
-        <setting name="cacheEnabled" value="false" /> <!--캐시사용여부 실용때는 ture 변경해야 할수있다.-->
-        <setting name="useGeneratedKeys" value="true" /> <!--자동 생성키 사용 mysql에서 시퀀스 사용안하는거 말하는듯-->
-        <setting name="defaultExecutorType" value="REUSE" />  <!--sql세션 재사용 여부 SIMPLE, BATCH도 있음-->
-        <setting name="jdbcTypeForNull" value="NULL" />
-        <setting name="mapUnderscoreToCamelCase" value="true"/> <!--스네이크 케이스 매핑-->
-    </settings>
-
-    <mappers>
-        <mapper class="com.lumen.www.mapper.AdminUserMapper"/>
-    </mappers>
-
 
 </configuration>

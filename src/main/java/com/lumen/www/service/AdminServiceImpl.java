@@ -1,14 +1,12 @@
 package com.lumen.www.service;
 
 import com.lumen.www.json.JsonResult;
-import com.lumen.www.mapper.AdminUserMapper;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import com.lumen.www.dao.AdminRepository;
 import com.lumen.www.vo.AdminUser;
+import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
 import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -19,20 +17,17 @@ public class AdminServiceImpl implements AdminService {
 
     private final AdminRepository adminRepository;
 
-
     //private final JwtTokenProvider jwtTokenProvider;
 
     // 1차 로그인
     @Override
+    @Transactional
     public JsonResult adminLogin(AdminUser adminUser) {
         System.out.println("adminLogin Service()");
-        System.out.println(adminUser);
 
         // 아이디 유효성 검사 특수문자 제거
         adminUser.setAdminId(removeSpecialCharacters(adminUser.getAdminId()));
         AdminUser adminUserDB = adminRepository.adminLogin(adminUser);
-
-        System.out.println(adminUserDB);
 
         return createJsonResult(Optional.ofNullable(adminUserDB)
                 .map(AdminUser::getRole)
