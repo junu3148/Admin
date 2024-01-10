@@ -3,7 +3,7 @@ package com.lumen.www.controller;
 
 import com.lumen.www.json.JsonResult;
 import com.lumen.www.service.AdminService;
-import com.lumen.www.vo.AdminUser;
+import com.lumen.www.dto.AdminUser;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -38,6 +38,7 @@ public class AdminController {
         try {
             // 2차 로그인 시도 및 세션 설정
             AdminUser adminUserDB = adminService.adminLoginCk(adminUser);
+            System.out.println("controller" + adminUserDB);
             if (adminUserDB != null) {
                 session.setAttribute("adminUser", adminUserDB);
                 System.out.println("Session ID in AdminController: " + session.getId()); // 세션 ID 로그 출력

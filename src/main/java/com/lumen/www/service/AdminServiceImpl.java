@@ -1,15 +1,20 @@
 package com.lumen.www.service;
 
+import com.lumen.www.dto.MonthlySubscriberDTO;
 import com.lumen.www.json.JsonResult;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import com.lumen.www.dao.AdminRepository;
-import com.lumen.www.vo.AdminUser;
+import com.lumen.www.dto.AdminUser;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -38,12 +43,7 @@ public class AdminServiceImpl implements AdminService {
     @Override
     public AdminUser adminLoginCk(AdminUser adminUser) { // 세션이나 토큰 사용하면 수정될수있음 직접빼서 확인해보면 되니깐 권한
         System.out.println("adminLoginCk Service()");
-
-        // 슈퍼 어드민일 경우
-        boolean isAccountInfoProvided = adminUser.getDepositor() != null && adminUser.getAccountNumber() != null;
-        return isAccountInfoProvided
-                ? adminRepository.adminLoginCk(adminUser)
-                : adminRepository.adminLoginCk(adminUser.getAdminName());
+        return adminRepository.adminLoginCk(adminUser);
     }
 
     // 가입자 현황
@@ -57,26 +57,45 @@ public class AdminServiceImpl implements AdminService {
     @Override
     public JsonResult getMonthlySalesChart() {
         System.out.println("monthlySalesChart Service()");
-        return createJsonResult(adminRepository.getMonthlySalesChart());
+
+        List<Map<String, Object>> resultList = adminRepository.getMonthlySubscriber();
+
+        // 'resultList'를 'monthList'로 변환
+        List<String> monthList = resultList.stream()
+                // 'resultList'의 각 요소에서 'month' 키의 값을 추출하고 String으로 형변환
+                .map(resultMap -> (String) resultMap.get("month"))
+                // 변환된 값들을 리스트로 수집
+                .collect(Collectors.toList());
+
+        // 'resultList'를 'subscribersCountList'로 변환
+        List<Integer> subscribersCountList = resultList.stream()
+                // 'resultList'의 각 요소에서 'subscribers_count' 키의 값을 추출하고 Integer로 형변환
+                .map(resultMap -> (Integer) resultMap.get("subscribers_count"))
+                // 변환된 값들을 리스트로 수집
+                .collect(Collectors.toList());
+
+        MonthlySubscriberDTO monthlySubscriberDTO = new MonthlySubscriberDTO(monthList, subscribersCountList);
+
+        return createJsonResult(monthlySubscriberDTO);
     }
 
     // 메인페이지 현황지표
     @Override
     public JsonResult getCurrentSituation() {
         System.out.println("currentSituation Service()");
-        return createJsonResult(adminRepository.getCurrentSituation());
+        return createJsonResult(adminRepository.getUserActivity());
     }
 
     // 메인페이지 문의현황
     @Override
     public JsonResult getMainInquiryList() {
         System.out.println("mainInquiryList Service()");
-        return createJsonResult(adminRepository.getMainInquiryList());
+        return createJsonResult(adminRepository.getInquiryList());
     }
 
     // JsonResult 생성 & 반환
     private JsonResult createJsonResult(Object data) {
-
+        System.out.println(data);
         JsonResult jsonResult = new JsonResult();
         if (data != null) jsonResult.success(data);
         else jsonResult.fail("실패");

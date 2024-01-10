@@ -1,7 +1,7 @@
 package com.lumen.www.service;
 
 import com.lumen.www.json.JsonResult;
-import com.lumen.www.vo.AdminUser;
+import com.lumen.www.dto.AdminUser;
 
 public interface AdminService {
 

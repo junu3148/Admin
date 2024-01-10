@@ -1,4 +1,4 @@
-package com.lumen.www.vo;
+package com.lumen.www.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -12,7 +12,7 @@ import lombok.NoArgsConstructor;
 public class AdminUser {
 
     private String token;
-    private Long adminSq;
+    private Long id;
     private String adminId;
     private String adminPassword;
     private String adminName;

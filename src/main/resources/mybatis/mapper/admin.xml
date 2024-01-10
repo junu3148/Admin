@@ -1,24 +1,74 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
-<mapper namespace="AdminMapper">
+<mapper namespace="admin">
 
-    <resultMap id="adminResultMap" type="AdminUser">
-        <!-- 열 이름과 카멜 케이스로 매핑 -->
-        <result column="admin_id" property="adminId"/>
-        <result column="admin_password" property="adminPassword"/>
-        <result column="admin_sq" property="adminSq"/>
-        <result column="admin_name" property="adminName"/>
-        <result column="bank_name" property="bankName"/>
-        <result column="account_number" property="accountNumber"/>
-    </resultMap>
-
-    <select id="getAdminUser" parameterType="AdminUser" resultMap="adminResultMap">
-        SELECT admin_id,
+    <!--AdminUser 정보 가져오기-->
+    <select id="getAdminUser" parameterType="AdminUser" resultType="AdminUser">
+        SELECT id,
+               admin_id,
                admin_password,
+               admin_name,
+               depositor,
+               bank_name,
+               account_number,
                role
         FROM admin
         WHERE admin_id = #{adminId}
           AND admin_password = #{adminPassword}
     </select>
+
+    <!--1차 로그인 role 가져오기-->
+    <select id="adminLogin" parameterType="AdminUser" resultType="AdminUser">
+        SELECT role
+        FROM admin
+        WHERE admin_id = #{adminId}
+          AND admin_password = #{adminPassword}
+    </select>
+
+    <!--2차 로그인 adminUser 정보가져오기-->
+    <select id="adminLoginCk" parameterType="AdminUser" resultType="AdminUser">
+        <![CDATA[
+        SELECT id,
+               admin_id,
+               role
+        FROM admin
+        WHERE admin_name = #{adminName}
+        ]]>
+        <if test="depositor != null and accountNumber != null">
+            AND depositor = #{depositor}
+            AND account_number = #{accountNumber}
+        </if>
+    </select>
+
+    <!--가입자 현황-->
+    <select id="subscriberCount" resultType="int">
+        SELECT count(id)
+        FROM admin
+    </select>
+
+
+    <!--메인페이지 월별가입자 그래프-->
+    <select id="getMonthlySubscriber" resultType="java.util.Map">
+        SELECT month, subscribers_count
+        FROM monthly_subscribers;
+    </select>
+
+    <!--메인페이지 현황지표-->
+    <select id="getUserActivity" resultType="UserActivityDTO">
+        SELECT user_count, up_down, percentage
+        FROM user_activity
+    </select>
+
+    <!--메인페이지 문의현황-->
+    <select id="getInquiryList" resultType="InquiryDTO">
+        SELECT id,
+               DATE_FORMAT(inquiry_date, '%Y-%m-%d') AS inquiryDate,
+               inquiry_details,
+               answer_status,
+               subscription_plan
+        FROM inquiries
+    </select>
+
+
 </mapper>

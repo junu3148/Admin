@@ -40,7 +40,7 @@ mybatis:
     jdbc-type-for-null: NULL      # JDBC에서 NULL 값 타입을 설정
     map-underscore-to-camel-case: true  # 스네이크 케이스를 카멜 케이스로 매핑
 
-mybatis.type-aliases-package: com.lumen.www.vo  # Type Alias를 찾을 패키지 지정
+mybatis.type-aliases-package: com.lumen.www.dto  # Type Alias를 찾을 패키지 지정
 mybatis.mapper-locations: classpath:mybatis/mapper/*.xml  # MyBatis XML 매퍼 파일 경로 설정
 
 
