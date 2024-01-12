@@ -5,7 +5,7 @@
 
     <!--AdminUser 정보 가져오기-->
     <select id="getAdminUser" parameterType="AdminUser" resultType="AdminUser">
-        SELECT id,
+        SELECT admin_key,
                admin_id,
                admin_password,
                admin_name,
@@ -13,7 +13,7 @@
                bank_name,
                account_number,
                role
-        FROM admin
+        FROM ADMIN
         WHERE admin_id = #{adminId}
           AND admin_password = #{adminPassword}
     </select>
@@ -21,7 +21,7 @@
     <!--1차 로그인 role 가져오기-->
     <select id="adminLogin" parameterType="AdminUser" resultType="AdminUser">
         SELECT role
-        FROM admin
+        FROM ADMIN
         WHERE admin_id = #{adminId}
           AND admin_password = #{adminPassword}
     </select>
@@ -29,10 +29,10 @@
     <!--2차 로그인 adminUser 정보가져오기-->
     <select id="adminLoginCk" parameterType="AdminUser" resultType="AdminUser">
         <![CDATA[
-        SELECT id,
+        SELECT admin_key,
                admin_id,
                role
-        FROM admin
+        FROM ADMIN
         WHERE admin_name = #{adminName}
         ]]>
         <if test="depositor != null and accountNumber != null">
@@ -43,8 +43,8 @@
 
     <!--가입자 현황-->
     <select id="subscriberCount" resultType="int">
-        SELECT count(id)
-        FROM admin
+        SELECT count(admin_key)
+        FROM ADMIN
     </select>
 
 
@@ -62,12 +62,12 @@
 
     <!--메인페이지 문의현황-->
     <select id="getInquiryList" resultType="InquiryDTO">
-        SELECT id,
+        SELECT inquiry_key,
                DATE_FORMAT(inquiry_date, '%Y-%m-%d') AS inquiryDate,
                inquiry_details,
-               answer_status,
+               inquiry_status,
                subscription_plan
-        FROM inquiries
+        FROM inquiry
     </select>
 
 

@@ -12,7 +12,7 @@ import lombok.NoArgsConstructor;
 public class AdminUser {
 
     private String token;
-    private Long id;
+    private Long adminKey;
     private String adminId;
     private String adminPassword;
     private String adminName;

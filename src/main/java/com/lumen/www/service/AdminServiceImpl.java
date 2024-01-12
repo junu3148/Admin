@@ -30,17 +30,23 @@ public class AdminServiceImpl implements AdminService {
     public JsonResult adminLogin(AdminUser adminUser) {
         System.out.println("adminLogin Service()");
 
-        // 아이디 유효성 검사 특수문자 제거
-        adminUser.setAdminId(removeSpecialCharacters(adminUser.getAdminId()));
-        AdminUser adminUserDB = adminRepository.adminLogin(adminUser);
+        // 아이디 e-mail 형식확인
+        if (isValidEmail(adminUser.getAdminId())) {
+            AdminUser adminUserDB = adminRepository.adminLogin(adminUser);
 
-        return createJsonResult(Optional.ofNullable(adminUserDB)
-                .map(AdminUser::getRole)
-                .orElse(null));
+            // adminUserDB가 null이 아닐 경우에만 결과 반환
+            return createJsonResult(Optional.ofNullable(adminUserDB)
+                    .map(AdminUser::getRole)
+                    .orElse(null));
+        } else {
+            // 이메일 형식이 아닐 경우 적절한 에러 메시지 또는 코드 반환
+            return createJsonResult("Invalid email format");
+        }
     }
 
     // 2차 로그인
     @Override
+    @Transactional
     public AdminUser adminLoginCk(AdminUser adminUser) { // 세션이나 토큰 사용하면 수정될수있음 직접빼서 확인해보면 되니깐 권한
         System.out.println("adminLoginCk Service()");
         return adminRepository.adminLoginCk(adminUser);
@@ -48,6 +54,7 @@ public class AdminServiceImpl implements AdminService {
 
     // 가입자 현황
     @Override
+    @Transactional
     public JsonResult subscriberCount() {
         System.out.println("subscriberCount Service()");
         return createJsonResult(adminRepository.subscriberCount());
@@ -55,6 +62,7 @@ public class AdminServiceImpl implements AdminService {
 
     // 메인페이지 월별가입자 그래프
     @Override
+    @Transactional
     public JsonResult getMonthlySalesChart() {
         System.out.println("monthlySalesChart Service()");
 
@@ -81,6 +89,7 @@ public class AdminServiceImpl implements AdminService {
 
     // 메인페이지 현황지표
     @Override
+    @Transactional
     public JsonResult getCurrentSituation() {
         System.out.println("currentSituation Service()");
         return createJsonResult(adminRepository.getUserActivity());
@@ -88,6 +97,7 @@ public class AdminServiceImpl implements AdminService {
 
     // 메인페이지 문의현황
     @Override
+    @Transactional
     public JsonResult getMainInquiryList() {
         System.out.println("mainInquiryList Service()");
         return createJsonResult(adminRepository.getInquiryList());
@@ -103,13 +113,11 @@ public class AdminServiceImpl implements AdminService {
     }
 
     // 특수 문자를 제거하는 유틸리티 메서드
-    private String removeSpecialCharacters(String input) {
-        // 특수 문자를 제거하는 정규 표현식 패턴
-        Pattern pattern = Pattern.compile("[^a-zA-Z0-9]");
-        Matcher matcher = pattern.matcher(input);
+    public boolean isValidEmail(String email) {
+        Pattern pattern = Pattern.compile("[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}");
+        Matcher matcher = pattern.matcher(email);
 
-        // 특수 문자를 제거한 결과 문자열 반환
-        return matcher.replaceAll("");
+        return matcher.matches();
     }
 
     /*  // 토큰생성 반환 서비스
