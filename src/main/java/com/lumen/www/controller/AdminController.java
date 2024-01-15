@@ -1,139 +1,81 @@
 package com.lumen.www.controller;
 
-
-import com.lumen.www.json.JsonResult;
+import com.lumen.www.files.FileStorageProperties;
 import com.lumen.www.service.AdminService;
-import com.lumen.www.dto.AdminUser;
-import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.multipart.MultipartHttpServletRequest;
+import org.springframework.web.servlet.ModelAndView;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.UUID;
 
 @RestController
 @RequiredArgsConstructor
 public class AdminController {
 
+
     private final AdminService adminService;
+    private final FileStorageProperties fileStorageProperties;
+    private static final Logger logger = LoggerFactory.getLogger(AdminSignController.class);
 
 
-    // 관리자 로그인 폼을 반환하는 엔드포인트
-    @GetMapping("/adminlogin")
-    public String adminLoginForm() {
-        return "adminLoginForm";
-    }
+    @PostMapping(value = "/image/upload")
+    public ModelAndView image(MultipartHttpServletRequest request) throws Exception {
 
-    // 1차 로그인 처리를 위한 엔드포인트
-    @PostMapping("/admin-login")
-    public JsonResult adminLogin(@RequestBody AdminUser adminUser) {
-        return adminService.adminLogin(adminUser);
-    }
+        // ckeditor는 이미지 업로드 후 이미지 표시하기 위해 uploaded 와 url을 json 형식으로 받아야 함
+        // modelandview를 사용하여 json 형식으로 보내기위해 모델앤뷰 생성자 매개변수로 jsonView 라고 써줌
+        // jsonView 라고 쓴다고 무조건 json 형식으로 가는건 아니고 @Configuration 어노테이션을 단
+        // WebConfig 파일에 MappingJackson2JsonView 객체를 리턴하는 jsonView 매서드를 만들어서 bean으로 등록해야 함
+        ModelAndView mav = new ModelAndView("jsonView");
 
-    // 2차 로그인 처리를 위한 엔드포인트
-    @PostMapping("/admin-login-ck")
-    public ResponseEntity<String> adminLoginCk(@RequestBody AdminUser adminUser, HttpSession session) {
         try {
-            // 2차 로그인 시도 및 세션 설정
-            AdminUser adminUserDB = adminService.adminLoginCk(adminUser);
-            System.out.println("controller" + adminUserDB);
-            if (adminUserDB != null) {
-                session.setAttribute("adminUser", adminUserDB);
-                System.out.println("Session ID in AdminController: " + session.getId()); // 세션 ID 로그 출력
-                return ResponseEntity.ok("Exist"); // 로그인 성공 응답
-            } else {
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Authentication failed"); // 로그인 실패 응답
-            }
-        } catch (Exception e) {
-            return handleException(e); // 예외 처리 메서드 호출
+
+
+            // ckeditor 에서 파일을 보낼 때 upload : [파일] 형식으로 해서 넘어오기 때문에 upload라는 키의 밸류를 받아서 uploadFile에 저장함
+            MultipartFile uploadFile = request.getFile("upload");
+
+            // 파일의 오리지널 네임
+            String originalFileName = uploadFile.getOriginalFilename();
+
+            // 파일의 확장자
+            String ext = originalFileName.substring(originalFileName.indexOf("."));
+
+            // 서버에 저장될 때 중복된 파일 이름인 경우를 방지하기 위해 UUID에 확장자를 붙여 새로운 파일 이름을 생성
+            String newFileName = UUID.randomUUID() + ext;
+
+            // 이미지를 현재 경로와 연관된 파일에 저장하기 위해 현재 경로를 알아냄
+            String realPath = request.getServletContext().getRealPath("/");
+
+            // 현재경로/upload/파일명이 저장 경로
+            // String savePath = realPath + "upload/" + newFileName;
+            String savePath = fileStorageProperties.getUploadDir() + newFileName;
+
+            // 브라우저에서 이미지 불러올 때 절대 경로로 불러오면 보안의 위험 있어 상대경로를 쓰거나 이미지 불러오는 jsp 또는 클래스 파일을 만들어 가져오는 식으로 우회해야 함
+            // 때문에 savePath와 별개로 상대 경로인 uploadPath 만들어줌
+            String uploadPath = "./upload/" + newFileName;
+
+            // 저장 경로로 파일 객체 생성
+            File file = new File(savePath);
+
+            // 파일 업로드
+            uploadFile.transferTo(file);
+
+            // uploaded, url 값을 modelandview를 통해 보냄
+            mav.addObject("uploaded", true); // 업로드 완료
+            mav.addObject("url", uploadPath); // 업로드 파일의 경로
+        } catch (IOException e) {
+            mav.addObject("uploaded", false);
+            mav.addObject("error", "File upload failed: " + e.getMessage());
+            // 로깅, 오류 처리 등 필요한 작업 수행
         }
+        return mav;
     }
 
-    // 로그아웃 처리를 위한 엔드포인트
-    @GetMapping("/admin-logout")
-    public ResponseEntity<String> adminLogout(HttpSession session) {
-        session.removeAttribute("adminUser"); // 세션에서 사용자 정보 삭제
-        session.invalidate();  // 세션 무효화
-        return ResponseEntity.ok("Logged out"); // 로그아웃 성공 응답
-    }
 
-    // 예외 처리 및 로그 출력을 담당하는 메서드
-    private ResponseEntity<String> handleException(Exception e) {
-        System.err.println("Exception occurred: " + e.getMessage()); // 예외 메시지 출력
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred"); // 내부 서버 오류 응답
-    }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-  /*  // 2차 로그인 세션에 토큰저장방법
-    @PostMapping("/adminloginck")
-    public ResponseEntity<String> login(@RequestBody AdminUser adminUser, HttpSession session) {
-        String token = adminService.loginck(adminUser);
-
-        if (token != null) {
-            // 세션 쿠키에 토큰을 저장
-            session.setAttribute("accessToken", token);
-
-            // 세션 쿠키 만료 시간 설정 (예: 1800초)
-            //session.setMaxInactiveInterval(1800);
-
-            return ResponseEntity.ok("Exist");
-        } else {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Authentication failed");
-        }
-    }*/
-/*    // 2차 로그인 서비스에서 쿠키반환
-    @PostMapping("/adminloginck2")
-    public ResponseEntity<String> login(@RequestBody AdminUser adminUser) {
-        ResponseCookie accessCookie = adminService.loginck2(adminUser);
-
-        if (accessCookie != null) {
-            return ResponseEntity.ok()
-                    .header(HttpHeaders.SET_COOKIE, accessCookie.toString())
-                    .body("Exist");
-        } else {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Authentication failed");
-        }
-    }*/
- /*    // 2차 로그인 쿠키에 토큰저장
-   @PostMapping("/adminloginck")
-    public ResponseEntity<String> login(@RequestBody AdminUser adminUser, HttpServletResponse response) {
-        String token = adminService.loginck(adminUser);
-
-        if (token != null) {
-            // 토큰을 쿠키에 담아서 클라이언트에게 전달
-            ResponseCookie accessCookie = ResponseCookie.from("accessToken", token)
-                    .httpOnly(true)
-                    .sameSite("None")
-                    .secure(true)
-                    .path("/")
-                    .maxAge(1800)
-                    .domain("192.168.0.16")
-                    .build();
-
-            //return ResponseEntity.ok(token);
-            return ResponseEntity.ok()
-                    .header(HttpHeaders.SET_COOKIE, accessCookie.toString())
-                    .body("Exist");
-        } else {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Authentication failed");
-        }
-    }*/
 }
-
-
-

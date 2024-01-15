@@ -44,6 +44,8 @@ mybatis.type-aliases-package: com.lumen.www.dto  # Type Alias를 찾을 패키�
 mybatis.mapper-locations: classpath:mybatis/mapper/*.xml  # MyBatis XML 매퍼 파일 경로 설정
 
 
+file:
+  upload-dir: C:\\lumen\\upload\\
 
 
 # JWT 설정

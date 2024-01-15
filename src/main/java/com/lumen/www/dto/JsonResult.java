@@ -1,4 +1,4 @@
-package com.lumen.www.json;
+package com.lumen.www.dto;
 
 import lombok.Getter;
 import lombok.ToString;

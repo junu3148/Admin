@@ -2,9 +2,11 @@ package com.lumen.www.controller;
 
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
-import com.lumen.www.json.JsonResult;
+import com.lumen.www.dto.JsonResult;
 import com.lumen.www.service.AdminService;
 
 @RestController
@@ -14,9 +16,9 @@ public class AdminMainController {
     private final AdminService adminService;
 
     // 관리자페이지 메인 (연결안됨)
-    @GetMapping("/admin-main")
-    public String adminMain(HttpSession session) {
-        System.out.println("adminMain()");
+    @GetMapping("/adminmain")
+    public String adminMain() {
+        System.out.println("나오니?");
         return "adminMain";
     }
 

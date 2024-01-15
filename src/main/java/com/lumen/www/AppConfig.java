@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.web.servlet.view.json.MappingJackson2JsonView;
 
 @Configuration
 @ComponentScan(basePackages = "com.lumen.www")
@@ -49,9 +50,10 @@ public class AppConfig {
     }
 
 
+
+}
     // JwtTokenProvider 빈 정의 (필요에 따라 주석 해제할 수 있음)
     /*@Bean
     public JwtTokenProvider jwtTokenProvider() {
         return new JwtTokenProvider(secretKey);
     }*/
-}

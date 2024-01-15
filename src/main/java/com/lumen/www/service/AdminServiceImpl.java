@@ -1,14 +1,16 @@
 package com.lumen.www.service;
 
-import com.lumen.www.dto.MonthlySubscriberDTO;
-import com.lumen.www.json.JsonResult;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
 import com.lumen.www.dao.AdminRepository;
 import com.lumen.www.dto.AdminUser;
+import com.lumen.www.dto.MonthlySubscriberDTO;
+import com.lumen.www.exception.ServiceException;
+import com.lumen.www.dto.JsonResult;
+import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -20,105 +22,131 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class AdminServiceImpl implements AdminService {
 
-    private final AdminRepository adminRepository;
+    private static final Logger logger = LoggerFactory.getLogger(AdminServiceImpl.class);
+    private static final Pattern EMAIL_PATTERN = Pattern.compile("[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}");
+    private static final String INVALID_EMAIL_FORMAT = "Invalid email format";
+    private static final String LOG_FAILURE_MESSAGE = "실패";
 
-    //private final JwtTokenProvider jwtTokenProvider;
+    private final AdminRepository adminRepository;
 
     // 1차 로그인
     @Override
     @Transactional
     public JsonResult adminLogin(AdminUser adminUser) {
-        System.out.println("adminLogin Service()");
+        logger.debug("adminLogin Service() called with adminUser: {}", adminUser);
 
-        // 아이디 e-mail 형식확인
         if (isValidEmail(adminUser.getAdminId())) {
-            AdminUser adminUserDB = adminRepository.adminLogin(adminUser);
-
-            // adminUserDB가 null이 아닐 경우에만 결과 반환
-            return createJsonResult(Optional.ofNullable(adminUserDB)
-                    .map(AdminUser::getRole)
-                    .orElse(null));
+            try {
+                AdminUser adminUserDB = adminRepository.adminLogin(adminUser);
+                return createJsonResult(Optional.ofNullable(adminUserDB).map(AdminUser::getRole).orElse(null));
+            } catch (Exception e) {
+                logger.error("Error in adminLogin", e);
+                return createJsonResult(LOG_FAILURE_MESSAGE);
+            }
         } else {
-            // 이메일 형식이 아닐 경우 적절한 에러 메시지 또는 코드 반환
-            return createJsonResult("Invalid email format");
+            return createJsonResult(INVALID_EMAIL_FORMAT);
         }
     }
 
     // 2차 로그인
     @Override
     @Transactional
-    public AdminUser adminLoginCk(AdminUser adminUser) { // 세션이나 토큰 사용하면 수정될수있음 직접빼서 확인해보면 되니깐 권한
-        System.out.println("adminLoginCk Service()");
-        return adminRepository.adminLoginCk(adminUser);
+    public AdminUser adminLoginCk(AdminUser adminUser) {
+        logger.debug("adminLoginCk Service() called with adminUser: {}", adminUser);
+        try {
+            return adminRepository.adminLoginCk(adminUser);
+        } catch (Exception e) {
+            logger.error("Error in adminLoginCk", e);
+            throw new ServiceException("Error in adminLoginCk", e);
+        }
     }
 
     // 가입자 현황
     @Override
     @Transactional
     public JsonResult subscriberCount() {
-        System.out.println("subscriberCount Service()");
-        return createJsonResult(adminRepository.subscriberCount());
+        logger.debug("subscriberCount Service()");
+        try {
+            return createJsonResult(adminRepository.subscriberCount());
+        } catch (Exception e) {
+            logger.error("Error in subscriberCount", e);
+            return createJsonResult(LOG_FAILURE_MESSAGE);
+        }
     }
 
     // 메인페이지 월별가입자 그래프
     @Override
     @Transactional
     public JsonResult getMonthlySalesChart() {
-        System.out.println("monthlySalesChart Service()");
+        logger.debug("monthlySalesChart Service()");
+        try {
+            List<Map<String, Object>> resultList = adminRepository.getMonthlySubscriber();
 
-        List<Map<String, Object>> resultList = adminRepository.getMonthlySubscriber();
+            // 'resultList'를 'monthList'로 변환
+            List<String> monthList = resultList.stream()
+                    // 'resultList'의 각 요소에서 'month' 키의 값을 추출하고 String으로 형변환
+                    .map(resultMap -> (String) resultMap.get("month"))
+                    // 변환된 값들을 리스트로 수집
+                    .collect(Collectors.toList());
 
-        // 'resultList'를 'monthList'로 변환
-        List<String> monthList = resultList.stream()
-                // 'resultList'의 각 요소에서 'month' 키의 값을 추출하고 String으로 형변환
-                .map(resultMap -> (String) resultMap.get("month"))
-                // 변환된 값들을 리스트로 수집
-                .collect(Collectors.toList());
+            // 'resultList'를 'subscribersCountList'로 변환
+            List<Integer> subscribersCountList = resultList.stream()
+                    // 'resultList'의 각 요소에서 'subscribers_count' 키의 값을 추출하고 Integer로 형변환
+                    .map(resultMap -> (Integer) resultMap.get("subscribers_count"))
+                    // 변환된 값들을 리스트로 수집
+                    .collect(Collectors.toList());
 
-        // 'resultList'를 'subscribersCountList'로 변환
-        List<Integer> subscribersCountList = resultList.stream()
-                // 'resultList'의 각 요소에서 'subscribers_count' 키의 값을 추출하고 Integer로 형변환
-                .map(resultMap -> (Integer) resultMap.get("subscribers_count"))
-                // 변환된 값들을 리스트로 수집
-                .collect(Collectors.toList());
+            MonthlySubscriberDTO monthlySubscriberDTO = new MonthlySubscriberDTO(monthList, subscribersCountList);
 
-        MonthlySubscriberDTO monthlySubscriberDTO = new MonthlySubscriberDTO(monthList, subscribersCountList);
-
-        return createJsonResult(monthlySubscriberDTO);
+            return createJsonResult(monthlySubscriberDTO);
+        } catch (Exception e) {
+            logger.error("Error in getMonthlySalesChart", e);
+            return createJsonResult(LOG_FAILURE_MESSAGE);
+        }
     }
 
     // 메인페이지 현황지표
     @Override
     @Transactional
     public JsonResult getCurrentSituation() {
-        System.out.println("currentSituation Service()");
-        return createJsonResult(adminRepository.getUserActivity());
+        logger.debug("currentSituation Service()");
+        try {
+            return createJsonResult(adminRepository.getUserActivity());
+        } catch (Exception e) {
+            logger.error("Error in getCurrentSituation", e);
+            return createJsonResult(LOG_FAILURE_MESSAGE);
+        }
     }
 
     // 메인페이지 문의현황
     @Override
     @Transactional
     public JsonResult getMainInquiryList() {
-        System.out.println("mainInquiryList Service()");
-        return createJsonResult(adminRepository.getInquiryList());
+        logger.debug("mainInquiryList Service()");
+        try {
+            return createJsonResult(adminRepository.getInquiryList());
+        } catch (Exception e) {
+            logger.error("Error in getMainInquiryList", e);
+            return createJsonResult(LOG_FAILURE_MESSAGE);
+        }
+    }
+
+    // 공통된 로직은 프라이빗 메소드로 추출
+    private boolean isValidEmail(String email) {
+        Matcher matcher = EMAIL_PATTERN.matcher(email);
+        return matcher.matches();
     }
 
     // JsonResult 생성 & 반환
     private JsonResult createJsonResult(Object data) {
         System.out.println(data);
+        logger.debug("Creating JsonResult for data: {}", data);
         JsonResult jsonResult = new JsonResult();
         if (data != null) jsonResult.success(data);
-        else jsonResult.fail("실패");
+        else jsonResult.fail(LOG_FAILURE_MESSAGE);
         return jsonResult;
     }
-
-    // 특수 문자를 제거하는 유틸리티 메서드
-    public boolean isValidEmail(String email) {
-        Pattern pattern = Pattern.compile("[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}");
-        Matcher matcher = pattern.matcher(email);
-
-        return matcher.matches();
-    }
+}
 
     /*  // 토큰생성 반환 서비스
     @Override
@@ -158,5 +186,4 @@ public class AdminServiceImpl implements AdminService {
 
         return null; // 인증 실패 시 null 반환
     }*/
-}
 
