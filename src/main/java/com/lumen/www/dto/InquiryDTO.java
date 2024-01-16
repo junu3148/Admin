@@ -9,7 +9,7 @@ public class InquiryDTO {
 
     private int inquiryKey; // PK
     private String inquiryDate;
-    private String inquiryDetails;
+    private String inquiryContent;
     private String inquiryStatus;
     private String qna;
     private String inquiryType;

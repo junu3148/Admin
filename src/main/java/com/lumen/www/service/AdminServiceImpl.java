@@ -3,6 +3,7 @@ package com.lumen.www.service;
 import com.lumen.www.dao.AdminRepository;
 import com.lumen.www.dto.AdminUser;
 import com.lumen.www.dto.MonthlySubscriberDTO;
+import com.lumen.www.dto.PromotionsDTO;
 import com.lumen.www.exception.ServiceException;
 import com.lumen.www.dto.JsonResult;
 import lombok.RequiredArgsConstructor;
@@ -146,7 +147,19 @@ public class AdminServiceImpl implements AdminService {
         else jsonResult.fail(LOG_FAILURE_MESSAGE);
         return jsonResult;
     }
+
+    @Override
+    public JsonResult addPromotions(PromotionsDTO promotionsDTO) {
+        System.out.println(promotionsDTO);
+
+
+
+        return null;
+    }
 }
+
+
+
 
     /*  // 토큰생성 반환 서비스
     @Override

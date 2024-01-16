@@ -1,17 +1,10 @@
 package com.lumen.www.dao;
 
-import com.lumen.www.dto.AdminUser;
-import com.lumen.www.dto.InquiryDTO;
-import com.lumen.www.dto.MonthlySubscriberDTO;
-import com.lumen.www.dto.UserActivityDTO;
-import com.lumen.www.vo.CurrentSituationVO;
-import com.lumen.www.vo.MonthVO;
-import com.lumen.www.vo.QnaVO;
+import com.lumen.www.dto.*;
 import lombok.RequiredArgsConstructor;
 import org.apache.ibatis.session.SqlSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.dao.DataAccessException;
 import org.springframework.dao.DataAccessResourceFailureException;
 import org.springframework.stereotype.Repository;
 
@@ -20,10 +13,10 @@ import java.util.Map;
 
 @Repository
 @RequiredArgsConstructor
-public class DBRepository implements AdminRepository {
+public class AdminRepositoryImpl implements AdminRepository {
 
     private final SqlSession sqlSession;
-    private static final Logger logger = LoggerFactory.getLogger(DBRepository.class);
+    private static final Logger logger = LoggerFactory.getLogger(AdminRepositoryImpl.class);
 
 
     // 유저 정보 가져오기
@@ -91,6 +84,7 @@ public class DBRepository implements AdminRepository {
         }
     }
 
+    // 문의 리스트
     @Override
     public List<InquiryDTO> getInquiryList() {
         try {
@@ -100,4 +94,5 @@ public class DBRepository implements AdminRepository {
             throw new DataAccessResourceFailureException("Error getting inquiry list", e);
         }
     }
+ 
 }

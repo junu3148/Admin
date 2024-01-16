@@ -18,7 +18,6 @@ public class AdminMainController {
     // 관리자페이지 메인 (연결안됨)
     @GetMapping("/adminmain")
     public String adminMain() {
-        System.out.println("나오니?");
         return "adminMain";
     }
 

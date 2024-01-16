@@ -63,10 +63,16 @@
     <!--메인페이지 문의현황-->
     <select id="getInquiryList" resultType="InquiryDTO">
         SELECT inquiry_key,
-               DATE_FORMAT(inquiry_date, '%Y-%m-%d') AS inquiryDate,
-               inquiry_details,
-               inquiry_status,
-               subscription_plan
+               date_format(inquiry_date, '%Y-%m-%d') AS inquirydate,
+               inquiry_content,
+               CASE inquiry_status
+                   WHEN 'N' THEN
+                       '답변대기'
+                   WHEN 'Y' THEN
+                       '답변완료'
+                   ELSE
+                       inquiry_status
+                   END                               AS inquirystatus
         FROM inquiry
     </select>
 

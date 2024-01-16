@@ -2,6 +2,7 @@ package com.lumen.www.service;
 
 import com.lumen.www.dto.JsonResult;
 import com.lumen.www.dto.AdminUser;
+import com.lumen.www.dto.PromotionsDTO;
 
 public interface AdminService {
 
@@ -22,6 +23,10 @@ public interface AdminService {
 
     // 메인페이지 문의현황
     JsonResult getMainInquiryList();
+
+    // 프로모션 등록
+    JsonResult addPromotions(PromotionsDTO promotionsDTO);
+
 
     /*  String loginck(AdminUser adminUser);
 
