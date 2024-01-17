@@ -6,7 +6,7 @@ import com.lumen.www.files.FileStorageProperties;
 import com.lumen.www.files.ImageUploader;
 import com.lumen.www.service.AdminService;
 import com.lumen.www.service.AdminServiceImpl;
-import com.lumen.www.service.EmailService;
+import com.lumen.www.util.EmailService;
 import org.apache.ibatis.session.SqlSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

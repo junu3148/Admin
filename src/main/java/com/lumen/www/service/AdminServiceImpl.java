@@ -7,6 +7,7 @@ import com.lumen.www.dto.MonthlySubscriberDTO;
 import com.lumen.www.dto.PromotionsDTO;
 import com.lumen.www.entity.EmailMessage;
 import com.lumen.www.exception.ServiceException;
+import com.lumen.www.util.EmailService;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -143,6 +144,23 @@ public class AdminServiceImpl implements AdminService {
         return matcher.matches();
     }
 
+    // 프로모션 배포
+    @Override
+    public JsonResult addPromotions(PromotionsDTO promotionsDTO) {
+        System.out.println(promotionsDTO);
+
+        EmailMessage emailMessage = EmailMessage.builder()
+                .subject(promotionsDTO.getPromotionsTitle())
+                .message(promotionsDTO.getPromotionsContent())
+                .build();
+        // 이메일 전송 후 결과를 반환받음
+        String result = emailService.sendMail(emailMessage, "test");
+        System.out.println(result);
+        if (result.equals("ok")) {
+            return createJsonResult(result);
+        } else return null;
+    }
+
     // JsonResult 생성 & 반환
     private JsonResult createJsonResult(Object data) {
         System.out.println(data);
@@ -151,23 +169,6 @@ public class AdminServiceImpl implements AdminService {
         if (data != null) jsonResult.success(data);
         else jsonResult.fail(LOG_FAILURE_MESSAGE);
         return jsonResult;
-    }
-
-    @Override
-    public JsonResult addPromotions(PromotionsDTO promotionsDTO) {
-        System.out.println(promotionsDTO);
-
-        EmailMessage emailMessage = EmailMessage.builder()
-                .to("junu3148@gmail.com")
-                .subject(promotionsDTO.getPromotionsTitle())
-                .message(promotionsDTO.getPromotionsContent())
-                .build();
-
-        // 이메일 전송 후 결과를 반환받음
-        String result = emailService.sendMail(emailMessage, "test");
-        System.out.println(result);
-
-        return null;
     }
 }
 
