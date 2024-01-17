@@ -1,6 +1,7 @@
 package com.lumen.www.service;
 
 import com.lumen.www.entity.EmailMessage;
+import jakarta.activation.FileDataSource;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import jakarta.mail.internet.MimeUtility;
@@ -51,29 +52,22 @@ public class EmailService {
             mimeMessageHelper.setFrom(email); // 보내는사람
             mimeMessageHelper.setTo(emailMessage.getTo()); // 받는사람
             mimeMessageHelper.setSubject(emailMessage.getSubject()); // 제목
+            mimeMessageHelper.setText(emailMessage.getMessage(), true);// 내용
 
-            String htmlContent = emailMessage.getMessage();
+
 
             // 이미지 파일의 절대 경로
-            String imagePath = extractImageUrl(htmlContent);
-            String s = "C:/lumen"+imagePath.substring(1,imagePath.length());
-
+            String imagePath = extractImageUrl(emailMessage.getMessage());
             System.out.println(imagePath);
-            System.out.println(s);
+
+            // 파일첨부
+            mimeMessageHelper.addInline("image", new FileDataSource(imagePath));
 
 
-            FileSystemResource res = new FileSystemResource(new File(s));
 
-            mimeMessageHelper.addInline("image", new ClassPathResource(imagePath));
-            // HTML 본문에서 이미지의 Content-ID를 사용하여 이미지를 참조
-            htmlContent = htmlContent.replace(imagePath, "cid:image");
 
-            mimeMessageHelper.setText(htmlContent, true);
 
             javaMailSender.send(mimeMessage);
-
-
-
             log.info("Email sent successfully");
             return authNum;
         } catch (MessagingException e) {
