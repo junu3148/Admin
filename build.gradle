@@ -23,6 +23,9 @@ repositories {
 
 dependencies {
 
+
+	implementation 'org.springframework.boot:spring-boot-starter-mail'
+	implementation 'nz.net.ultraq.thymeleaf:thymeleaf-layout-dialect'
 	// html 탬플릿 엔젠
 	implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
 	// 웹서버 개발을 위한

@@ -2,15 +2,19 @@ package com.lumen.www.service;
 
 import com.lumen.www.dao.AdminRepository;
 import com.lumen.www.dto.AdminUser;
+import com.lumen.www.dto.JsonResult;
 import com.lumen.www.dto.MonthlySubscriberDTO;
 import com.lumen.www.dto.PromotionsDTO;
 import com.lumen.www.exception.ServiceException;
-import com.lumen.www.dto.JsonResult;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.mail.SimpleMailMessage;
+import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
 
 import java.util.List;
 import java.util.Map;
@@ -29,6 +33,11 @@ public class AdminServiceImpl implements AdminService {
     private static final String LOG_FAILURE_MESSAGE = "실패";
 
     private final AdminRepository adminRepository;
+
+    private final JavaMailSender javaMailSender;
+
+    @Value("${spring.mail.username}")
+    private String email;
 
     // 1차 로그인
     @Override
@@ -151,6 +160,14 @@ public class AdminServiceImpl implements AdminService {
     @Override
     public JsonResult addPromotions(PromotionsDTO promotionsDTO) {
         System.out.println(promotionsDTO);
+        SimpleMailMessage message = new SimpleMailMessage();
+
+        message.setFrom(email);
+        message.setTo("junu3148@gmail.com");
+        message.setSubject(promotionsDTO.getPromotionsTitle());
+        message.setText(promotionsDTO.getPromotionsContent());
+
+        javaMailSender.send(message);
 
 
 
