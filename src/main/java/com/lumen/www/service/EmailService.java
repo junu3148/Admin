@@ -27,7 +27,7 @@ import java.io.FileInputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.file.Files;
-import java.util.Random;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -41,7 +41,6 @@ public class EmailService {
 
     @Value("${spring.mail.username}")
     private String email;
-    private String cid = "image";
 
     // 메일 발송
     public String sendMail(EmailMessage emailMessage, String type) {
@@ -67,14 +66,30 @@ public class EmailService {
 
     // 이미지 첨부
     private void processImage(MimeMessage mimeMessage, EmailMessage emailMessage, MimeMessageHelper mimeMessageHelper) throws MessagingException {
-        // 이미지 파일 경로 추출
-        String imagePath = extractImageUrl(emailMessage.getMessage());
-        String modifiedHtmlMessage = emailMessage.getMessage().replace(imagePath, "cid:" + cid);
+        List<String> imagePaths = extractImageUrls(emailMessage.getMessage()); // 여러 이미지 경로 추출
+        String modifiedHtmlMessage = emailMessage.getMessage();
+
+        // 이미지 CID 매핑을 저장하기 위한 Map 생성
+        Map<String, String> cidMap = new HashMap<>();
+
+        for (int i = 0; i < imagePaths.size(); i++) {
+            String cid = "image" + i; // 각 이미지에 대한 CID 생성
+            cidMap.put(imagePaths.get(i), cid);
+        }
+
+        // 모든 이미지 경로를 CID로 대체
+        for (Map.Entry<String, String> entry : cidMap.entrySet()) {
+            modifiedHtmlMessage = modifiedHtmlMessage.replace(entry.getKey(), "cid:" + entry.getValue());
+        }
+
+        // 본문 텍스트 설정
         mimeMessageHelper.setText(modifiedHtmlMessage, true);
 
-        // 이미지 첨부 (CID 사용)
-        FileSystemResource res = new FileSystemResource(new File("C:/lumen" + imagePath.substring(1)));
-        mimeMessageHelper.addInline(cid, res);
+        // 각 이미지 첨부 (CID 사용)
+        for (String imagePath : imagePaths) {
+            FileSystemResource res = new FileSystemResource(new File("C:/lumen" + imagePath.substring(1)));
+            mimeMessageHelper.addInline(cidMap.get(imagePath), res);
+        }
     }
 
 
@@ -107,16 +122,18 @@ public class EmailService {
         return templateEngine.process(type, context);
     }
 
-    public String extractImageUrl(String htmlContent) {
-        String imageUrl = null;
+    // 이미지 경로 검색
+    public List<String> extractImageUrls(String htmlContent) {
+        List<String> imageUrls = new ArrayList<>();
         Pattern pattern = Pattern.compile("<img [^>]*src=[\"']([^\"']+)[\"']", Pattern.CASE_INSENSITIVE);
         Matcher matcher = pattern.matcher(htmlContent);
 
-        if (matcher.find()) {
-            imageUrl = matcher.group(1); // 첫 번째 일치하는 이미지의 src 값을 추출
+        while (matcher.find()) {
+            imageUrls.add(matcher.group(1)); // 모든 일치하는 이미지의 src 값을 리스트에 추가
         }
 
-        return imageUrl;
+        return imageUrls;
     }
+
 
 }
