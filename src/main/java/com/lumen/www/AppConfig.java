@@ -6,6 +6,7 @@ import com.lumen.www.files.FileStorageProperties;
 import com.lumen.www.files.ImageUploader;
 import com.lumen.www.service.AdminService;
 import com.lumen.www.service.AdminServiceImpl;
+import com.lumen.www.service.EmailService;
 import org.apache.ibatis.session.SqlSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -16,6 +17,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.mail.javamail.JavaMailSender;
+import org.thymeleaf.spring6.SpringTemplateEngine;
 
 @Configuration
 @ComponentScan(basePackages = "com.lumen.www")
@@ -23,23 +25,21 @@ public class AppConfig {
 
     private static final Logger logger = LoggerFactory.getLogger(AppConfig.class);
     private final SqlSession sqlSession;
-
-    @Autowired
-    private JavaMailSender javaMailSender;
-
+    private final JavaMailSender javaMailSender;
 
     @Value("${jwt.secret}")
     private String secretKey;
 
-    public AppConfig(SqlSession sqlSession) {
+    public AppConfig(SqlSession sqlSession, JavaMailSender javaMailSender) {
         this.sqlSession = sqlSession;
+        this.javaMailSender = javaMailSender;
     }
 
     // AdminService 빈 정의
     @Bean
     public AdminService adminService() {
         try {
-            return new AdminServiceImpl(adminRepository(),javaMailSender);
+            return new AdminServiceImpl(adminRepository(), emailService());
         } catch (Exception e) {
             logger.error("Error creating AdminService bean", e);
             throw e; // 다시 예외를 던져서 호출자가 처리할 수 있도록 합니다.
@@ -70,7 +70,11 @@ public class AppConfig {
         return new ImageUploader(fileStorageProperties);
     }
 
-
+    // EmailService
+    @Bean
+    public EmailService emailService() {
+        return new EmailService(javaMailSender, new SpringTemplateEngine());
+    }
 }
 // JwtTokenProvider 빈 정의 (필요에 따라 주석 해제할 수 있음)
     /*@Bean

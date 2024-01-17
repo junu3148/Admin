@@ -24,6 +24,9 @@ spring:
           timeout: 5000 # 6
           starttls:
             enable: true # 7
+        mime:
+          charset : UTF-8
+
 
 
   # CORS 설정
