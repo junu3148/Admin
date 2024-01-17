@@ -52,7 +52,10 @@ public class EmailService {
             mimeMessageHelper.setFrom(email); // 보내는사람
             mimeMessageHelper.setTo(emailMessage.getTo()); // 받는사람
             mimeMessageHelper.setSubject(emailMessage.getSubject()); // 제목
-            mimeMessageHelper.setText(emailMessage.getMessage(), true);// 내용
+            mimeMessageHelper.setText(emailMessage.getMessage(), true);
+
+
+
 
 
 
@@ -60,8 +63,8 @@ public class EmailService {
             String imagePath = extractImageUrl(emailMessage.getMessage());
             System.out.println(imagePath);
 
-            // 파일첨부
-            mimeMessageHelper.addInline("image", new FileDataSource(imagePath));
+            mimeMessageHelper.addInline("image", new FileDataSource("C:/lumen"+imagePath.substring(1, imagePath.length())));
+
 
 
 
