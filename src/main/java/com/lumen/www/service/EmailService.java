@@ -42,8 +42,39 @@ public class EmailService {
     @Value("${spring.mail.username}")
     private String email;
 
-
     public String sendMail(EmailMessage emailMessage, String type) {
+        String authNum = createCode();
+        MimeMessage mimeMessage = javaMailSender.createMimeMessage();
+
+        try {
+            MimeMessageHelper mimeMessageHelper = new MimeMessageHelper(mimeMessage, true);
+            mimeMessageHelper.setFrom(email); // 보내는사람
+            mimeMessageHelper.setTo(emailMessage.getTo()); // 받는사람
+            mimeMessageHelper.setSubject(emailMessage.getSubject()); // 제목
+
+            // 이미지 파일 경로 추출
+            String imagePath = extractImageUrl(emailMessage.getMessage());
+            String cid = "image"; // CID 설정
+            String modifiedHtmlMessage = emailMessage.getMessage().replace(imagePath, "cid:" + cid);
+            mimeMessageHelper.setText(modifiedHtmlMessage, true);
+
+            // 이미지 첨부 (CID 사용)
+            FileSystemResource res = new FileSystemResource(new File("C:/lumen" + imagePath.substring(1)));
+            mimeMessageHelper.addInline(cid, res);
+
+            javaMailSender.send(mimeMessage);
+            log.info("Email sent successfully");
+            return authNum;
+        } catch (MessagingException e) {
+            log.error("Email sending failed: " + e.getMessage());
+            throw new RuntimeException("Failed to send email", e);
+        }
+    }
+
+
+
+
+   /* public String sendMail(EmailMessage emailMessage, String type) {
         String authNum = createCode();
         MimeMessage mimeMessage = javaMailSender.createMimeMessage();
 
@@ -55,19 +86,11 @@ public class EmailService {
             mimeMessageHelper.setText(emailMessage.getMessage(), true);
 
 
-
-
-
-
             // 이미지 파일의 절대 경로
             String imagePath = extractImageUrl(emailMessage.getMessage());
             System.out.println(imagePath);
 
-            mimeMessageHelper.addInline("image", new FileDataSource("C:/lumen"+imagePath.substring(1, imagePath.length())));
-
-
-
-
+            mimeMessageHelper.addInline("image", new FileDataSource("C:/lumen" + imagePath.substring(1, imagePath.length())));
 
 
             javaMailSender.send(mimeMessage);
@@ -78,7 +101,7 @@ public class EmailService {
             throw new RuntimeException("Failed to send email", e);
         }
     }
-
+*/
 
     // 인증번호 및 임시 비밀번호 생성 메서드
     public String createCode() {
