@@ -1,5 +1,6 @@
 package com.lumen.www.controller;
 
+import com.lumen.www.dto.AdminUser;
 import jakarta.mail.internet.MimeMessage;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
@@ -21,15 +22,24 @@ public class AdminMainController {
 
     private final AdminService adminService;
 
+
     // 관리자페이지 메인 (연결안됨)
     @GetMapping("/adminmain")
-    public String adminMain() {
+    public String adminMain(HttpSession session) {
+
+        AdminUser adminUser1 = (AdminUser) session.getAttribute("adminUser");
+        System.out.println(adminUser1);
         return "adminMain";
     }
 
     // 가입자 현황
     @GetMapping("/subscriber-count")
-    public JsonResult subscriberCount() {
+    public JsonResult subscriberCount(HttpSession session) {
+
+
+        AdminUser adminUser1 = (AdminUser) session.getAttribute("adminUser");
+        System.out.println(adminUser1);
+
         return adminService.subscriberCount();
     }
 

@@ -1,9 +1,9 @@
 package com.lumen.www.controller;
 
-import com.lumen.www.dto.AdminUser;
+import com.lumen.www.dto.JoinListDTO;
+import com.lumen.www.dto.JoinSearchDTO;
 import com.lumen.www.dto.JsonResult;
 import com.lumen.www.dto.PromotionsDTO;
-import com.lumen.www.files.FileStorageProperties;
 import com.lumen.www.files.ImageUploader;
 import com.lumen.www.service.AdminService;
 import lombok.RequiredArgsConstructor;
@@ -30,6 +30,12 @@ public class AdminController {
         return imageUploader.uploadImage(request);
     }
 
+    // 가입자 관리
+    @PostMapping("/admin-join")
+    public JsonResult adminJoin(@RequestBody JoinSearchDTO joinSearchDTO){
+        return adminService.getJoinList(joinSearchDTO);
+    }
+    
     // 프로모션 등록
     @PostMapping("/add-promotions")
     public JsonResult addPromotions(@RequestBody PromotionsDTO promotionsDTO) {

@@ -4,6 +4,7 @@ import com.lumen.www.dao.AdminRepository;
 import com.lumen.www.dao.AdminRepositoryImpl;
 import com.lumen.www.files.FileStorageProperties;
 import com.lumen.www.files.ImageUploader;
+import com.lumen.www.jwt.JwtTokenProvider;
 import com.lumen.www.service.AdminService;
 import com.lumen.www.service.AdminServiceImpl;
 import com.lumen.www.util.EmailService;
@@ -38,7 +39,7 @@ public class AppConfig {
     @Bean
     public AdminService adminService() {
         try {
-            return new AdminServiceImpl(adminRepository(), emailService());
+            return new AdminServiceImpl(adminRepository(), emailService(),jwtTokenProvider());
         } catch (Exception e) {
             logger.error("Error creating AdminService bean", e);
             throw e; // 다시 예외를 던져서 호출자가 처리할 수 있도록 합니다.
@@ -74,9 +75,12 @@ public class AppConfig {
     public EmailService emailService() {
         return new EmailService(javaMailSender, new SpringTemplateEngine());
     }
-}
-// JwtTokenProvider 빈 정의 (필요에 따라 주석 해제할 수 있음)
-    /*@Bean
+
+    // JwtTokenProvider 빈 정의 (필요에 따라 주석 해제할 수 있음)
+    @Bean
     public JwtTokenProvider jwtTokenProvider() {
         return new JwtTokenProvider(secretKey);
-    }*/
+    }
+}
+
+

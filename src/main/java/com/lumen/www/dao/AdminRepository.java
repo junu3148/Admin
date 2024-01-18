@@ -1,10 +1,6 @@
 package com.lumen.www.dao;
 
-import com.lumen.www.dto.AdminUser;
-import com.lumen.www.dto.InquiryDTO;
-import com.lumen.www.dto.PromotionsDTO;
-import com.lumen.www.dto.UserActivityDTO;
-import org.springframework.dao.DataAccessException;
+import com.lumen.www.dto.*;
 
 import java.util.List;
 import java.util.Map;
@@ -64,4 +60,11 @@ public interface AdminRepository {
      */
     List<InquiryDTO> getInquiryList();
 
+
+    /**
+     * 검색 조건별 가입자 리스트를 반환합니다.
+     *
+     * @return 조건별 가입자 정보를 담은 JoinSearchDTO 리스트
+     */
+    List<JoinListDTO> getJoinList(JoinSearchDTO joinSearchDTO);
 }

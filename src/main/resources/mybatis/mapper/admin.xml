@@ -76,5 +76,44 @@
         FROM inquiry
     </select>
 
+    <!--가입자 리스트-->
+    <select id="getJoinList"  parameterType="JoinSearchDTO" resultType="JoinListDTO">
+        SELECT user_key,
+        user_name AS 고객명,
+        user_id AS 이메일,
+        phone_number AS 연락처,
+        plan_name AS 플랜,
+        accession_date AS 가입일,
+        withdrawal_date AS 회원탈퇴일,
+        occupation AS 직업,
+        CASE
+        WHEN YEAR(CURDATE()) - birth_year BETWEEN 10 AND 19 THEN '10대'
+        WHEN YEAR(CURDATE()) - birth_year BETWEEN 20 AND 29 THEN '20대'
+        WHEN YEAR(CURDATE()) - birth_year BETWEEN 30 AND 39 THEN '30대'
+        WHEN YEAR(CURDATE()) - birth_year BETWEEN 40 AND 49 THEN '40대'
+        WHEN YEAR(CURDATE()) - birth_year BETWEEN 50 AND 59 THEN '50대'
+        WHEN YEAR(CURDATE()) - birth_year BETWEEN 60 AND 69 THEN '60대'
+        WHEN YEAR(CURDATE()) - birth_year BETWEEN 70 AND 79 THEN '70대'
+        WHEN YEAR(CURDATE()) - birth_year BETWEEN 80 AND 89 THEN '80대'
+        ELSE '기타'
+        END AS 연령,
+        gender AS 성별,
+        country AS 국가
+        FROM USER A
+        INNER JOIN PLAN B ON A.plan_key = B.plan_key
+        WHERE 1 = 1
+
+        <if test="userName != null and userName != ''">
+            AND user_name = #{userName}
+        </if>
+        <if test="planName != null">
+            AND plan_name = #{planName}
+        </if>
+        <if test="startDate != null and startDate != ''">
+            AND accession_date BETWEEN #{startDate} AND #{endDate}
+        </if>
+
+    </select>
+
 
 </mapper>

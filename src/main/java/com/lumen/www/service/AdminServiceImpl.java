@@ -1,12 +1,10 @@
 package com.lumen.www.service;
 
 import com.lumen.www.dao.AdminRepository;
-import com.lumen.www.dto.AdminUser;
-import com.lumen.www.dto.JsonResult;
-import com.lumen.www.dto.MonthlySubscriberDTO;
-import com.lumen.www.dto.PromotionsDTO;
+import com.lumen.www.dto.*;
 import com.lumen.www.entity.EmailMessage;
 import com.lumen.www.exception.ServiceException;
+import com.lumen.www.jwt.JwtTokenProvider;
 import com.lumen.www.util.EmailService;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
@@ -35,6 +33,8 @@ public class AdminServiceImpl implements AdminService {
 
     private final EmailService emailService;
 
+    private final JwtTokenProvider jwtTokenProvider;
+
 
     // 1차 로그인
     @Override
@@ -58,10 +58,11 @@ public class AdminServiceImpl implements AdminService {
     // 2차 로그인
     @Override
     @Transactional
-    public AdminUser adminLoginCk(AdminUser adminUser) {
+    public String adminLoginCk(AdminUser adminUser) {
         logger.debug("adminLoginCk Service() called with adminUser: {}", adminUser);
         try {
-            return adminRepository.adminLoginCk(adminUser);
+           AdminUser adminUserDB = adminRepository.adminLoginCk(adminUser);
+            return jwtTokenProvider.generateToken(adminUserDB);
         } catch (Exception e) {
             logger.error("Error in adminLoginCk", e);
             throw new ServiceException("Error in adminLoginCk", e);
@@ -138,13 +139,22 @@ public class AdminServiceImpl implements AdminService {
         }
     }
 
-    // 공통된 로직은 프라이빗 메소드로 추출
-    private boolean isValidEmail(String email) {
-        Matcher matcher = EMAIL_PATTERN.matcher(email);
-        return matcher.matches();
+
+    @Override
+    public JsonResult getJoinList(JoinSearchDTO joinSearchDTO){
+        logger.debug("getJoinList Service()");
+        try {
+            List<JoinListDTO> joinListDTO = adminRepository.getJoinList(joinSearchDTO);
+
+            return createJsonResult(adminRepository.getJoinList(joinSearchDTO));
+        } catch (Exception e) {
+            logger.error("Error in getJoinList", e);
+            return createJsonResult(LOG_FAILURE_MESSAGE);
+        }
     }
 
-    // 프로모션 배포
+
+    // 프로모션 메일 발송
     @Override
     public JsonResult addPromotions(PromotionsDTO promotionsDTO) {
         System.out.println(promotionsDTO);
@@ -161,6 +171,7 @@ public class AdminServiceImpl implements AdminService {
         } else return null;
     }
 
+
     // JsonResult 생성 & 반환
     private JsonResult createJsonResult(Object data) {
         System.out.println(data);
@@ -169,6 +180,12 @@ public class AdminServiceImpl implements AdminService {
         if (data != null) jsonResult.success(data);
         else jsonResult.fail(LOG_FAILURE_MESSAGE);
         return jsonResult;
+    }
+
+    // 이메일 형식 체크
+    private boolean isValidEmail(String email) {
+        Matcher matcher = EMAIL_PATTERN.matcher(email);
+        return matcher.matches();
     }
 }
 

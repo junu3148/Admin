@@ -94,5 +94,18 @@ public class AdminRepositoryImpl implements AdminRepository {
             throw new DataAccessResourceFailureException("Error getting inquiry list", e);
         }
     }
- 
+
+    // 가입자리스트
+    @Override
+    public List<JoinListDTO> getJoinList(JoinSearchDTO joinSearchDTO) {
+        try {
+
+            System.out.println(joinSearchDTO);
+            //return null;
+            return sqlSession.selectList("admin.getJoinList", joinSearchDTO);
+        } catch (Exception e) {
+            logger.error("Error getting join list", e);
+            throw new DataAccessResourceFailureException("Error getting join list", e);
+        }
+    }
 }
