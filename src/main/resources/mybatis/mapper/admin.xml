@@ -115,5 +115,20 @@
 
     </select>
 
+    <select id="findByUsername" parameterType="String" resultType="AdminUser">
+
+        SELECT admin_key,
+               admin_id,
+               admin_password,
+               admin_name,
+               depositor,
+               bank_name,
+               account_number,
+               role
+        FROM ADMIN
+        WHERE admin_id = #{adminId}
+    </select>
+
+
 
 </mapper>

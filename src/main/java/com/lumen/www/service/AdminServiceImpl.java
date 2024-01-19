@@ -12,7 +12,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -62,7 +61,8 @@ public class AdminServiceImpl implements AdminService {
         logger.debug("adminLoginCk Service() called with adminUser: {}", adminUser);
         try {
            AdminUser adminUserDB = adminRepository.adminLoginCk(adminUser);
-            return jwtTokenProvider.generateToken(adminUserDB);
+           // return jwtTokenProvider.generateToken(adminUserDB);
+            return null;
         } catch (Exception e) {
             logger.error("Error in adminLoginCk", e);
             throw new ServiceException("Error in adminLoginCk", e);

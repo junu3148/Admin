@@ -1,19 +1,24 @@
 package com.lumen.www.jwt;
 
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
+import com.lumen.www.dto.AdminUser;
+import com.lumen.www.dto.JwtToken;
+import com.lumen.www.exception.InvalidTokenException;
+import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.User;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
-import com.lumen.www.dto.AdminUser;
 
 import java.security.Key;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -37,40 +42,36 @@ public class JwtTokenProvider {
         this.key = Keys.hmacShaKeyFor(keyBytes);
     }
 
-    /**
-     * 주어진 AdminUser 객체에 기반하여 JWT 토큰을 생성합니다.
-     *
-     * 이 메서드는 토큰의 헤더(header)와 페이로드(payload)를 설정하고,
-     * 주어진 서명 알고리즘을 사용하여 토큰에 서명합니다.
-     * 생성된 토큰은 AdminUser의 식별자, 역할 및 이름을 포함합니다.
-     *
-     * @param adminUser 토큰에 포함할 관리자 사용자 정보.
-     * @return 생성된 JWT 토큰 문자열.
-     */
-    public String generateToken(AdminUser adminUser) {
+    // Member 정보를 가지고 AccessToken, RefreshToken을 생성하는 메서드
+    public JwtToken generateToken(Authentication authentication) {
+        // 권한 가져오기
+        String authorities = authentication.getAuthorities().stream()
+                .map(GrantedAuthority::getAuthority)
+                .collect(Collectors.joining(","));
 
-        // Header 부분 설정: 토큰의 유형과 서명 알고리즘을 정의합니다.
-        Map<String, Object> headers = new HashMap<>();
-        headers.put("typ", TOKEN_TYPE);       // 토큰의 유형 (예: JWT)
-        headers.put("alg", SIGNATURE_ALGORITHM); // 사용할 서명 알고리즘 (예: HS256)
+        long now = (new Date()).getTime();
 
-        // Payload 부분 설정: 관리자 사용자의 ID, 역할, 이름을 포함합니다.
-        Map<String, Object> payloads = new HashMap<>();
-        payloads.put(CLAIM_ADMIN_USER_ID, adminUser.getAdminId());
-        payloads.put(CLAIM_IS_ADMIN, adminUser.getRole());
-        payloads.put(CLAIM_USER_NAME, adminUser.getAdminName());
+        // Access Token 생성
+        Date accessTokenExpiresIn = new Date(now + 86400000);
+        String accessToken = Jwts.builder()
+                .setSubject(authentication.getName())
+                .claim("auth", authorities)
+                .setExpiration(accessTokenExpiresIn)
+                .signWith(key, SignatureAlgorithm.HS256)
+                .compact();
 
-        long now = System.currentTimeMillis();
-        // 토큰 Builder를 사용하여 토큰을 생성합니다.
-        return Jwts.builder()
-                .setHeader(headers) // Headers 설정
-                .setClaims(payloads) // Claims 설정
-                .setSubject("AdminUser") // 토큰의 용도를 지정 (예: "AdminUser")
-                .setExpiration(new Date(now + ACCESS_TOKEN_EXPIRE_COUNT)) // 토큰 만료 시간 설정
-                .signWith(key, SignatureAlgorithm.HS256) // HS256 알고리즘과 키를 사용하여 서명
-                .compact(); // 토큰을 문자열 형태로 압축하여 반환
+        // Refresh Token 생성
+        String refreshToken = Jwts.builder()
+                .setExpiration(new Date(now + 86400000))
+                .signWith(key, SignatureAlgorithm.HS256)
+                .compact();
+
+        return JwtToken.builder()
+                .grantType("Bearer")
+                .accessToken(accessToken)
+                .refreshToken(refreshToken)
+                .build();
     }
-
 
     /**
      * JWT 토큰에서 관리자 사용자 정보를 추출하여 AdminUser 객체로 반환합니다.
@@ -101,7 +102,6 @@ public class JwtTokenProvider {
     }
 
 
-
     /**
      * 주어진 JWT 토큰을 파싱하여 Claims 객체를 반환합니다.
      * 이 메서드는 JWT 토큰의 유효성을 검증하고, 토큰 내부에 저장된 클레임(claim)들을 추출합니다.
@@ -116,6 +116,58 @@ public class JwtTokenProvider {
                 .build()           // JwtParserBuilder 인스턴스를 JwtParser로 빌드
                 .parseClaimsJws(token) // 토큰을 파싱하여 Claims JWS 객체를 얻음
                 .getBody();            // Claims JWS 객체에서 Claims(클레임 세트)를 추출
+    }
+
+    public Authentication getAuthentication(String accessToken) {
+        Claims claims = parseClaims(accessToken);
+
+        if (claims.get("auth") == null) {
+            throw new InvalidTokenException("권한 정보가 없는 토큰입니다."); // 사용자 정의 예외
+        }
+
+        Collection<? extends GrantedAuthority> authorities =
+                Arrays.stream(claims.get("auth").toString().split(","))
+                        .map(SimpleGrantedAuthority::new)
+                        .collect(Collectors.toList());
+
+        UserDetails principal = new User(claims.getSubject(), "", authorities);
+        return new UsernamePasswordAuthenticationToken(principal, "", authorities);
+    }
+
+    public boolean validateToken(String token) {
+        try {
+            Jwts.parserBuilder()
+                    .setSigningKey(key)
+                    .build()
+                    .parseClaimsJws(token);
+            return true;
+        } catch (SecurityException | MalformedJwtException e) {
+            log.info("Invalid JWT Token", e);
+            throw new InvalidTokenException("Invalid JWT Token", e); // 사용자 정의 예외
+        } catch (ExpiredJwtException e) {
+            log.info("Expired JWT Token", e);
+            // 만료된 토큰에 대한 처리, 필요에 따라
+        } catch (UnsupportedJwtException e) {
+            log.info("Unsupported JWT Token", e);
+            throw new InvalidTokenException("Unsupported JWT Token", e); // 사용자 정의 예외
+        } catch (IllegalArgumentException e) {
+            log.info("JWT claims string is empty.", e);
+            throw new InvalidTokenException("JWT claims string is empty.", e); // 사용자 정의 예외
+        }
+        return false;
+    }
+
+    // accessToken
+    private Claims parseClaims(String accessToken) {
+        try {
+            return Jwts.parserBuilder()
+                    .setSigningKey(key)
+                    .build()
+                    .parseClaimsJws(accessToken)
+                    .getBody();
+        } catch (ExpiredJwtException e) {
+            return e.getClaims();
+        }
     }
 
 }

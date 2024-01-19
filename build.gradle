@@ -1,67 +1,68 @@
 plugins {
-	id 'java'
-	id 'org.springframework.boot' version '3.2.1'
-	id 'io.spring.dependency-management' version '1.1.4'
+    id 'java'
+    id 'org.springframework.boot' version '3.2.1'
+    id 'io.spring.dependency-management' version '1.1.4'
 }
 
 group = 'vikinglab'
 version = '0.0.1-SNAPSHOT'
 
 java {
-	sourceCompatibility = '17'
+    sourceCompatibility = '17'
+
 }
 
 configurations {
-	compileOnly {
-		extendsFrom annotationProcessor
-	}
+    compileOnly {
+        extendsFrom annotationProcessor
+    }
 }
 
 repositories {
-	mavenCentral()
+    mavenCentral()
 }
 
 dependencies {
 
 
-	implementation 'org.springframework.boot:spring-boot-starter-mail'
-	implementation 'nz.net.ultraq.thymeleaf:thymeleaf-layout-dialect'
-	implementation group: 'commons-io', name: 'commons-io', version: '2.12.0'
+    implementation 'org.springframework.boot:spring-boot-starter-mail'
+    implementation 'nz.net.ultraq.thymeleaf:thymeleaf-layout-dialect'
+    implementation group: 'commons-io', name: 'commons-io', version: '2.12.0'
 
-	// html 탬플릿 엔젠
-	implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
-	// 웹서버 개발을 위한
-	implementation 'org.springframework.boot:spring-boot-starter-web'
-	// html 변깅시 자동 재부팅
-	developmentOnly 'org.springframework.boot:spring-boot-devtools'
-	// 테스트 라이브러리
-	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    // html 탬플릿 엔젠
+    implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
+    // 웹서버 개발을 위한
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    // html 변깅시 자동 재부팅
+    developmentOnly 'org.springframework.boot:spring-boot-devtools'
+    // 테스트 라이브러리
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
 
-	// 마이바티스 스프링 부트 스타터 의존성 추가
-	implementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter:3.0.3'
-	testImplementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter-test:3.0.3'
+    // 마이바티스 스프링 부트 스타터 의존성 추가
+    implementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter:3.0.3'
+    testImplementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter-test:3.0.3'
 
-	// 롬북 라이브러리
-	compileOnly 'org.projectlombok:lombok'
-	annotationProcessor 'org.projectlombok:lombok'
+    // 롬북 라이브러리
+    compileOnly 'org.projectlombok:lombok'
+    annotationProcessor 'org.projectlombok:lombok'
 
-	testCompileOnly 'org.projectlombok:lombok'
-	testAnnotationProcessor 'org.projectlombok:lombok'
+    testCompileOnly 'org.projectlombok:lombok'
+    testAnnotationProcessor 'org.projectlombok:lombok'
 
-	// mysql
-	runtimeOnly 'com.mysql:mysql-connector-j'
-	implementation 'org.springframework.boot:spring-boot-starter-jdbc'
+    // mysql
+    runtimeOnly 'com.mysql:mysql-connector-j'
+    implementation 'org.springframework.boot:spring-boot-starter-jdbc'
 
-	// jwt
-	implementation 'io.jsonwebtoken:jjwt-api:0.11.5'
-	runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.11.5'
-	runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.11.5'
+    // Spring Security
+    implementation 'org.springframework.boot:spring-boot-starter-security'
 
-	// Redis
-	implementation 'org.springframework.boot:spring-boot-starter-data-redis'
+    // JWT
+    implementation 'io.jsonwebtoken:jjwt-api:0.11.5'
+    implementation 'io.jsonwebtoken:jjwt-impl:0.11.5'
+    implementation 'io.jsonwebtoken:jjwt-jackson:0.11.5'
 
 }
 
 tasks.named('test') {
-	useJUnitPlatform()
+    useJUnitPlatform()
 }

@@ -2,11 +2,13 @@ package com.lumen.www;
 
 import com.lumen.www.dao.AdminRepository;
 import com.lumen.www.dao.AdminRepositoryImpl;
+import com.lumen.www.dao.MemberRepository;
 import com.lumen.www.files.FileStorageProperties;
 import com.lumen.www.files.ImageUploader;
 import com.lumen.www.jwt.JwtTokenProvider;
 import com.lumen.www.service.AdminService;
 import com.lumen.www.service.AdminServiceImpl;
+import com.lumen.www.service.MemberService;
 import com.lumen.www.util.EmailService;
 import org.apache.ibatis.session.SqlSession;
 import org.slf4j.Logger;
@@ -17,6 +19,9 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.thymeleaf.spring6.SpringTemplateEngine;
 
 @Configuration
@@ -81,6 +86,21 @@ public class AppConfig {
     public JwtTokenProvider jwtTokenProvider() {
         return new JwtTokenProvider(secretKey);
     }
+    // AuthenticationManagerBuilder를 주입받아 사용
+    @Bean
+    public MemberService memberService(MemberRepository memberRepository, AuthenticationManagerBuilder authManagerBuilder, JwtTokenProvider jwtTokenProvider) {
+        return new MemberService(memberRepository, authManagerBuilder, jwtTokenProvider);
+    }
+    @Bean
+    public MemberRepository memberRepository(){
+        return new MemberRepository(sqlSession);
+    }
+
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
+    }
+
 }
 
 
