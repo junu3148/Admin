@@ -14,10 +14,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -37,13 +34,13 @@ public class AdminSignController {
     }
 
     // 1차 로그인 처리를 위한 엔드포인트
-    @PostMapping("/admin-login")
+  /*  @PostMapping("/admin-login")
     public JsonResult adminLogin(@RequestBody AdminUser adminUser) {
         return adminService.adminLogin(adminUser);
-    }
+    }*/
 
     // 2차 로그인 처리를 위한 엔드포인트
-    @PostMapping("/admin-login-ck")
+/*    @PostMapping("/admin-login-ck")
     public ResponseEntity<String> adminLoginCk(@RequestBody AdminUser adminUser, HttpSession session) {
 
         String token = adminService.adminLoginCk(adminUser);
@@ -67,7 +64,7 @@ public class AdminSignController {
         } else {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Authentication failed");
         }
-    }
+    }*/
 
     // 로그아웃 처리를 위한 엔드포인트
     @GetMapping("/admin-logout")

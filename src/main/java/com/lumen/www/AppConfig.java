@@ -2,7 +2,6 @@ package com.lumen.www;
 
 import com.lumen.www.dao.AdminRepository;
 import com.lumen.www.dao.AdminRepositoryImpl;
-import com.lumen.www.dao.MemberRepository;
 import com.lumen.www.files.FileStorageProperties;
 import com.lumen.www.files.ImageUploader;
 import com.lumen.www.jwt.JwtTokenProvider;
@@ -88,18 +87,11 @@ public class AppConfig {
     }
     // AuthenticationManagerBuilder를 주입받아 사용
     @Bean
-    public MemberService memberService(MemberRepository memberRepository, AuthenticationManagerBuilder authManagerBuilder, JwtTokenProvider jwtTokenProvider) {
-        return new MemberService(memberRepository, authManagerBuilder, jwtTokenProvider);
-    }
-    @Bean
-    public MemberRepository memberRepository(){
-        return new MemberRepository(sqlSession);
+    public MemberService memberService(AdminRepository adminRepository, AuthenticationManagerBuilder authManagerBuilder, JwtTokenProvider jwtTokenProvider) {
+        return new MemberService(adminRepository, authManagerBuilder, jwtTokenProvider);
     }
 
-    @Bean
-    public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
-    }
+
 
 }
 

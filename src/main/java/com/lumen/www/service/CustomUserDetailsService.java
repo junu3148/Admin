@@ -1,8 +1,10 @@
 package com.lumen.www.service;
 
-import com.lumen.www.dao.MemberRepository;
+import com.lumen.www.dao.AdminRepository;
 import com.lumen.www.dto.AdminUser;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -10,34 +12,40 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.HashSet;
+import java.util.Optional;
+import java.util.Set;
+
 @Service
 @RequiredArgsConstructor
 public class CustomUserDetailsService implements UserDetailsService {
 
-    private final MemberRepository memberRepository;
+    private final AdminRepository adminRepository;
     private final PasswordEncoder passwordEncoder;
+
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        System.out.println(username);
-
-        AdminUser adminUser = memberRepository.findByUsername(username);
-        if (adminUser == null) {
-            throw new UsernameNotFoundException("해당하는 회원을 찾을 수 없습니다.");
-        }
+        // 데이터베이스에서 사용자 정보 조회
+        AdminUser adminUser = adminRepository.findByUsername(username)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
 
         return createUserDetails(adminUser);
     }
 
-
     // 해당하는 User 의 데이터가 존재한다면 UserDetails 객체로 만들어서 return
-    private UserDetails createUserDetails(AdminUser member) {
-        return User.builder()
-                .username(member.getUsername())
-               .password(passwordEncoder.encode(member.getPassword()))
-                .roles(member.getRoles().toArray(new String[0]))
-                .build();
+    private UserDetails createUserDetails(AdminUser adminUser) {
+        Set<GrantedAuthority> grantedAuthorities = new HashSet<>();
+        // int 타입의 role을 String으로 변환
+        grantedAuthorities.add(new SimpleGrantedAuthority("ROLE_" + adminUser.getRole()));
+
+        return new org.springframework.security.core.userdetails.User(
+                adminUser.getUsername(),
+                adminUser.getPassword(),
+                grantedAuthorities);
     }
 
 
 }
+
+

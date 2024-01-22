@@ -8,6 +8,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.factory.PasswordEncoderFactories;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
@@ -29,7 +30,8 @@ public class SecurityConfig   {
                 .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 .and()
                 .authorizeHttpRequests()
-                .requestMatchers("/sign-in").permitAll()
+                .requestMatchers("/admin-login").permitAll()
+                .requestMatchers("/admin-login-ck").permitAll()
                 .requestMatchers("/test").hasAuthority("ROLE_USER")
                 .anyRequest().authenticated()
                 .and()
@@ -39,12 +41,8 @@ public class SecurityConfig   {
 
     @Bean
     public PasswordEncoder passwordEncoder() {
-        // BCrypt Encoder 사용
-        return PasswordEncoderFactories.createDelegatingPasswordEncoder();
-
-
+        return new BCryptPasswordEncoder();
     }
-
 
 
 }

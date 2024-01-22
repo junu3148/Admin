@@ -117,13 +117,17 @@
 
     <select id="findByUsername" parameterType="String" resultType="AdminUser">
 
-        SELECT admin_key,
+        SELECT
                admin_id,
                admin_password,
-               admin_name,
-               depositor,
-               bank_name,
-               account_number,
+               role
+        FROM ADMIN
+        WHERE admin_id = #{adminId}
+    </select>
+
+    <select id="getRole" parameterType="String" resultType="int">
+
+        SELECT
                role
         FROM ADMIN
         WHERE admin_id = #{adminId}

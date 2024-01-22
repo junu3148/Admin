@@ -1,7 +1,6 @@
 package com.lumen.www.service;
 
-import com.lumen.www.dao.MemberRepository;
-import com.lumen.www.dto.AdminUser;
+import com.lumen.www.dao.AdminRepository;
 import com.lumen.www.dto.JwtToken;
 import com.lumen.www.jwt.JwtTokenProvider;
 import lombok.RequiredArgsConstructor;
@@ -17,14 +16,13 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional(readOnly = true)
 @Slf4j
 public class  MemberService{
-    private final MemberRepository memberRepository;
+    private final AdminRepository adminRepository;
     private final AuthenticationManagerBuilder authenticationManagerBuilder;
     private final JwtTokenProvider jwtTokenProvider;
 
     @Transactional
     public JwtToken signIn(String username, String password) {
 
-        System.out.println(username);
         // 1. username + password 를 기반으로 Authentication 객체 생성
         // 이때 authentication 은 인증 여부를 확인하는 authenticated 값이 false
         UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(username, password);
@@ -33,10 +31,11 @@ public class  MemberService{
         // authenticate 메서드가 실행될 때 CustomUserDetailsService 에서 만든 loadUserByUsername 메서드 실행
         Authentication authentication = authenticationManagerBuilder.getObject().authenticate(authenticationToken);
 
-        System.out.println(authentication);
-
         // 3. 인증 정보를 기반으로 JWT 토큰 생성
         JwtToken jwtToken = jwtTokenProvider.generateToken(authentication);
+
+        // 이부분 자체권환으로 하는방법이 있을텐데... 추후에 리펙토링 해야함.
+        jwtToken.setRole(adminRepository.getRole(username));
 
         return jwtToken;
     }

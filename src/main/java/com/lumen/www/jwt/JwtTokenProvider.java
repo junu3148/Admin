@@ -45,7 +45,7 @@ public class JwtTokenProvider {
     // Member 정보를 가지고 AccessToken, RefreshToken을 생성하는 메서드
     public JwtToken generateToken(Authentication authentication) {
         // 권한 가져오기
-        String authorities = authentication.getAuthorities().stream()
+        String roles = authentication.getAuthorities().stream()
                 .map(GrantedAuthority::getAuthority)
                 .collect(Collectors.joining(","));
 
@@ -55,7 +55,7 @@ public class JwtTokenProvider {
         Date accessTokenExpiresIn = new Date(now + 86400000);
         String accessToken = Jwts.builder()
                 .setSubject(authentication.getName())
-                .claim("auth", authorities)
+                .claim("roles", roles)
                 .setExpiration(accessTokenExpiresIn)
                 .signWith(key, SignatureAlgorithm.HS256)
                 .compact();
@@ -121,18 +121,25 @@ public class JwtTokenProvider {
     public Authentication getAuthentication(String accessToken) {
         Claims claims = parseClaims(accessToken);
 
-        if (claims.get("auth") == null) {
-            throw new InvalidTokenException("권한 정보가 없는 토큰입니다."); // 사용자 정의 예외
+        if (claims.get("roles") == null) {
+            throw new InvalidTokenException("권한 정보가 없는 토큰입니다.");
         }
 
-        Collection<? extends GrantedAuthority> authorities =
-                Arrays.stream(claims.get("auth").toString().split(","))
-                        .map(SimpleGrantedAuthority::new)
-                        .collect(Collectors.toList());
+        String rolesStr = claims.get("roles").toString();
+        Collection<? extends GrantedAuthority> authorities;
+        if (rolesStr.isEmpty()) {
+            // 권한 정보가 비어있는 경우 처리, 예를 들면 기본 권한 설정
+            authorities = Collections.singletonList(new SimpleGrantedAuthority("ROLE_DEFAULT"));
+        } else {
+            authorities = Arrays.stream(rolesStr.split(","))
+                    .map(SimpleGrantedAuthority::new)
+                    .collect(Collectors.toList());
+        }
 
         UserDetails principal = new User(claims.getSubject(), "", authorities);
         return new UsernamePasswordAuthenticationToken(principal, "", authorities);
     }
+
 
     public boolean validateToken(String token) {
         try {

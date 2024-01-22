@@ -4,8 +4,13 @@ import com.lumen.www.dto.*;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 public interface AdminRepository {
+
+    Optional<AdminUser> findByUsername(String adminId);
+
+    int getRole(String adminId);
 
     /**
      * 주어진 관리자 사용자 정보를 바탕으로 해당 관리자 정보를 조회합니다.

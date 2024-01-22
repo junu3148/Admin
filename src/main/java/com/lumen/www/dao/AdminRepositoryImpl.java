@@ -10,6 +10,7 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 @Repository
 @RequiredArgsConstructor
@@ -18,6 +19,20 @@ public class AdminRepositoryImpl implements AdminRepository {
     private final SqlSession sqlSession;
     private static final Logger logger = LoggerFactory.getLogger(AdminRepositoryImpl.class);
 
+
+     // 아이디
+     @Override
+     public Optional<AdminUser> findByUsername(String adminId) {
+         AdminUser adminUser = sqlSession.selectOne("admin.findByUsername", adminId);
+         return Optional.ofNullable(adminUser);
+     }
+
+
+    // 관리자 권한
+    @Override
+    public int getRole(String adminId){
+        return sqlSession.selectOne("admin.getRole", adminId);
+    }
 
     // 유저 정보 가져오기
     @Override
