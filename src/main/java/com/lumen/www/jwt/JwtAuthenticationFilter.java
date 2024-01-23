@@ -1,5 +1,6 @@
 package com.lumen.www.jwt;
 
+import com.lumen.www.util.JwtTokenUtil;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.ServletRequest;
@@ -22,7 +23,7 @@ public class JwtAuthenticationFilter extends GenericFilterBean {
             throws IOException, ServletException {
 
         // 1. Request Header에서 JWT 토큰 추출
-        String token = resolveToken((HttpServletRequest) request);
+        String token = JwtTokenUtil.resolveToken((HttpServletRequest) request);
 
         // 2. validateToken으로 토큰 유효성 검사
         if (token != null && jwtTokenProvider.validateToken(token)) {
@@ -35,13 +36,4 @@ public class JwtAuthenticationFilter extends GenericFilterBean {
         chain.doFilter(request, response);
     }
 
-    private String resolveToken(HttpServletRequest request) {
-        // "Authorization" 헤더에서 토큰 추출
-        String bearerToken = request.getHeader("Authorization");
-        if (bearerToken != null && bearerToken.startsWith("Bearer ")) {
-            // "Bearer " 접두어를 제거하고 토큰 반환
-            return bearerToken.substring(7);
-        }
-        return null;
-    }
 }

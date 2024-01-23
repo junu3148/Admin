@@ -35,6 +35,7 @@ public class ImageUploader {
             mav.addObject("uploaded", false);  // IOException 발생 시, 업로드 상태를 false로 설정
             mav.addObject("error", "File upload failed: " + e.getMessage());  // 오류 메시지를 ModelAndView에 추가
         }
+
         return mav;  // ModelAndView 반환
     }
 }

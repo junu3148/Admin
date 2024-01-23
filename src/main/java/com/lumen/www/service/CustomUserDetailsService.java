@@ -11,6 +11,7 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.HashSet;
 import java.util.Optional;
@@ -21,15 +22,14 @@ import java.util.Set;
 public class CustomUserDetailsService implements UserDetailsService {
 
     private final AdminRepository adminRepository;
-    private final PasswordEncoder passwordEncoder;
-
 
     @Override
+    @Transactional
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+
         // 데이터베이스에서 사용자 정보 조회
         AdminUser adminUser = adminRepository.findByUsername(username)
-                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
-
+                .orElseThrow(() -> new UsernameNotFoundException("유저 정보를 찾을수 없습니다."));
         return createUserDetails(adminUser);
     }
 

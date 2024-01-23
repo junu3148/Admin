@@ -30,9 +30,10 @@ public class SecurityConfig   {
                 .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 .and()
                 .authorizeHttpRequests()
-                .requestMatchers("/admin-login").permitAll()
-                .requestMatchers("/admin-login-ck").permitAll()
+                .requestMatchers("admin/**").permitAll()
+                .requestMatchers("/authToken").permitAll()
                 .requestMatchers("/test").hasAuthority("ROLE_USER")
+                .requestMatchers("/upload/**").permitAll()  // "/upload/**" 경로에 대한 접근을 허용
                 .anyRequest().authenticated()
                 .and()
                 .addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider), UsernamePasswordAuthenticationFilter.class)

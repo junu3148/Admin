@@ -2,6 +2,7 @@ package com.lumen.www;
 
 import com.lumen.www.dao.AdminRepository;
 import com.lumen.www.dao.AdminRepositoryImpl;
+import com.lumen.www.dao.TokenRepository;
 import com.lumen.www.files.FileStorageProperties;
 import com.lumen.www.files.ImageUploader;
 import com.lumen.www.jwt.JwtTokenProvider;
@@ -80,11 +81,19 @@ public class AppConfig {
         return new EmailService(javaMailSender, new SpringTemplateEngine());
     }
 
-    // JwtTokenProvider 빈 정의 (필요에 따라 주석 해제할 수 있음)
+
+    // JwtTokenProvider 빈 정의
     @Bean
     public JwtTokenProvider jwtTokenProvider() {
-        return new JwtTokenProvider(secretKey);
+        return new JwtTokenProvider(secretKey, tokenRepository());
     }
+
+    // TokenRepository 빈 정의
+    @Bean
+    public TokenRepository tokenRepository() {
+        return new TokenRepository(sqlSession);
+    }
+
     // AuthenticationManagerBuilder를 주입받아 사용
     @Bean
     public MemberService memberService(AdminRepository adminRepository, AuthenticationManagerBuilder authManagerBuilder, JwtTokenProvider jwtTokenProvider) {
