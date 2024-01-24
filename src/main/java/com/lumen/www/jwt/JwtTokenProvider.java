@@ -3,6 +3,7 @@ package com.lumen.www.jwt;
 import com.lumen.www.dao.TokenRepository;
 import com.lumen.www.dto.AdminUser;
 import com.lumen.www.dto.JwtToken;
+import com.lumen.www.dto.RefreshToken;
 import com.lumen.www.exception.InvalidTokenException;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;
@@ -88,8 +89,28 @@ public class JwtTokenProvider {
                 .compact();
 
 
-        // 데이터베이스에 리플레시 토큰 저장
-        tokenRepository.saveRefreshToken(authentication.getName(), refreshToken, refreshTokenExpiresIn);
+        // 아이디로 리플레시 토큰이 있는지 확인
+        Optional<RefreshToken> existingToken = tokenRepository.findRefreshToken(authentication.getName());
+        System.out.println(existingToken);
+        if (existingToken.isPresent()) {
+            RefreshToken refreshTokenObj = existingToken.get();
+            // 현재 시간을 가져옵니다.
+            Date now2 = new Date();
+
+            // 토큰의 만료 시간이 현재 시간보다 이후인지 확인합니다.
+            if (refreshTokenObj.getExpiryDate().after(now2)) {
+                // 새로운 토큰을 생성하지 않고 기존 토큰을 사용
+                refreshToken = refreshTokenObj.getRefreshToken();
+                //refreshTokenExpiresIn = refreshTokenObj.getExpiryDate();
+            } else {
+                // 기존 토큰이 만료된 경우 새 토큰을 저장
+                tokenRepository.saveRefreshToken(authentication.getName(), refreshToken, refreshTokenExpiresIn);
+            }
+        } else {
+            // 토큰이 존재하지 않는 경우 새 토큰을 저장
+            tokenRepository.saveRefreshToken(authentication.getName(), refreshToken, refreshTokenExpiresIn);
+        }
+
 
         return JwtToken.builder()
                 .grantType("Bearer")
@@ -98,39 +119,6 @@ public class JwtTokenProvider {
                 .build();
     }
 
-    // Member 정보를 가지고 AccessToken, RefreshToken을 생성하는 메서드
- /*   public JwtToken generateToken(Authentication authentication) {
-        // 권한 가져오기
-        String roles = authentication.getAuthorities().stream()
-                .map(GrantedAuthority::getAuthority)
-                .collect(Collectors.joining(","));
-
-        long now = (new Date()).getTime();
-
-        // Access Token 생성
-        Date accessTokenExpiresIn = new Date(now + 86400000);
-        String accessToken = Jwts.builder()
-                .setHeaderParam("typ", TOKEN_TYPE)
-                .setSubject(authentication.getName())
-                .claim("roles", roles)
-                .setExpiration(accessTokenExpiresIn)
-                .signWith(key, SIGNATURE_ALGORITHM)
-                .compact();
-
-        // Refresh Token 생성
-        String refreshToken = Jwts.builder()
-                .setHeaderParam("typ", TOKEN_TYPE)
-                .setExpiration(new Date(now + 86400000))
-                .signWith(key, SIGNATURE_ALGORITHM)
-                .compact();
-
-
-        return JwtToken.builder()
-                .grantType("Bearer")
-                .accessToken(accessToken)
-                .refreshToken(refreshToken)
-                .build();
-    }*/
 
     /**
      * JWT 토큰에서 관리자 사용자 정보를 추출하여 AdminUser 객체로 반환합니다.
@@ -175,6 +163,16 @@ public class JwtTokenProvider {
                 .build()           // JwtParserBuilder 인스턴스를 JwtParser로 빌드
                 .parseClaimsJws(token) // 토큰을 파싱하여 Claims JWS 객체를 얻음
                 .getBody();            // Claims JWS 객체에서 Claims(클레임 세트)를 추출
+    }
+
+    public Date getExpirationDateFromToken(String token) {
+        Claims claims = Jwts.parserBuilder()
+                .setSigningKey(key)
+                .build()
+                .parseClaimsJws(token)
+                .getBody();
+
+        return claims.getExpiration();
     }
 
     /**
@@ -286,6 +284,7 @@ public class JwtTokenProvider {
             return e.getClaims();
         }
     }
+
 
 
 }

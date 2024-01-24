@@ -1,9 +1,12 @@
 package com.lumen.www.service;
 
 import com.lumen.www.dao.AdminRepository;
+import com.lumen.www.dao.TokenRepository;
 import com.lumen.www.dto.AdminUser;
 import com.lumen.www.dto.JwtToken;
 import com.lumen.www.jwt.JwtTokenProvider;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
@@ -15,6 +18,8 @@ import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Date;
+
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
@@ -23,6 +28,29 @@ public class MemberService {
     private final AdminRepository adminRepository;
     private final AuthenticationManagerBuilder authenticationManagerBuilder;
     private final JwtTokenProvider jwtTokenProvider;
+    private final TokenRepository tokenRepository;
+
+
+ /*   public Authentication attemptAuthentication(String username, String password) {
+        UsernamePasswordAuthenticationToken authenticationToken =
+                new UsernamePasswordAuthenticationToken(username, password);
+
+        return authenticationManagerBuilder.getObject().authenticate(authenticationToken);
+    }
+
+
+    public void onSuccessfulAuthentication(HttpServletRequest request,
+                                           HttpServletResponse response,
+                                           Authentication authResult) {
+        JwtToken jwtToken = jwtTokenProvider.generateToken(authResult);
+        jwtToken.setRole(adminRepository.getRole(authResult.getName()));
+
+        HttpHeaders httpHeaders = new HttpHeaders();
+        httpHeaders.add("Authorization", "Bearer " + jwtToken.getAccessToken());
+
+        // 헤더 설정 등 후속 처리...
+    }*/
+
 
     @Transactional
     public ResponseEntity<?> signInAndGenerateJwtToken(AdminUser adminUser) {
@@ -48,8 +76,10 @@ public class MemberService {
         // HTTP 응답 헤더에 JWT 토큰을 추가
         HttpHeaders httpHeaders = new HttpHeaders();
         httpHeaders.add("Authorization", "Bearer " + jwtToken.getAccessToken());
-
+        //httpHeaders.add("Refresh-Token", jwtToken.getRefreshToken());
 
         return new ResponseEntity<>(jwtToken, httpHeaders, HttpStatus.OK);
     }
+
+
 }

@@ -10,6 +10,7 @@ import com.lumen.www.service.AdminService;
 import com.lumen.www.service.AdminServiceImpl;
 import com.lumen.www.service.MemberService;
 import com.lumen.www.util.EmailService;
+import com.lumen.www.util.JwtTokenUtil;
 import org.apache.ibatis.session.SqlSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -44,7 +45,7 @@ public class AppConfig {
     @Bean
     public AdminService adminService() {
         try {
-            return new AdminServiceImpl(adminRepository(), emailService(),jwtTokenProvider());
+            return new AdminServiceImpl(adminRepository(), emailService(), jwtTokenProvider());
         } catch (Exception e) {
             logger.error("Error creating AdminService bean", e);
             throw e; // 다시 예외를 던져서 호출자가 처리할 수 있도록 합니다.
@@ -96,10 +97,9 @@ public class AppConfig {
 
     // AuthenticationManagerBuilder를 주입받아 사용
     @Bean
-    public MemberService memberService(AdminRepository adminRepository, AuthenticationManagerBuilder authManagerBuilder, JwtTokenProvider jwtTokenProvider) {
-        return new MemberService(adminRepository, authManagerBuilder, jwtTokenProvider);
+    public MemberService memberService(AdminRepository adminRepository, AuthenticationManagerBuilder authManagerBuilder, JwtTokenProvider jwtTokenProvider, TokenRepository tokenRepository) {
+        return new MemberService(adminRepository, authManagerBuilder, jwtTokenProvider, tokenRepository);
     }
-
 
 
 }
