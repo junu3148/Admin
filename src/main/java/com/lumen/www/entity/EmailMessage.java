@@ -11,5 +11,4 @@ public class EmailMessage {
     private String subject;
     private String message;
 
-    // 명시적인 기본 생성자 선언이 더 이상 필요하지 않음
 }

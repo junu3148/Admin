@@ -1,4 +1,4 @@
-package com.lumen.www.jwt;
+package com.lumen.www;
 
 import com.lumen.www.jwt.JwtAuthenticationFilter;
 import com.lumen.www.jwt.JwtTokenProvider;

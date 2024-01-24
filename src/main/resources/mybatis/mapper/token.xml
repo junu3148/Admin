@@ -6,19 +6,20 @@
     <insert id="saveRefreshToken" parameterType="map">
 
         INSERT INTO refresh_tokens (admin_key, refresh_token, expiry_date)
-        SELECT admin_key, #{refreshToken}, #{expiryDate}
+        SELECT admin_key, #{refreshToken}, DATE_ADD(#{expiryDate}, INTERVAL 9 HOUR)
         FROM ADMIN
         WHERE admin_id = #{userName}
 
     </insert>
 
-
     <select id="findRefreshToken" parameterType="String" resultType="RefreshToken">
+
         SELECT refresh_token,
-               CONVERT_TZ(expiry_date, '+00:00', '+09:00') AS expiryDate
+               expiry_date
         FROM refresh_tokens
         WHERE ADMIN_KEY = (SELECT ADMIN_KEY FROM ADMIN WHERE ADMIN_ID = #{userName})
-          AND CONVERT_TZ(expiry_date, '+00:00', '+09:00') > NOW()
+          AND expiry_date > NOW()
+
     </select>
 
 </mapper>

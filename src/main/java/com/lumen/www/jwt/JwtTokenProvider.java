@@ -8,9 +8,7 @@ import com.lumen.www.exception.InvalidTokenException;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -72,9 +70,11 @@ public class JwtTokenProvider {
 
         // Access Token 유효시간: 30분 (30 * 60 * 1000)
         Date accessTokenExpiresIn = new Date(now + ACCESS_TOKEN_EXPIRE_COUNT);
+
+        //String uuid = UUID.randomUUID().toString(); // 무작위 UUID 생성
         String accessToken = Jwts.builder()
                 .setHeaderParam("typ", TOKEN_TYPE)
-                .setSubject(authentication.getName())
+                .setSubject(authentication.getName()) // UUID를 subject로 설정
                 .claim("roles", roles)
                 .setExpiration(accessTokenExpiresIn)
                 .signWith(key, SIGNATURE_ALGORITHM)
@@ -91,26 +91,15 @@ public class JwtTokenProvider {
 
         // 아이디로 리플레시 토큰이 있는지 확인
         Optional<RefreshToken> existingToken = tokenRepository.findRefreshToken(authentication.getName());
-        System.out.println(existingToken);
         if (existingToken.isPresent()) {
+            // 토큰이 존재하면, 기존 토큰을 사용합니다. (만료된 토큰은 null로 반환됨)
             RefreshToken refreshTokenObj = existingToken.get();
-            // 현재 시간을 가져옵니다.
-            Date now2 = new Date();
-
-            // 토큰의 만료 시간이 현재 시간보다 이후인지 확인합니다.
-            if (refreshTokenObj.getExpiryDate().after(now2)) {
-                // 새로운 토큰을 생성하지 않고 기존 토큰을 사용
-                refreshToken = refreshTokenObj.getRefreshToken();
-                //refreshTokenExpiresIn = refreshTokenObj.getExpiryDate();
-            } else {
-                // 기존 토큰이 만료된 경우 새 토큰을 저장
-                tokenRepository.saveRefreshToken(authentication.getName(), refreshToken, refreshTokenExpiresIn);
-            }
+            refreshToken = refreshTokenObj.getRefreshToken();
+            // refreshTokenExpiresIn = refreshTokenObj.getExpiryDate(); // 필요한 경우
         } else {
-            // 토큰이 존재하지 않는 경우 새 토큰을 저장
+            // 토큰이 존재하지 않거나 만료된 경우, 새 토큰을 생성 및 저장합니다.
             tokenRepository.saveRefreshToken(authentication.getName(), refreshToken, refreshTokenExpiresIn);
         }
-
 
         return JwtToken.builder()
                 .grantType("Bearer")
@@ -219,6 +208,7 @@ public class JwtTokenProvider {
      * @return 토큰이 유효한 경우 true, 그렇지 않은 경우 false 반환.
      * @throws InvalidTokenException 유효하지 않은 토큰인 경우 발생할 수 있는 사용자 정의 예외.
      */
+
     public boolean validateToken(String token) {
         try {
             // JWT 토큰을 검증하기 위한 파서를 생성합니다.
@@ -284,7 +274,6 @@ public class JwtTokenProvider {
             return e.getClaims();
         }
     }
-
 
 
 }

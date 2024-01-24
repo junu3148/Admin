@@ -4,12 +4,6 @@ import com.lumen.www.dto.*;
 
 public interface AdminService {
 
-    // 1차 로그인
-    JsonResult adminLogin(AdminUser adminUser);
-
-    // 2차 로그인
-    String adminLoginCk(AdminUser adminUser);
-
     // 가입자 현황
     JsonResult subscriberCount();
 

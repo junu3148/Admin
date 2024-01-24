@@ -10,7 +10,6 @@ import com.lumen.www.service.AdminService;
 import com.lumen.www.service.AdminServiceImpl;
 import com.lumen.www.service.MemberService;
 import com.lumen.www.util.EmailService;
-import com.lumen.www.util.JwtTokenUtil;
 import org.apache.ibatis.session.SqlSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,15 +20,12 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.thymeleaf.spring6.SpringTemplateEngine;
 
 @Configuration
 @ComponentScan(basePackages = "com.lumen.www")
 public class AppConfig {
 
-    private static final Logger logger = LoggerFactory.getLogger(AppConfig.class);
     private final SqlSession sqlSession;
     private final JavaMailSender javaMailSender;
 
@@ -44,23 +40,13 @@ public class AppConfig {
     // AdminService 빈 정의
     @Bean
     public AdminService adminService() {
-        try {
             return new AdminServiceImpl(adminRepository(), emailService(), jwtTokenProvider());
-        } catch (Exception e) {
-            logger.error("Error creating AdminService bean", e);
-            throw e; // 다시 예외를 던져서 호출자가 처리할 수 있도록 합니다.
-        }
     }
 
     // AdminRepository 빈 정의
     @Bean
     public AdminRepository adminRepository() {
-        try {
             return new AdminRepositoryImpl(sqlSession);
-        } catch (Exception e) {
-            logger.error("Error creating AdminRepository bean", e);
-            throw e; // 다시 예외를 던져서 호출자가 처리할 수 있도록 합니다.
-        }
     }
 
     // 파일 경로
@@ -82,7 +68,6 @@ public class AppConfig {
         return new EmailService(javaMailSender, new SpringTemplateEngine());
     }
 
-
     // JwtTokenProvider 빈 정의
     @Bean
     public JwtTokenProvider jwtTokenProvider() {
@@ -97,10 +82,9 @@ public class AppConfig {
 
     // AuthenticationManagerBuilder를 주입받아 사용
     @Bean
-    public MemberService memberService(AdminRepository adminRepository, AuthenticationManagerBuilder authManagerBuilder, JwtTokenProvider jwtTokenProvider, TokenRepository tokenRepository) {
-        return new MemberService(adminRepository, authManagerBuilder, jwtTokenProvider, tokenRepository);
+    public MemberService memberService(AdminRepository adminRepository, AuthenticationManagerBuilder authManagerBuilder, JwtTokenProvider jwtTokenProvider) {
+        return new MemberService(adminRepository, authManagerBuilder, jwtTokenProvider);
     }
-
 
 }
 

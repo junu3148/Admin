@@ -14,7 +14,6 @@ import javax.sql.DataSource;
 
 @Configuration
 @EnableTransactionManagement
-@MapperScan("com.lumen.www.mapper")
 public class MyBatisConfig {
 
     @Bean

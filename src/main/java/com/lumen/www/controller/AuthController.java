@@ -31,18 +31,11 @@ public class AuthController {
 
     @PostMapping("login")
     public ResponseEntity<?> signIn(@RequestBody AdminUser adminUser) {
-        System.out.println("1차 로그인");
 
-        // 사용자 인증을 수행하고 JWT 토큰을 얻는 로직
         ResponseEntity<?> responseEntity = memberService.signInAndGenerateJwtToken(adminUser);
-
-        if (responseEntity.getStatusCode() == HttpStatus.OK) {
-            // 인증 성공
-            return responseEntity;
-        } else {
-            // 사용자 인증 실패 시 HTTP 상태 코드 401 Unauthorized 응답
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Authentication failed");
-        }
+        // 인증 성공
+        if (responseEntity.getStatusCode() == HttpStatus.OK) return responseEntity;
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Authentication failed");
     }
 
 
@@ -59,8 +52,6 @@ public class AuthController {
         List<String> roles = authentication.getAuthorities().stream()
                 .map(GrantedAuthority::getAuthority)
                 .collect(Collectors.toList());
-
-
 
 
         System.out.println("AdminUser: " + adminUser);

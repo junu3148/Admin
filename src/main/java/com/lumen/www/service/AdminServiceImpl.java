@@ -23,7 +23,6 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class AdminServiceImpl implements AdminService {
 
-    private static final Logger logger = LoggerFactory.getLogger(AdminServiceImpl.class);
     private static final Pattern EMAIL_PATTERN = Pattern.compile("[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}");
     private static final String INVALID_EMAIL_FORMAT = "Invalid email format";
     private static final String LOG_FAILURE_MESSAGE = "실패";
@@ -35,59 +34,18 @@ public class AdminServiceImpl implements AdminService {
     private final JwtTokenProvider jwtTokenProvider;
 
 
-    // 1차 로그인
-    @Override
-    @Transactional
-    public JsonResult adminLogin(AdminUser adminUser) {
-        logger.debug("adminLogin Service() called with adminUser: {}", adminUser);
-
-        if (isValidEmail(adminUser.getAdminId())) {
-            try {
-                AdminUser adminUserDB = adminRepository.adminLogin(adminUser);
-                return createJsonResult(Optional.ofNullable(adminUserDB).map(AdminUser::getRole).orElse(null));
-            } catch (Exception e) {
-                logger.error("Error in adminLogin", e);
-                return createJsonResult(LOG_FAILURE_MESSAGE);
-            }
-        } else {
-            return createJsonResult(INVALID_EMAIL_FORMAT);
-        }
-    }
-
-    // 2차 로그인
-    @Override
-    @Transactional
-    public String adminLoginCk(AdminUser adminUser) {
-        logger.debug("adminLoginCk Service() called with adminUser: {}", adminUser);
-        try {
-           AdminUser adminUserDB = adminRepository.adminLoginCk(adminUser);
-           // return jwtTokenProvider.generateToken(adminUserDB);
-            return null;
-        } catch (Exception e) {
-            logger.error("Error in adminLoginCk", e);
-            throw new ServiceException("Error in adminLoginCk", e);
-        }
-    }
 
     // 가입자 현황
     @Override
     @Transactional
     public JsonResult subscriberCount() {
-        logger.debug("subscriberCount Service()");
-        try {
             return createJsonResult(adminRepository.subscriberCount());
-        } catch (Exception e) {
-            logger.error("Error in subscriberCount", e);
-            return createJsonResult(LOG_FAILURE_MESSAGE);
-        }
     }
 
     // 메인페이지 월별가입자 그래프
     @Override
     @Transactional
     public JsonResult getMonthlySalesChart() {
-        logger.debug("monthlySalesChart Service()");
-        try {
             List<Map<String, Object>> resultList = adminRepository.getMonthlySubscriber();
 
             // 'resultList'를 'monthList'로 변환
@@ -107,50 +65,27 @@ public class AdminServiceImpl implements AdminService {
             MonthlySubscriberDTO monthlySubscriberDTO = new MonthlySubscriberDTO(monthList, subscribersCountList);
 
             return createJsonResult(monthlySubscriberDTO);
-        } catch (Exception e) {
-            logger.error("Error in getMonthlySalesChart", e);
-            return createJsonResult(LOG_FAILURE_MESSAGE);
-        }
     }
 
     // 메인페이지 현황지표
     @Override
     @Transactional
     public JsonResult getCurrentSituation() {
-        logger.debug("currentSituation Service()");
-        try {
             return createJsonResult(adminRepository.getUserActivity());
-        } catch (Exception e) {
-            logger.error("Error in getCurrentSituation", e);
-            return createJsonResult(LOG_FAILURE_MESSAGE);
-        }
     }
 
     // 메인페이지 문의현황
     @Override
     @Transactional
     public JsonResult getMainInquiryList() {
-        logger.debug("mainInquiryList Service()");
-        try {
             return createJsonResult(adminRepository.getInquiryList());
-        } catch (Exception e) {
-            logger.error("Error in getMainInquiryList", e);
-            return createJsonResult(LOG_FAILURE_MESSAGE);
-        }
     }
 
 
     @Override
     public JsonResult getJoinList(JoinSearchDTO joinSearchDTO){
-        logger.debug("getJoinList Service()");
-        try {
             List<JoinListDTO> joinListDTO = adminRepository.getJoinList(joinSearchDTO);
-
             return createJsonResult(adminRepository.getJoinList(joinSearchDTO));
-        } catch (Exception e) {
-            logger.error("Error in getJoinList", e);
-            return createJsonResult(LOG_FAILURE_MESSAGE);
-        }
     }
 
 
@@ -175,7 +110,6 @@ public class AdminServiceImpl implements AdminService {
     // JsonResult 생성 & 반환
     private JsonResult createJsonResult(Object data) {
         System.out.println(data);
-        logger.debug("Creating JsonResult for data: {}", data);
         JsonResult jsonResult = new JsonResult();
         if (data != null) jsonResult.success(data);
         else jsonResult.fail(LOG_FAILURE_MESSAGE);
@@ -188,46 +122,3 @@ public class AdminServiceImpl implements AdminService {
         return matcher.matches();
     }
 }
-
-
-
-
-    /*  // 토큰생성 반환 서비스
-    @Override
-    public String loginck(AdminUser adminUser) {
-
-        AdminUser adminUserDB;
-        if (adminUser.getAccountName() != null && adminUser.getAccountNumber() != null) {
-            adminUserDB = adminRepository.loginck(adminUser);
-        } else {
-            adminUserDB = adminRepository.loginck(adminUser.getUserName());
-        }
-        if (adminUserDB != null && adminUserDB.getUserName().equals(adminUser.getUserName())) {
-            // 사용자 인증이 성공하면 토큰 생성
-            return jwtTokenProvider.generateToken(adminUserDB);
-        }
-        return null; // 인증 실패 시 null 반환
-    }
-
-    // 서비스에서 쿠키에 토큰담기
-    public ResponseCookie loginck2(AdminUser adminUser) {
-        AdminUser adminUserDB = adminRepository.loginck(adminUser);
-
-        if (adminUserDB != null && adminUserDB.getUserName().equals(adminUser.getUserName())) {
-            // 사용자 인증이 성공하면 토큰 생성
-            String token = jwtTokenProvider.generateToken(adminUserDB);
-
-            // 토큰을 쿠키에 담아 반환
-            return ResponseCookie.from("accessToken", token)
-                    .httpOnly(true)
-                    .sameSite("None")
-                    .secure(true)
-                    .path("/")
-                    .maxAge(1800) // 30분
-                    .domain("192.168.0.16")
-                    .build();
-        }
-
-        return null; // 인증 실패 시 null 반환
-    }*/
-
