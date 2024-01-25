@@ -15,12 +15,10 @@ public class AdminRepositoryImpl implements AdminRepository {
 
     private final SqlSession sqlSession;
 
-
     // 아이디
     @Override
     public Optional<AdminUser> findByUsername(String adminId) {
-        AdminUser adminUser = sqlSession.selectOne("admin.findByUsername", adminId);
-        return Optional.ofNullable(adminUser);
+        return Optional.ofNullable(sqlSession.selectOne("admin.findByUsername", adminId));
     }
 
 

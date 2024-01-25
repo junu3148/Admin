@@ -11,8 +11,6 @@ import com.lumen.www.service.AdminServiceImpl;
 import com.lumen.www.service.MemberService;
 import com.lumen.www.util.EmailService;
 import org.apache.ibatis.session.SqlSession;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;

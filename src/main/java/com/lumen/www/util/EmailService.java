@@ -1,6 +1,6 @@
 package com.lumen.www.util;
 
-import com.lumen.www.entity.EmailMessage;
+import com.lumen.www.dto.EmailMessage;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;

@@ -41,6 +41,7 @@ public class AuthController {
         // 인증 성공
         if (responseEntity.getStatusCode() == HttpStatus.OK) return responseEntity;
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Authentication failed");
+
     }
 
     // 2차 로그인 추가정보 확인
@@ -57,13 +58,14 @@ public class AuthController {
 
     @PostMapping("refresh-token")
     public ResponseEntity<?> refreshTokenCK(HttpServletRequest request) {
-        System.out.println("DDdd");
+
         String refreshToken = JwtTokenUtil.resolveToken(request);
         ResponseEntity<?> responseEntity = memberService.refreshTokenCK(refreshToken);
 
         // 인증 성공
         if (responseEntity.getStatusCode() == HttpStatus.OK) return responseEntity;
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Authentication failed");
+
     }
 
 

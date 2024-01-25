@@ -61,6 +61,16 @@ public class JwtTokenProvider {
         this.tokenRepository = tokenRepository;
     }
 
+    /**
+     * 인증된 사용자의 Authentication 객체를 받아 JWT 액세스 토큰과 리프레시 토큰을 생성합니다.
+     *
+     * 이 메서드는 사용자의 권한을 기반으로 JWT 액세스 토큰을 생성하며, 해당 토큰은 30분 동안 유효합니다.
+     * 또한, 사용자를 위한 리프레시 토큰을 생성하거나 기존에 존재하는 리프레시 토큰을 조회하여 반환합니다.
+     * 리프레시 토큰은 8시간 동안 유효합니다.
+     *
+     * @param authentication 인증된 사용자의 Authentication 객체. 사용자의 이름과 권한 정보를 포함합니다.
+     * @return 생성된 JWT 액세스 토큰과 리프레시 토큰이 포함된 JwtToken 객체.
+     */
     public JwtToken generateToken(Authentication authentication) {
         String roles = authentication.getAuthorities().stream()
                 .map(GrantedAuthority::getAuthority)
@@ -80,7 +90,7 @@ public class JwtTokenProvider {
                 .signWith(key, SIGNATURE_ALGORITHM)
                 .compact();
 
-        // Refresh Token 유효시간: 4시간 (4 * 60 * 60 * 1000)
+        // Refresh Token 유효시간: 8시간 (8 * 60 * 60 * 1000)
         Date refreshTokenExpiresIn = new Date(now + REFRESH_TOKEN_EXPIRE_COUNT);
         String refreshToken = Jwts.builder()
                 .setHeaderParam("typ", TOKEN_TYPE)
@@ -108,6 +118,16 @@ public class JwtTokenProvider {
                 .build();
     }
 
+    /**
+     * 주어진 RefreshToken 객체를 이용하여 새로운 액세스 토큰을 생성합니다.
+     *
+     * 이 메서드는 RefreshToken 객체로부터 사용자의 이름과 역할을 추출하여
+     * JWT 토큰을 생성합니다. 생성된 토큰은 30분 동안 유효합니다.
+     *
+     * @param tokenData Optional<RefreshToken> 형태로 제공되는 토큰 데이터.
+     *                  이 데이터는 사용자의 이름과 역할 정보를 포함하고 있어야 합니다.
+     * @return 생성된 JWT 액세스 토큰 문자열.
+     */
     public String generateAccessToken(Optional<RefreshToken>  tokenData) {
 
         // 관리자에 대한 역할은 사전에 정의되어 있거나 어딘가에서 가져오는 것으로 가정합니다.
@@ -128,7 +148,6 @@ public class JwtTokenProvider {
 
         return accessToken;
     }
-
 
 
     /**

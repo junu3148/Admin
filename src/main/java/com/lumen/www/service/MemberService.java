@@ -18,8 +18,6 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
-import java.util.Map;
 import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -34,10 +32,17 @@ public class MemberService {
     private final JwtTokenProvider jwtTokenProvider;
     private final TokenRepository tokenRepository;
     private static final Pattern EMAIL_PATTERN = Pattern.compile("[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}");
+    private static final String AUTHORIZATION_HEADER = "Authorization";
+    private static final String BEARER_PREFIX = "Bearer ";
+    private static final String INVALID_TOKEN_MESSAGE = "Invalid or expired refresh token";
+    private static final String ERROR_PROCESSING_MESSAGE = "An error occurred while processing the refresh token";
+    private static final String INVALID_CREDENTIALS_MESSAGE = "인증에 실패하였습니다.";
+    private static final String INVALID_EMAIL_MESSAGE = "아이디는 이메일 형식이어야 합니다.";
 
-    @Transactional
+
+    // 로그인 토큰 생성
+   /* @Transactional
     public ResponseEntity<?> signInAndGenerateJwtToken(AdminUser adminUser) {
-
 
         String username = adminUser.getUsername();
         String password = adminUser.getPassword();
@@ -61,7 +66,7 @@ public class MemberService {
 
                 // HTTP 응답 헤더에 JWT 토큰을 추가
                 HttpHeaders httpHeaders = new HttpHeaders();
-                httpHeaders.add("Authorization", "Bearer " + jwtToken.getAccessToken());
+                httpHeaders.add(AUTHORIZATION_HEADER, BEARER_PREFIX + jwtToken.getAccessToken());
 
                 return new ResponseEntity<>(jwtToken, httpHeaders, HttpStatus.OK);
             } catch (AuthenticationException e) {
@@ -74,8 +79,90 @@ public class MemberService {
             return new ResponseEntity<>("아이디는 이메일 형식이어야 합니다.", httpHeaders, HttpStatus.BAD_REQUEST);
 
         }
+    }*/
+    @Transactional
+    public ResponseEntity<?> signInAndGenerateJwtToken(AdminUser adminUser) {
+        String username = adminUser.getUsername();
+        String password = adminUser.getPassword();
+
+        if (!isValidEmail(username)) {
+            return badRequestResponse(INVALID_EMAIL_MESSAGE);
+        }
+
+        try {
+            JwtToken jwtToken = authenticateAndGenerateToken(username, password);
+            return buildResponseWithToken(jwtToken);
+        } catch (AuthenticationException e) {
+            return unauthorizedResponse(INVALID_CREDENTIALS_MESSAGE);
+        }
     }
 
+    private JwtToken authenticateAndGenerateToken(String username, String password) {
+        Authentication authentication = authenticateUser(username, password);
+        JwtToken jwtToken = jwtTokenProvider.generateToken(authentication);
+        jwtToken.setRole(adminRepository.getRole(username));
+        return jwtToken;
+    }
+
+    private Authentication authenticateUser(String username, String password) {
+        UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(username, password);
+        return authenticationManagerBuilder.getObject().authenticate(authenticationToken);
+    }
+
+    private ResponseEntity<?> buildResponseWithToken(JwtToken jwtToken) {
+        HttpHeaders httpHeaders = new HttpHeaders();
+        httpHeaders.add(AUTHORIZATION_HEADER, BEARER_PREFIX + jwtToken.getAccessToken());
+        return new ResponseEntity<>(jwtToken, httpHeaders, HttpStatus.OK);
+    }
+
+    private ResponseEntity<String> badRequestResponse(String message) {
+        HttpHeaders httpHeaders = new HttpHeaders();
+        return new ResponseEntity<>(message, httpHeaders, HttpStatus.BAD_REQUEST);
+    }
+
+    // 리플레시 토큰 유효성검사 후 에세스토큰 발행
+    public ResponseEntity<?> refreshTokenCK(String refreshToken) {
+        try {
+            if (!isValidRefreshToken(refreshToken)) {
+                return unauthorizedResponse(INVALID_TOKEN_MESSAGE);
+            }
+
+            String newAccessToken = createNewAccessToken(refreshToken);
+            return buildResponseWithToken(newAccessToken);
+        } catch (Exception e) {
+            return internalServerErrorResponse(ERROR_PROCESSING_MESSAGE);
+        }
+    }
+
+    private boolean isValidRefreshToken(String refreshToken) {
+        return refreshToken != null && jwtTokenProvider.validateToken(refreshToken)
+                && tokenRepository.refreshTokenCK(refreshToken).isPresent();
+    }
+
+    private String createNewAccessToken(String refreshToken) {
+        Optional<RefreshToken> tokenData = tokenRepository.refreshTokenCK(refreshToken);
+        return jwtTokenProvider.generateAccessToken(tokenData);
+    }
+
+    private ResponseEntity<?> buildResponseWithToken(String token) {
+        HttpHeaders headers = new HttpHeaders();
+        headers.add(AUTHORIZATION_HEADER, BEARER_PREFIX + token);
+
+        JwtToken jwtToken = new JwtToken();
+        jwtToken.setAccessToken(token);
+
+        return new ResponseEntity<>(jwtToken, headers, HttpStatus.OK);
+    }
+
+    private ResponseEntity<String> unauthorizedResponse(String message) {
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(message);
+    }
+
+    private ResponseEntity<String> internalServerErrorResponse(String message) {
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(message);
+    }
+
+   /* // 리플레시 토큰 유효성검사 후 에세스토큰 발행
     public ResponseEntity<?> refreshTokenCK(String refreshToken) {
         try {
             // 리프레시 토큰 유효성 검사
@@ -105,9 +192,7 @@ public class MemberService {
             // 예외 처리
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred while processing the refresh token");
         }
-    }
-
-
+    }*/
 
     // 이메일 형식 체크
     private boolean isValidEmail(String email) {

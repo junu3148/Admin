@@ -31,6 +31,7 @@ public class CustomUserDetailsService implements UserDetailsService {
         AdminUser adminUser = adminRepository.findByUsername(username)
                 .orElseThrow(() -> new UsernameNotFoundException("유저 정보를 찾을수 없습니다."));
         return createUserDetails(adminUser);
+
     }
 
     // 해당하는 User 의 데이터가 존재한다면 UserDetails 객체로 만들어서 return

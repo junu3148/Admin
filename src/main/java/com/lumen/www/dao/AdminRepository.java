@@ -8,9 +8,29 @@ import java.util.Optional;
 
 public interface AdminRepository {
 
+    /**
+     * 주어진 adminId를 이용하여 관리자 사용자 정보를 조회합니다.
+     *
+     * 이 메서드는 adminId를 기반으로 데이터베이스에서 AdminUser 객체를 조회합니다.
+     * 조회된 관리자 정보가 존재하는 경우 Optional<AdminUser> 형태로 반환되며,
+     * 존재하지 않는 경우 Optional.empty()가 반환됩니다.
+     *
+     * @param adminId 조회할 관리자 사용자의 ID.
+     * @return 조회된 AdminUser 객체를 포함하는 Optional 객체.
+     */
     Optional<AdminUser> findByUsername(String adminId);
 
+    /**
+     * 주어진 adminId에 해당하는 관리자의 역할 정보를 조회합니다.
+     *
+     * 이 메서드는 adminId를 기반으로 해당 관리자의 역할을 데이터베이스에서 조회합니다.
+     * 조회된 역할 정보는 int 형태로 반환됩니다.
+     *
+     * @param adminId 조회할 관리자 사용자의 ID.
+     * @return 조회된 관리자의 역할 정보.
+     */
     int getRole(String adminId);
+
 
     /**
      * 주어진 관리자 사용자 정보를 바탕으로 해당 관리자 정보를 조회합니다.

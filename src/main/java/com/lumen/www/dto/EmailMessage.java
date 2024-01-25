@@ -1,4 +1,4 @@
-package com.lumen.www.entity;
+package com.lumen.www.dto;
 
 import lombok.Builder;
 import lombok.Data;

@@ -13,7 +13,6 @@ public class CorsConfig implements WebMvcConfigurer {
             "http://192.168.0.16:3000",
             // 다른 허용할 원본 URL 추가 가능
     };
-
     @Override
     public void addCorsMappings(CorsRegistry registry) {
         registry.addMapping("/**")
