@@ -26,4 +26,8 @@ public class TokenRepository {
         return Optional.ofNullable(sqlSession.selectOne("token.findRefreshToken", userName));
     }
 
+    public Optional<RefreshToken> refreshTokenCK(String refreshToken){
+        return  Optional.ofNullable(sqlSession.selectOne("token.refreshTokenCK", refreshToken));
+    }
+
 }

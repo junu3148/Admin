@@ -27,7 +27,7 @@ public class AdminMainController {
 
     // 관리자페이지 메인 (연결안됨)
     @GetMapping("/adminmain")
-    public String adminMain(HttpSession session) {
+    public String adminMain( ) {
         return "adminMain";
     }
 

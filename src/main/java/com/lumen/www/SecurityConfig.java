@@ -1,5 +1,7 @@
 package com.lumen.www;
 
+import com.lumen.www.jwt.JwtAccessDeniedHandler;
+import com.lumen.www.jwt.JwtAuthenticationEntryPoint;
 import com.lumen.www.jwt.JwtAuthenticationFilter;
 import com.lumen.www.jwt.JwtTokenProvider;
 import lombok.RequiredArgsConstructor;
@@ -19,10 +21,12 @@ import static org.springframework.security.config.Customizer.withDefaults;
 @Configuration
 @EnableWebSecurity
 @RequiredArgsConstructor
-public class SecurityConfig   {
+public class SecurityConfig {
     private final JwtTokenProvider jwtTokenProvider;
+    private final JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
+    private final JwtAccessDeniedHandler jwtAccessDeniedHandler;
 
-    @Bean
+/*    @Bean
     public SecurityFilterChain filterChain(HttpSecurity httpSecurity) throws Exception {
         return httpSecurity
                 .httpBasic().disable()
@@ -30,15 +34,43 @@ public class SecurityConfig   {
                 .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 .and()
                 .authorizeHttpRequests()
+                .requestMatchers("/admin/refresh-token").permitAll()
                 .requestMatchers("admin/**").permitAll()
                 .requestMatchers("/authToken").permitAll()
-                .requestMatchers("/test").hasAuthority("ROLE_USER")
-                .requestMatchers("/upload/**").permitAll()  // "/upload/**" 경로에 대한 접근을 허용
-                .anyRequest().authenticated()
+                .requestMatchers("/upload/**").permitAll()
+                .and()
+                .exceptionHandling()
+                .authenticationEntryPoint(jwtAuthenticationEntryPoint)
+                .accessDeniedHandler(jwtAccessDeniedHandler)
                 .and()
                 .addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider), UsernamePasswordAuthenticationFilter.class)
                 .build();
+    }*/
+
+
+    @Bean
+    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+        http
+                .httpBasic().disable()
+                .csrf().disable()
+                .sessionManagement()
+                .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                .and()
+                .authorizeHttpRequests((authz) -> authz
+                        .requestMatchers("/admin/refresh-token").permitAll()
+                        .requestMatchers("/admin/**").permitAll()
+                        .requestMatchers("/authToken").permitAll()
+                        .requestMatchers("/upload/**").permitAll()
+                        .anyRequest().authenticated())
+                .exceptionHandling()
+                .authenticationEntryPoint(jwtAuthenticationEntryPoint)
+                .accessDeniedHandler(jwtAccessDeniedHandler)
+                .and()
+                .addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider), UsernamePasswordAuthenticationFilter.class);
+
+        return http.build();
     }
+
 
     @Bean
     public PasswordEncoder passwordEncoder() {

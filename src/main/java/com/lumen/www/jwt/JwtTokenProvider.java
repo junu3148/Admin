@@ -108,6 +108,28 @@ public class JwtTokenProvider {
                 .build();
     }
 
+    public String generateAccessToken(Optional<RefreshToken>  tokenData) {
+
+        // 관리자에 대한 역할은 사전에 정의되어 있거나 어딘가에서 가져오는 것으로 가정합니다.
+        String roles = "ROLE_" +tokenData.get().getRole(); // 실제 역할 가져오는 로직으로 필요에 따라 교체하세요.
+
+        long now = (new Date()).getTime();
+
+        // 액세스 토큰 유효 시간: 30분 (30 * 60 * 1000)
+        Date accessTokenExpiresIn = new Date(now + ACCESS_TOKEN_EXPIRE_COUNT);
+
+        String accessToken = Jwts.builder()
+                .setHeaderParam("typ", TOKEN_TYPE)
+                .setSubject(tokenData.get().getUsername()) // adminId를 주제로 설정
+                .claim("roles", roles)
+                .setExpiration(accessTokenExpiresIn)
+                .signWith(key, SIGNATURE_ALGORITHM)
+                .compact();
+
+        return accessToken;
+    }
+
+
 
     /**
      * JWT 토큰에서 관리자 사용자 정보를 추출하여 AdminUser 객체로 반환합니다.

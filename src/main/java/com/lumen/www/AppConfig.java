@@ -40,7 +40,7 @@ public class AppConfig {
     // AdminService 빈 정의
     @Bean
     public AdminService adminService() {
-            return new AdminServiceImpl(adminRepository(), emailService(), jwtTokenProvider());
+            return new AdminServiceImpl(adminRepository(), emailService());
     }
 
     // AdminRepository 빈 정의
@@ -82,8 +82,8 @@ public class AppConfig {
 
     // AuthenticationManagerBuilder를 주입받아 사용
     @Bean
-    public MemberService memberService(AdminRepository adminRepository, AuthenticationManagerBuilder authManagerBuilder, JwtTokenProvider jwtTokenProvider) {
-        return new MemberService(adminRepository, authManagerBuilder, jwtTokenProvider);
+    public MemberService memberService(AdminRepository adminRepository, AuthenticationManagerBuilder authManagerBuilder, JwtTokenProvider jwtTokenProvider, TokenRepository tokenRepository) {
+        return new MemberService(adminRepository, authManagerBuilder, jwtTokenProvider,tokenRepository);
     }
 
 }

@@ -21,20 +21,12 @@ public interface AdminRepository {
     AdminUser getAdminUser(AdminUser adminUser);
 
     /**
-     * 1차 로그인을 위한 메소드입니다.
-     *
-     * @param adminUser 로그인 시도하는 관리자 사용자 정보
-     * @return 로그인 성공 시 AdminUser 객체, 실패 시 null
-     */
-    AdminUser adminLogin(AdminUser adminUser);
-
-    /**
      * 2차 로그인을 처리합니다.
      *
      * @param adminUser 로그인 시도하는 관리자 사용자 정보
      * @return 로그인 성공 시 AdminUser 객체, 실패 시 null
      */
-    AdminUser adminLoginCk(AdminUser adminUser);
+    Optional<AdminUser> adminLoginCk(AdminUser adminUser);
 
     /**
      * 현재 가입자 수를 반환합니다.
@@ -72,4 +64,6 @@ public interface AdminRepository {
      * @return 조건별 가입자 정보를 담은 JoinSearchDTO 리스트
      */
     List<JoinListDTO> getJoinList(JoinSearchDTO joinSearchDTO);
+
+
 }

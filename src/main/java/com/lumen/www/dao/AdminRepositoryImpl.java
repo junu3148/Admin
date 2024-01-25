@@ -36,15 +36,10 @@ public class AdminRepositoryImpl implements AdminRepository {
         return sqlSession.selectOne("admin.getAdminUser", adminUser);
     }
 
-    // 1차 로그인
-    public AdminUser adminLogin(AdminUser adminUser) {
-        return sqlSession.selectOne("admin.adminLogin", adminUser);
-    }
-
     // 2차 로그인
     @Override
-    public AdminUser adminLoginCk(AdminUser adminUser) {
-        return sqlSession.selectOne("admin.adminLoginCk", adminUser);
+    public Optional<AdminUser> adminLoginCk(AdminUser adminUser) {
+        return Optional.ofNullable(sqlSession.selectOne("admin.adminLoginCk", adminUser));
     }
 
     // 가입자 현황
@@ -76,4 +71,5 @@ public class AdminRepositoryImpl implements AdminRepository {
     public List<JoinListDTO> getJoinList(JoinSearchDTO joinSearchDTO) {
         return sqlSession.selectList("admin.getJoinList", joinSearchDTO);
     }
+
 }

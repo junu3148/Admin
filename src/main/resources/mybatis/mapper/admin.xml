@@ -3,8 +3,45 @@
 
 <mapper namespace="admin">
 
+    <!--로그인 인증-->
+    <select id="findByUsername" parameterType="String" resultType="AdminUser">
+
+        SELECT admin_id,
+               admin_password
+        FROM ADMIN
+        WHERE admin_id = #{adminId}
+
+    </select>
+
+    <!--권한정보 조회-->
+    <select id="getRole" parameterType="String" resultType="int">
+
+        SELECT role
+        FROM ADMIN
+        WHERE admin_id = #{adminId}
+
+    </select>
+
+    <!--2차 로그인 adminUser 정보가져오기-->
+    <select id="adminLoginCk" parameterType="AdminUser" resultType="AdminUser">
+
+        SELECT admin_key
+        FROM ADMIN
+        WHERE admin_name = #{adminName}
+
+        <if test="bankName != null and depositor != null and accountNumber != null">
+
+            AND bank_name = #{bankName}
+            AND depositor = #{depositor}
+            AND account_number = #{accountNumber}
+
+        </if>
+
+    </select>
+
     <!--AdminUser 정보 가져오기-->
     <select id="getAdminUser" parameterType="AdminUser" resultType="AdminUser">
+
         SELECT admin_key,
                admin_id,
                admin_password,
@@ -16,54 +53,39 @@
         FROM ADMIN
         WHERE admin_id = #{adminId}
           AND admin_password = #{adminPassword}
+
     </select>
 
-    <!--1차 로그인 role 가져오기-->
-    <select id="adminLogin" parameterType="AdminUser" resultType="AdminUser">
-        SELECT role
-        FROM ADMIN
-        WHERE admin_id = #{adminId}
-          AND admin_password = #{adminPassword}
-    </select>
-
-    <!--2차 로그인 adminUser 정보가져오기-->
-    <select id="adminLoginCk" parameterType="AdminUser" resultType="AdminUser">
-        <![CDATA[
-        SELECT admin_key,
-               admin_id,
-               role
-        FROM ADMIN
-        WHERE admin_name = #{adminName}
-        ]]>
-        <if test="depositor != null and accountNumber != null">
-            AND depositor = #{depositor}
-            AND account_number = #{accountNumber}
-        </if>
-    </select>
 
     <!--가입자 현황-->
     <select id="subscriberCount" resultType="int">
+
         SELECT count(admin_key)
         FROM ADMIN
-    </select>
 
+    </select>
 
     <!--메인페이지 월별가입자 그래프-->
     <select id="getMonthlySubscriber" resultType="java.util.Map">
+
         SELECT month, subscribers_count
-        FROM monthly_subscribers;
+        FROM monthly_subscribers
+
     </select>
 
     <!--메인페이지 현황지표-->
     <select id="getUserActivity" resultType="UserActivityDTO">
+
         SELECT user_count, up_down, percentage
         FROM user_activity
+
     </select>
 
     <!--메인페이지 문의현황-->
     <select id="getInquiryList" resultType="InquiryDTO">
+
         SELECT inquiry_key,
-               date_format(inquiry_date, '%Y-%m-%d') AS inquirydate,
+               date_format(inquiry_date, '%Y-%m-%d') AS inquiryDate,
                inquiry_content,
                CASE inquiry_status
                    WHEN 'N' THEN
@@ -72,12 +94,14 @@
                        '답변완료'
                    ELSE
                        inquiry_status
-                   END                               AS inquirystatus
+                   END                               AS inquiryStatus
         FROM inquiry
+
     </select>
 
     <!--가입자 리스트-->
-    <select id="getJoinList"  parameterType="JoinSearchDTO" resultType="JoinListDTO">
+    <select id="getJoinList" parameterType="JoinSearchDTO" resultType="JoinListDTO">
+
         SELECT user_key,
         user_name AS 고객명,
         user_id AS 이메일,
@@ -114,25 +138,6 @@
         </if>
 
     </select>
-
-    <select id="findByUsername" parameterType="String" resultType="AdminUser">
-
-        SELECT
-               admin_id,
-               admin_password,
-               role
-        FROM ADMIN
-        WHERE admin_id = #{adminId}
-    </select>
-
-    <select id="getRole" parameterType="String" resultType="int">
-
-        SELECT
-               role
-        FROM ADMIN
-        WHERE admin_id = #{adminId}
-    </select>
-
 
 
 </mapper>

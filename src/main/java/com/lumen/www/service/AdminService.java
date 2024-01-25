@@ -1,8 +1,11 @@
 package com.lumen.www.service;
 
 import com.lumen.www.dto.*;
+import org.springframework.http.ResponseEntity;
 
 public interface AdminService {
+
+    ResponseEntity<?> adminLoginCk(AdminUser adminUser);
 
     // 가입자 현황
     JsonResult subscriberCount();
