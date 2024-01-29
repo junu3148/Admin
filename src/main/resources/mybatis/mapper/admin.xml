@@ -94,8 +94,11 @@
                        '답변완료'
                    ELSE
                        inquiry_status
-                   END                               AS inquiryStatus
-        FROM inquiry
+                   END                               AS inquiryStatus,
+               plan_name
+        FROM inquiry a
+                 INNER JOIN user b ON a.user_key = b.user_key
+                 INNER JOIN plan c ON b.plan_key = c.plan_key
 
     </select>
 
@@ -125,8 +128,7 @@
         country AS 국가
         FROM USER A
         INNER JOIN PLAN B ON A.plan_key = B.plan_key
-        WHERE 1 = 1
-
+        WHERE is_deleted = 0
         <if test="userName != null and userName != ''">
             AND user_name = #{userName}
         </if>
@@ -139,5 +141,78 @@
 
     </select>
 
+    <!--가입자 세부정보-->
+    <select id="getUserDetails" parameterType="UserDTO" resultType="UserDTO">
+
+        SELECT user_key,
+               user_id,
+               user_name,
+               phone_number,
+               DATE_FORMAT(accession_date, '%Y년 %m월 %d일') AS accessionDate,
+               b.plan_name,
+               b.plan_type,
+               CASE b.plan_type
+                   WHEN 'M' THEN '월간'
+                   WHEN 'Y' THEN '연간'
+                   ELSE b.plan_type
+                   END                                    AS planType,
+               b.plan_price,
+               sub_round,
+               COALESCE(withdrawal_date, '-')             AS withdrawalDate,
+               out_info,
+               occupation,
+               CASE
+                   WHEN YEAR (CURDATE()) - birth_year BETWEEN 10 AND 19 THEN '10대'
+                    WHEN YEAR(CURDATE()) - birth_year BETWEEN 20 AND 29 THEN '20대'
+                    WHEN YEAR(CURDATE()) - birth_year BETWEEN 30 AND 39 THEN '30대'
+                    WHEN YEAR(CURDATE()) - birth_year BETWEEN 40 AND 49 THEN '40대'
+                    WHEN YEAR(CURDATE()) - birth_year BETWEEN 50 AND 59 THEN '50대'
+                    WHEN YEAR(CURDATE()) - birth_year BETWEEN 60 AND 69 THEN '60대'
+                    WHEN YEAR(CURDATE()) - birth_year BETWEEN 70 AND 79 THEN '70대'
+                    WHEN YEAR(CURDATE()) - birth_year BETWEEN 80 AND 89 THEN '80대'
+                    ELSE '기타'
+        END
+        AS age,
+            CASE gender
+                    WHEN 'M' THEN '남자'
+                    WHEN 'F' THEN '여자'
+        END
+        AS gender,
+            country,
+            email_accept,
+            promo_accept,
+            user_status
+            FROM user a INNER JOIN plan b ON a.plan_key = b.plan_key
+            WHERE user_key =
+        #{userKey}
+
+    </select>
+
+    <update id="adminJoinUserDelete" parameterType="UserDTO">
+
+        UPDATE user
+        SET is_deleted      = 1,
+            withdrawal_date = NOW()
+        WHERE user_key = #{userKey}
+          AND is_deleted != 1
+          AND NOT EXISTS (
+            SELECT 1
+            FROM subscription
+            WHERE subscription.user_key = user.user_key
+        )
+
+    </update>
+
+
+    <delete id="deleteUsersWithStatusOlderThanOneMonth">
+
+        <![CDATA[
+        DELETE
+        FROM user
+        WHERE is_deleted = 1
+          AND withdrawal_date <= NOW() - INTERVAL 1 MONTH
+        ]]>
+
+    </delete>
 
 </mapper>

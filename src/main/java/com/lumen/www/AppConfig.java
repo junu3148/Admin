@@ -9,6 +9,7 @@ import com.lumen.www.jwt.JwtTokenProvider;
 import com.lumen.www.service.AdminService;
 import com.lumen.www.service.AdminServiceImpl;
 import com.lumen.www.service.MemberService;
+import com.lumen.www.service.UserCleanupTask;
 import com.lumen.www.util.EmailService;
 import org.apache.ibatis.session.SqlSession;
 import org.springframework.beans.factory.annotation.Value;
@@ -82,6 +83,12 @@ public class AppConfig {
     @Bean
     public MemberService memberService(AdminRepository adminRepository, AuthenticationManagerBuilder authManagerBuilder, JwtTokenProvider jwtTokenProvider, TokenRepository tokenRepository) {
         return new MemberService(adminRepository, authManagerBuilder, jwtTokenProvider,tokenRepository);
+    }
+
+    // 0시 주기적인 메서드 실행 클래스
+    @Bean
+    public UserCleanupTask userCleanupTask() {
+        return new UserCleanupTask(adminRepository());
     }
 
 }

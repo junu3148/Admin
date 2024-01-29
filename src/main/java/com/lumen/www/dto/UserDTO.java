@@ -1,6 +1,7 @@
 package com.lumen.www.dto;
 
-import lombok.Data;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.*;
 
 @Data
 public class UserDTO {
@@ -26,6 +27,9 @@ public class UserDTO {
 
     private int planKey;
     private String planName;
+    private String planType;
+    private int planPrice;
+
 
 
 }

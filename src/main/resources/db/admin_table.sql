@@ -133,11 +133,12 @@ CREATE TABLE CALCULATE
 );
 
 -- 9. 리플레시 토큰
-CREATE TABLE refresh_tokens (
-                                token_id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-                                admin_key BIGINT UNSIGNED NOT NULL,
-                                refresh_token VARCHAR(1024) NOT NULL,
-                                expiry_date DATETIME NOT NULL,
-                                creation_date DATETIME DEFAULT CURRENT_TIMESTAMP,
-                                FOREIGN KEY (admin_key) REFERENCES Admin(admin_key)
+CREATE TABLE refresh_tokens
+(
+    token_key      BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    admin_key     BIGINT UNSIGNED NOT NULL,
+    refresh_token VARCHAR(1024)   NOT NULL,
+    expiry_date   DATETIME        NOT NULL,
+    creation_date DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (admin_key) REFERENCES Admin (admin_key)
 );

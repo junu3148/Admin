@@ -41,45 +41,48 @@ public class MemberService {
 
 
     // 로그인 토큰 생성
-   /* @Transactional
-    public ResponseEntity<?> signInAndGenerateJwtToken(AdminUser adminUser) {
+//   @Transactional
+//    public ResponseEntity<?> signInAndGenerateJwtToken(AdminUser adminUser) {
+//
+//        String username = adminUser.getUsername();
+//        String password = adminUser.getPassword();
+//
+//        // 이메일 형싱 체크
+//        if (isValidEmail(username)) {
+//            try {
+//                // 1. username + password 를 기반으로 Authentication 객체 생성
+//                // 이때 authentication 은 인증 여부를 확인하는 authenticated 값이 false
+//                UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(username, password);
+//
+//                // 2. 실제 검증. authenticate() 메서드를 통해 요청된 Member 에 대한 검증 진행
+//                // authenticate 메서드가 실행될 때 CustomUserDetailsService 에서 만든 loadUserByUsername 메서드 실행
+//                Authentication authentication = authenticationManagerBuilder.getObject().authenticate(authenticationToken);
+//
+//                // 3. 인증 정보를 기반으로 JWT 토큰 생성
+//                JwtToken jwtToken = jwtTokenProvider.generateToken(authentication);
+//                System.out.println(jwtToken);
+//
+//                // 이부분 자체권환으로 하는방법이 있을텐데... 추후에 리펙토링 해야함.( 하지만 프론트에서 권한이필요해서 그냥 사용할 예정)
+//                jwtToken.setRole(adminRepository.getRole(username));
+//
+//
+//                // HTTP 응답 헤더에 JWT 토큰을 추가
+//                HttpHeaders httpHeaders = new HttpHeaders();
+//                httpHeaders.add(AUTHORIZATION_HEADER, BEARER_PREFIX + jwtToken.getAccessToken());
+//
+//                return new ResponseEntity<>(jwtToken, httpHeaders, HttpStatus.OK);
+//            } catch (AuthenticationException e) {
+//                // 사용자 인증 실패 시 처리
+//                HttpHeaders httpHeaders = new HttpHeaders();
+//                return new ResponseEntity<>("인증에 실패하였습니다.", httpHeaders, HttpStatus.UNAUTHORIZED);
+//            }
+//        } else {
+//            HttpHeaders httpHeaders = new HttpHeaders();
+//            return new ResponseEntity<>("아이디는 이메일 형식이어야 합니다.", httpHeaders, HttpStatus.BAD_REQUEST);
+//
+//        }
+//    }
 
-        String username = adminUser.getUsername();
-        String password = adminUser.getPassword();
-        // 이메일 형싱 체크
-        if (isValidEmail(username)) {
-            try {
-                // 1. username + password 를 기반으로 Authentication 객체 생성
-                // 이때 authentication 은 인증 여부를 확인하는 authenticated 값이 false
-                UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(username, password);
-
-                // 2. 실제 검증. authenticate() 메서드를 통해 요청된 Member 에 대한 검증 진행
-                // authenticate 메서드가 실행될 때 CustomUserDetailsService 에서 만든 loadUserByUsername 메서드 실행
-                Authentication authentication = authenticationManagerBuilder.getObject().authenticate(authenticationToken);
-
-
-                // 3. 인증 정보를 기반으로 JWT 토큰 생성
-                JwtToken jwtToken = jwtTokenProvider.generateToken(authentication);
-
-                // 이부분 자체권환으로 하는방법이 있을텐데... 추후에 리펙토링 해야함.( 하지만 프론트에서 권한이필요해서 그냥 사용할 예정)
-                jwtToken.setRole(adminRepository.getRole(username));
-
-                // HTTP 응답 헤더에 JWT 토큰을 추가
-                HttpHeaders httpHeaders = new HttpHeaders();
-                httpHeaders.add(AUTHORIZATION_HEADER, BEARER_PREFIX + jwtToken.getAccessToken());
-
-                return new ResponseEntity<>(jwtToken, httpHeaders, HttpStatus.OK);
-            } catch (AuthenticationException e) {
-                // 사용자 인증 실패 시 처리
-                HttpHeaders httpHeaders = new HttpHeaders();
-                return new ResponseEntity<>("인증에 실패하였습니다.", httpHeaders, HttpStatus.UNAUTHORIZED);
-            }
-        } else {
-            HttpHeaders httpHeaders = new HttpHeaders();
-            return new ResponseEntity<>("아이디는 이메일 형식이어야 합니다.", httpHeaders, HttpStatus.BAD_REQUEST);
-
-        }
-    }*/
     @Transactional
     public ResponseEntity<?> signInAndGenerateJwtToken(AdminUser adminUser) {
         String username = adminUser.getUsername();
@@ -162,7 +165,8 @@ public class MemberService {
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(message);
     }
 
-   /* // 리플레시 토큰 유효성검사 후 에세스토큰 발행
+   /* @Transactional
+    // 리플레시 토큰 유효성검사 후 에세스토큰 발행
     public ResponseEntity<?> refreshTokenCK(String refreshToken) {
         try {
             // 리프레시 토큰 유효성 검사

@@ -36,7 +36,6 @@ public class AuthController {
     // 1차 로그인 토큰발행
     @PostMapping("login")
     public ResponseEntity<?> signIn(@RequestBody AdminUser adminUser) {
-
         ResponseEntity<?> responseEntity = memberService.signInAndGenerateJwtToken(adminUser);
         // 인증 성공
         if (responseEntity.getStatusCode() == HttpStatus.OK) return responseEntity;

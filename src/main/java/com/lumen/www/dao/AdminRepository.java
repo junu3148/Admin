@@ -79,11 +79,46 @@ public interface AdminRepository {
 
 
     /**
-     * 검색 조건별 가입자 리스트를 반환합니다.
+     * 검색 조건에 따라 가입자 리스트를 반환합니다.
      *
-     * @return 조건별 가입자 정보를 담은 JoinSearchDTO 리스트
+     * 이 메서드는 JoinSearchDTO에 정의된 조건을 기반으로 가입자 정보를 검색합니다.
+     * 결과는 JoinListDTO 객체의 리스트로 반환됩니다.
+     *
+     * @param joinSearchDTO 가입자 검색에 사용될 조건을 담은 DTO 객체.
+     * @return 조건에 맞는 가입자 정보를 담은 JoinListDTO 리스트.
      */
     List<JoinListDTO> getJoinList(JoinSearchDTO joinSearchDTO);
+
+
+    /**
+     * 특정 사용자의 상세 정보를 반환합니다.
+     *
+     * 이 메서드는 UserDTO 객체에 포함된 식별 정보를 사용하여 사용자의 상세 정보를 조회합니다.
+     * 조회된 정보는 UserDTO 객체로 반환됩니다.
+     *
+     * @param userDTO 사용자 식별 정보를 포함한 DTO 객체.
+     * @return 조회된 사용자의 상세 정보를 담은 UserDTO 객체.
+     */
+    UserDTO getUserDetails(UserDTO userDTO);
+
+    /**
+     * 특정 사용자를 강제로 탈퇴시킵니다.
+     *
+     * 이 메서드는 UserDTO 객체에 담긴 식별 정보를 사용하여 해당 사용자를 탈퇴 처리합니다.
+     * 처리 결과는 영향 받은 레코드 수로 반환됩니다.
+     *
+     * @param userDTO 강제 탈퇴시킬 사용자의 식별 정보를 담은 DTO 객체.
+     * @return 처리된 레코드의 수.
+     */
+    int adminJoinUserDelete(UserDTO userDTO);
+
+    /**
+     * 상태 변경일로부터 한 달이 지난 사용자를 삭제합니다.
+     *
+     * 이 메서드는 자동으로 한 달 이상 상태가 변경되지 않은 사용자를 삭제합니다.
+     * 삭제는 데이터베이스에서 직접 수행되며, 별도의 반환값은 없습니다.
+     */
+    void deleteUsersWithStatusOlderThanOneMonth();
 
 
 }

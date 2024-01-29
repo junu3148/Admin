@@ -98,18 +98,23 @@ public class JwtTokenProvider {
                 .signWith(key, SIGNATURE_ALGORITHM)
                 .compact();
 
-
         // 아이디로 리플레시 토큰이 있는지 확인
         Optional<RefreshToken> existingToken = tokenRepository.findRefreshToken(authentication.getName());
-        if (existingToken.isPresent()) {
-            // 토큰이 존재하면, 기존 토큰을 사용합니다. (만료된 토큰은 null로 반환됨)
+
+        System.out.println("리플레시토큰");
+
+        if (existingToken.isPresent() && existingToken.get().getRefreshToken() != null) {
+            System.out.println("안저장");
+            // 토큰이 존재하고, 값이 null이 아니면 기존 토큰을 사용합니다.
             RefreshToken refreshTokenObj = existingToken.get();
             refreshToken = refreshTokenObj.getRefreshToken();
             // refreshTokenExpiresIn = refreshTokenObj.getExpiryDate(); // 필요한 경우
         } else {
-            // 토큰이 존재하지 않거나 만료된 경우, 새 토큰을 생성 및 저장합니다.
+            System.out.println("저장");
+            // 토큰이 존재하지 않거나 토큰 값이 null인 경우, 새 토큰을 생성 및 저장합니다.
             tokenRepository.saveRefreshToken(authentication.getName(), refreshToken, refreshTokenExpiresIn);
         }
+
 
         return JwtToken.builder()
                 .grantType("Bearer")

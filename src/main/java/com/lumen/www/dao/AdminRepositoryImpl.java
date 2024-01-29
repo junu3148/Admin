@@ -70,4 +70,21 @@ public class AdminRepositoryImpl implements AdminRepository {
         return sqlSession.selectList("admin.getJoinList", joinSearchDTO);
     }
 
+    // 가입자 세부정보
+    @Override
+    public UserDTO getUserDetails(UserDTO userDTO) {
+        return sqlSession.selectOne("admin.getUserDetails", userDTO);
+    }
+
+    // 가입자 강제탈퇴
+    @Override
+    public int adminJoinUserDelete(UserDTO userDTO) {
+        return sqlSession.update("admin.adminJoinUserDelete", userDTO);
+    }
+
+    // 탈퇴회원 30일 후 데이터 삭제
+    @Override
+    public void deleteUsersWithStatusOlderThanOneMonth() {
+        sqlSession.delete("admin.deleteUsersWithStatusOlderThanOneMonth");
+    }
 }

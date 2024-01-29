@@ -37,13 +37,13 @@ public class EmailService {
 
     /**
      * 주어진 이메일 메시지를 특정 수신자들에게 비동기적으로 발송합니다.
-     *
+     * <p>
      * 이 메서드는 정의된 수신자 목록에 대해 각각 비동기 이메일 발송 메서드(sendMailAsync)를 호출합니다.
      * 이메일 전송이 성공하면 콘솔에 서비스 시간을 출력하고, 실패하면 로그에 오류를 기록하고 RuntimeException을 발생시킵니다.
      * 모든 이메일 전송 시도 후에는 "ok" 문자열을 반환하여 전송이 시작되었음을 나타냅니다.
      *
      * @param emailMessage 발송할 이메일 메시지 객체.
-     * @param type 이메일 유형을 나타내는 문자열 (현재 사용되지 않음).
+     * @param type         이메일 유형을 나타내는 문자열 (현재 사용되지 않음).
      * @return 이메일 전송이 시작되었음을 나타내는 "ok" 문자열.
      * @throws RuntimeException 이메일 전송 중 예외가 발생한 경우.
      */
@@ -72,15 +72,39 @@ public class EmailService {
         }
     }
 
+
+    public String sendMail2(EmailMessage emailMessage, String email) {
+
+        System.out.println(email);
+        // 정의된 수신자 목록
+        try {
+            // 모든 수신자에 대해 이메일을 비동기적으로 발송
+            try {
+                sendMailAsync(emailMessage, email);
+                System.out.println("서비스 시간1: " + duration);
+            } catch (MessagingException e) {
+                log.error("Email sending failed: " + e.getMessage());
+                throw new RuntimeException("Failed to send email", e);
+            }
+
+            log.info("Email sending initiated successfully");
+
+            return "ok";
+        } catch (Exception e) {
+            log.error("Email sending failed: " + e.getMessage());
+            throw new RuntimeException("Failed to send email", e);
+        }
+    }
+
     /**
      * 주어진 이메일 메시지를 비동기적으로 특정 수신자에게 발송합니다.
-     *
+     * <p>
      * 이 메서드는 JavaMailSender를 사용하여 MIME 메시지를 생성하고 설정합니다.
      * 발신자, 수신자, 제목을 설정하고, 필요한 경우 이미지를 처리하여 첨부합니다.
      * 모든 설정이 완료되면, JavaMailSender를 통해 이메일을 발송합니다.
      *
      * @param emailMessage 발송할 이메일 메시지 객체.
-     * @param recipient 이메일의 수신자 주소.
+     * @param recipient    이메일의 수신자 주소.
      * @throws MessagingException 메일 발송 중 발생하는 예외.
      */
     @Async
@@ -105,11 +129,11 @@ public class EmailService {
 
     /**
      * 이메일 본문에 포함된 이미지를 처리하여 MIME 메시지에 첨부합니다.
-     *
+     * <p>
      * 이 메서드는 이메일 메시지에서 이미지 URL을 추출하고, 각 이미지 URL을 Content-ID(CID)로 매핑합니다.
      * 그런 다음 HTML 본문에서 이미지 URL을 해당 CID로 대체하고, MIME 메시지에 이미지를 첨부합니다.
      *
-     * @param emailMessage 발송할 이메일 메시지 객체. 이미지 URL을 포함한 HTML 본문을 가지고 있어야 합니다.
+     * @param emailMessage      발송할 이메일 메시지 객체. 이미지 URL을 포함한 HTML 본문을 가지고 있어야 합니다.
      * @param mimeMessageHelper MIME 메시지를 구성하는 데 사용되는 MimeMessageHelper 객체.
      * @throws MessagingException 이미지 처리 중 발생하는 예외.
      */

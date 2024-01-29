@@ -93,6 +93,11 @@ public class AdminServiceImpl implements AdminService {
         return createJsonResult(adminRepository.getJoinList(joinSearchDTO));
     }
 
+    // 가입자 세부정보
+    @Override
+    public JsonResult getUserDetails(UserDTO userDTO) {
+        return createJsonResult(adminRepository.getUserDetails(userDTO));
+    }
 
     // 프로모션 메일 발송
     @Override
@@ -106,6 +111,40 @@ public class AdminServiceImpl implements AdminService {
             return createJsonResult(result);
         } else return null;
     }
+
+    // 가입자 강제탈퇴
+    @Override
+    @Transactional
+    public ResponseEntity<Integer> adminJoinUserDelete(UserDTO userDTO) {
+
+        int result = adminRepository.adminJoinUserDelete(userDTO);
+
+        if (result == 1) {
+            // 삭제 성공
+            return new ResponseEntity<>(result, HttpStatus.OK);
+        } else if (result == 0) {
+            // 삭제할 대상 없음
+            return new ResponseEntity<>(result, HttpStatus.NOT_FOUND);
+        } else {
+            // 기타 오류
+            return new ResponseEntity<>(3, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+
+    // 비밀번호 변경 메일발송
+    @Override
+    public JsonResult adminJoinPWReset(UserDTO userDTO) {
+
+        EmailMessage emailMessage = EmailMessage.builder().subject("비밀번호 초기화 메일알림").message("비밀번호 초기화 해주세요").build();
+        // 이메일 전송 후 결과를 반환받음
+        String result = emailService.sendMail2(emailMessage, "menstua@viking-lab.com");
+
+        if (result.equals("ok")) {
+            return createJsonResult(result);
+        } else return null;
+    }
+
 
     // JsonResult 생성 & 반환
     private JsonResult createJsonResult(Object data) {

@@ -13,6 +13,7 @@ public class InquiryDTO {
     private String inquiryStatus;
     private String qna;
     private String inquiryType;
+    private String planName;
 
     // FK
     private String userKey;
