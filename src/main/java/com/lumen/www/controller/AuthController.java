@@ -49,6 +49,12 @@ public class AuthController {
         return adminService.adminLoginCk(adminUser);
     }
 
+    // 관리자 정보
+    @PostMapping("account")
+    public JsonResult getAccount(HttpServletRequest request) {
+        return adminService.getAdminUser(request);
+    }
+
     // accessToken 검증
     @PostMapping("access-token")
     public ResponseEntity<?> accessTokenCK() {

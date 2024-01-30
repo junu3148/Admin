@@ -32,9 +32,8 @@ public class JwtTokenProvider {
     public final long REFRESH_TOKEN_EXPIRE_COUNT = (8 * 60 * 60 * 1000); //8시간
     private static final String TOKEN_TYPE = "JWT";
     private static final SignatureAlgorithm SIGNATURE_ALGORITHM = SignatureAlgorithm.HS256;
-    private static final String CLAIM_ADMIN_USER_ID = "adminUserId";
-    private static final String CLAIM_IS_ADMIN = "isAdmin";
-    private static final String CLAIM_USER_NAME = "userName";
+    private static final String CLAIM_ADMIN_USER_ID = "sub";
+    private static final String CLAIM_IS_ADMIN = "roles";
 
 
     /**
@@ -156,31 +155,18 @@ public class JwtTokenProvider {
 
 
     /**
-     * JWT 토큰에서 관리자 사용자 정보를 추출하여 AdminUser 객체로 반환합니다.
+     * JWT 토큰에서 관리자 사용자 정보를 추출하여 adminId 반환합니다.
      *
      * @param token JWT 토큰 문자열.
-     * @return 추출된 관리자 사용자 정보가 담긴 AdminUser 객체.
+     * @return adminId 반환
      */
-    public AdminUser getAdminUserInfoFromToken(String token) {
-
-        // AdminUser 객체를 생성합니다.
-        AdminUser adminUser = new AdminUser();
+    public String getAdminUserInfoFromToken(String token) {
 
         // 토큰을 파싱하여 Claims 객체를 얻습니다.
         Claims claims = parseToken(token);
-
-        // Claims에서 관리자 ID, 역할, 이름을 추출합니다.
-        String adminId = claims.get(CLAIM_ADMIN_USER_ID, String.class);
-        String role = claims.get(CLAIM_IS_ADMIN, String.class);
-        String adminName = claims.get(CLAIM_USER_NAME, String.class);
-
-        // 추출한 정보를 AdminUser 객체에 설정합니다.
-        adminUser.setAdminId(adminId);
-        adminUser.setRole(Integer.parseInt(role)); // 문자열 형태의 역할을 정수로 변환합니다.
-        adminUser.setAdminName(adminName);
-
         // 완성된 AdminUser 객체를 반환합니다.
-        return adminUser;
+        return claims.get(CLAIM_ADMIN_USER_ID, String.class);
+
     }
 
 

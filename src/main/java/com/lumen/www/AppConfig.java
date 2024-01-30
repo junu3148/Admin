@@ -19,6 +19,8 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.thymeleaf.spring6.SpringTemplateEngine;
 
 @Configuration
@@ -39,13 +41,13 @@ public class AppConfig {
     // AdminService 빈 정의
     @Bean
     public AdminService adminService() {
-            return new AdminServiceImpl(adminRepository(), emailService());
+        return new AdminServiceImpl(adminRepository(), emailService(), jwtTokenProvider());
     }
 
     // AdminRepository 빈 정의
     @Bean
     public AdminRepository adminRepository() {
-            return new AdminRepositoryImpl(sqlSession);
+        return new AdminRepositoryImpl(sqlSession);
     }
 
     // 파일 경로
@@ -82,7 +84,7 @@ public class AppConfig {
     // AuthenticationManagerBuilder를 주입받아 사용
     @Bean
     public MemberService memberService(AdminRepository adminRepository, AuthenticationManagerBuilder authManagerBuilder, JwtTokenProvider jwtTokenProvider, TokenRepository tokenRepository) {
-        return new MemberService(adminRepository, authManagerBuilder, jwtTokenProvider,tokenRepository);
+        return new MemberService(adminRepository, authManagerBuilder, jwtTokenProvider, tokenRepository);
     }
 
     // 0시 주기적인 메서드 실행 클래스

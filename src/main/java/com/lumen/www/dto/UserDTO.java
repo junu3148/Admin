@@ -6,7 +6,7 @@ import lombok.*;
 @Data
 public class UserDTO {
 
-    private int userKey;
+    private Long userKey;
     private String userId;
     private String userPassword;
     private String userName;
@@ -22,13 +22,20 @@ public class UserDTO {
     private String promoAccept;
     private String userStatus;
     private int outInfo;
+    private String  outAmount;
+    private String notInfo;
     private int subRound;
+    private String notSubRound;
     private String company;
+    private int searchType;
 
-    private int planKey;
+
+    private Long planKey;
     private String planName;
     private String planType;
     private int planPrice;
+
+    private Long subKey;
 
 
 

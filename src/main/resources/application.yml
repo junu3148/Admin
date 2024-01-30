@@ -7,8 +7,6 @@ server:
       charset: UTF-8
       enabled: true
       force: true
-    session:
-      timeout: 30m # 세션 만료 시간 30분
 
 # Spring 설정
 spring:
@@ -74,4 +72,4 @@ file:
 
 # JWT 설정
 jwt:
-  secret: 64461f01e1s23mf93ngr9c48d801ce59142452199ff112fb5404c8e7e98e3ff
+  secret: 64461f01e1s23mf93ngrg2fd9501ce59142452199ff112fb5404c8e7e98e3ff

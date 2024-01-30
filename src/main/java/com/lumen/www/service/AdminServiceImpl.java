@@ -2,8 +2,11 @@ package com.lumen.www.service;
 
 import com.lumen.www.dao.AdminRepository;
 import com.lumen.www.dto.*;
-import com.lumen.www.dto.EmailMessage;
+import com.lumen.www.jwt.JwtTokenProvider;
 import com.lumen.www.util.EmailService;
+import com.lumen.www.util.JwtTokenUtil;
+import jakarta.servlet.ServletOutputStream;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -22,6 +25,8 @@ public class AdminServiceImpl implements AdminService {
     private static final String LOG_FAILURE_MESSAGE = "실패";
     private final AdminRepository adminRepository;
     private final EmailService emailService;
+    private final JwtTokenProvider jwtTokenProvider;
+
 
     // 2차 로그인
     @Override
@@ -37,6 +42,26 @@ public class AdminServiceImpl implements AdminService {
             // 사용자가 없는 경우, HttpStatus.NOT_FOUND와 에러 메시지 반환
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found");
         }
+    }
+
+    // 관리자 정보 가져오기
+    @Override
+    @Transactional
+    public JsonResult getAdminUser(HttpServletRequest request) {
+        // 1. 토큰 추출
+        String token = JwtTokenUtil.resolveToken(request);
+
+        // 2. 사용자 정보 조회
+        AdminDTO adminDTO = adminRepository.getAdminUser(jwtTokenProvider.getAdminUserInfoFromToken(token));
+
+        System.out.println("2" + adminDTO);
+        if (adminDTO == null) {
+            // 사용자 정보가 없는 경우의 처리
+            return createJsonResult(null);
+        }
+
+        // 4. 결과 반환
+        return createJsonResult(adminDTO);
     }
 
     // 가입자 현황
@@ -85,12 +110,11 @@ public class AdminServiceImpl implements AdminService {
         return createJsonResult(adminRepository.getInquiryList());
     }
 
-
     // 가입자 리스트
     @Override
     @Transactional
-    public JsonResult getJoinList(JoinSearchDTO joinSearchDTO) {
-        return createJsonResult(adminRepository.getJoinList(joinSearchDTO));
+    public JsonResult getJoinList(SearchDTO searchDTO) {
+        return createJsonResult(adminRepository.getJoinList(searchDTO));
     }
 
     // 가입자 세부정보
@@ -115,22 +139,20 @@ public class AdminServiceImpl implements AdminService {
     // 가입자 강제탈퇴
     @Override
     @Transactional
-    public ResponseEntity<Integer> adminJoinUserDelete(UserDTO userDTO) {
+    public ResponseEntity<?> adminJoinUserDelete(UserDTO userDTO) {
 
         int result = adminRepository.adminJoinUserDelete(userDTO);
-
         if (result == 1) {
             // 삭제 성공
-            return new ResponseEntity<>(result, HttpStatus.OK);
+            return ResponseEntity.ok().body("User successfully deleted.");
         } else if (result == 0) {
             // 삭제할 대상 없음
-            return new ResponseEntity<>(result, HttpStatus.NOT_FOUND);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("No user found to delete.");
         } else {
             // 기타 오류
-            return new ResponseEntity<>(3, HttpStatus.INTERNAL_SERVER_ERROR);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred during deletion.");
         }
     }
-
 
     // 비밀번호 변경 메일발송
     @Override
@@ -145,9 +167,63 @@ public class AdminServiceImpl implements AdminService {
         } else return null;
     }
 
+    // 미결제 회원 리스트
+    @Override
+    @Transactional
+    public JsonResult getPriceList(PriceSearchDTO priceSearchDTO) {
+
+        final String outInfo = priceSearchDTO.getOutInfo();
+        if (outInfo != null) {
+            final boolean isTenTimesDefaulted = outInfo.startsWith("10");
+            switch (outInfo.charAt(0)) {
+                case '1':
+                    priceSearchDTO.setMinNum(isTenTimesDefaulted ? 10 : 1);
+                    priceSearchDTO.setMaxNum(isTenTimesDefaulted ? 10 : 4);
+                    break;
+                case '5':
+                    priceSearchDTO.setMinNum(5);
+                    priceSearchDTO.setMaxNum(9);
+                    break;
+                default:
+                    priceSearchDTO.setMinNum(1);
+                    priceSearchDTO.setMaxNum(10);
+            }
+        }
+        System.out.println(priceSearchDTO);
+        return createJsonResult(adminRepository.getPriceList(priceSearchDTO));
+    }
+
+    // 회원 상태 변경
+    @Override
+    @Transactional
+    public ResponseEntity<?> updateUserStatus(UserDTO userDTO) {
+
+        int result = adminRepository.updateUserStatus(userDTO);
+        if (result > 0) {
+            // 성공적으로 하나 이상의 행이 업데이트되었을 때
+            return ResponseEntity.ok().body("User status successfully updated.");
+        } else {
+            // 업데이트할 행이 없거나 실패했을 때
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Failed to update user status.");
+        }
+    }
+
+    // 청약철회 현황
+    @Override
+    @Transactional
+    public JsonResult getSubscriptionEndList(SearchDTO searchDTO) {
+        return createJsonResult(adminRepository.getSubscriptionEndList(searchDTO));
+    }
+
+    // 인보이스 리스트
+    @Override
+    public JsonResult getInvoiceList(SearchDTO searchDTO) {
+        return createJsonResult(adminRepository.getInvoiceList(searchDTO));
+    }
 
     // JsonResult 생성 & 반환
     private JsonResult createJsonResult(Object data) {
+        System.out.println("리턴 " + data);
         JsonResult jsonResult = new JsonResult();
         if (data != null) jsonResult.success(data);
         else jsonResult.fail(LOG_FAILURE_MESSAGE);

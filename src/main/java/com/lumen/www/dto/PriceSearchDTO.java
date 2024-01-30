@@ -1,15 +1,14 @@
 package com.lumen.www.dto;
 
-
 import lombok.Data;
 
 @Data
-public class JoinSearchDTO {
+public class PriceSearchDTO {
 
     private String userName;
     private String planName;
-    private String startDate;
-    private String endDate;
-
+    private String outInfo;
+    private int minNum;
+    private int maxNum;
 
 }

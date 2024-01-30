@@ -64,7 +64,7 @@ CREATE TABLE SUBSCRIPTION
 (
     sub_key      BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     sub_date     DATE NOT NULL,
-    sub_end_date DATE NULL,
+    sub_end_date DATE NULL, -- 디폴트 추가
     sub_status   ENUM('Y', 'N') NOT NULL DEFAULT 'Y',
     user_key     BIGINT UNSIGNED,
     plan_key     BIGINT UNSIGNED,

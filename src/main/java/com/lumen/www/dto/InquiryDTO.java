@@ -7,7 +7,7 @@ import java.util.Date;
 @Data
 public class InquiryDTO {
 
-    private int inquiryKey; // PK
+    private Long inquiryKey; // PK
     private String inquiryDate;
     private String inquiryContent;
     private String inquiryStatus;

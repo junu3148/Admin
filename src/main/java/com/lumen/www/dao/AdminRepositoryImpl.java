@@ -30,8 +30,8 @@ public class AdminRepositoryImpl implements AdminRepository {
 
     // 유저 정보 가져오기
     @Override
-    public AdminUser getAdminUser(AdminUser adminUser) {
-        return sqlSession.selectOne("admin.getAdminUser", adminUser);
+    public AdminDTO getAdminUser(String adminId) {
+        return sqlSession.selectOne("admin.getAdminUser", adminId);
     }
 
     // 2차 로그인
@@ -66,8 +66,8 @@ public class AdminRepositoryImpl implements AdminRepository {
 
     // 가입자리스트
     @Override
-    public List<JoinListDTO> getJoinList(JoinSearchDTO joinSearchDTO) {
-        return sqlSession.selectList("admin.getJoinList", joinSearchDTO);
+    public List<JoinListDTO> getJoinList(SearchDTO searchDTO) {
+        return sqlSession.selectList("admin.getJoinList", searchDTO);
     }
 
     // 가입자 세부정보
@@ -86,5 +86,29 @@ public class AdminRepositoryImpl implements AdminRepository {
     @Override
     public void deleteUsersWithStatusOlderThanOneMonth() {
         sqlSession.delete("admin.deleteUsersWithStatusOlderThanOneMonth");
+    }
+
+    // 미결제 회원 리스트
+    @Override
+    public List<PriceListDTO> getPriceList(PriceSearchDTO priceSearchDTO) {
+        return sqlSession.selectList("admin.getPriceList", priceSearchDTO);
+    }
+
+    // 회원 상태 변경
+    @Override
+    public int updateUserStatus(UserDTO userDTO) {
+        return sqlSession.update("admin.updateUserStatus", userDTO);
+    }
+
+    // 청약철회 현황
+    @Override
+    public List<PayListDTO> getSubscriptionEndList(SearchDTO searchDTO) {
+        return sqlSession.selectList("admin.getSubscriptionEndList", searchDTO);
+    }
+
+    // 인보이스 리스트
+    @Override
+    public List<InvoiceListDTO> getInvoiceList(SearchDTO searchDTO) {
+        return sqlSession.selectList("admin.getInvoiceList", searchDTO);
     }
 }

@@ -40,19 +40,17 @@
     </select>
 
     <!--AdminUser 정보 가져오기-->
-    <select id="getAdminUser" parameterType="AdminUser" resultType="AdminUser">
+    <select id="getAdminUser" parameterType="String" resultType="AdminDTO">
 
         SELECT admin_key,
-               admin_id,
-               admin_password,
                admin_name,
                depositor,
                bank_name,
                account_number,
                role
-        FROM ADMIN
+        FROM admin
         WHERE admin_id = #{adminId}
-          AND admin_password = #{adminPassword}
+
 
     </select>
 
@@ -103,7 +101,7 @@
     </select>
 
     <!--가입자 리스트-->
-    <select id="getJoinList" parameterType="JoinSearchDTO" resultType="JoinListDTO">
+    <select id="getJoinList" parameterType="SearchDTO" resultType="JoinListDTO">
 
         SELECT user_key,
         user_name AS 고객명,
@@ -132,7 +130,7 @@
         <if test="userName != null and userName != ''">
             AND user_name = #{userName}
         </if>
-        <if test="planName != null">
+        <if test="planName != null and planName != ''">
             AND plan_name = #{planName}
         </if>
         <if test="startDate != null and startDate != ''">
@@ -144,50 +142,66 @@
     <!--가입자 세부정보-->
     <select id="getUserDetails" parameterType="UserDTO" resultType="UserDTO">
 
-        SELECT user_key,
-               user_id,
-               user_name,
-               phone_number,
-               DATE_FORMAT(accession_date, '%Y년 %m월 %d일') AS accessionDate,
-               b.plan_name,
-               b.plan_type,
-               CASE b.plan_type
-                   WHEN 'M' THEN '월간'
-                   WHEN 'Y' THEN '연간'
-                   ELSE b.plan_type
-                   END                                    AS planType,
-               b.plan_price,
-               sub_round,
-               COALESCE(withdrawal_date, '-')             AS withdrawalDate,
-               out_info,
-               occupation,
-               CASE
-                   WHEN YEAR (CURDATE()) - birth_year BETWEEN 10 AND 19 THEN '10대'
-                    WHEN YEAR(CURDATE()) - birth_year BETWEEN 20 AND 29 THEN '20대'
-                    WHEN YEAR(CURDATE()) - birth_year BETWEEN 30 AND 39 THEN '30대'
-                    WHEN YEAR(CURDATE()) - birth_year BETWEEN 40 AND 49 THEN '40대'
-                    WHEN YEAR(CURDATE()) - birth_year BETWEEN 50 AND 59 THEN '50대'
-                    WHEN YEAR(CURDATE()) - birth_year BETWEEN 60 AND 69 THEN '60대'
-                    WHEN YEAR(CURDATE()) - birth_year BETWEEN 70 AND 79 THEN '70대'
-                    WHEN YEAR(CURDATE()) - birth_year BETWEEN 80 AND 89 THEN '80대'
-                    ELSE '기타'
+        SELECT
+        a.user_key,
+        user_id,
+        user_name,
+        phone_number,
+        DATE_FORMAT(accession_date, '%Y년 %m월 %d일') AS accessionDate,
+        b.plan_name,
+        b.plan_type,
+        CASE b.plan_type
+        WHEN 'M' THEN '월간'
+        WHEN 'Y' THEN '연간'
+        ELSE b.plan_type
+        END AS planType,
+        b.plan_price,
+
+        COALESCE(withdrawal_date, '-') AS withdrawalDate,
+        a.sub_round AS subRound,
+        a.out_info AS outInfo,
+        COALESCE(withdrawal_date, '-') AS outAmount,
+
+        occupation,
+        CASE
+        WHEN YEAR (CURDATE()) - birth_year BETWEEN 10 AND 19 THEN '10대'
+        WHEN YEAR(CURDATE()) - birth_year BETWEEN 20 AND 29 THEN '20대'
+        WHEN YEAR(CURDATE()) - birth_year BETWEEN 30 AND 39 THEN '30대'
+        WHEN YEAR(CURDATE()) - birth_year BETWEEN 40 AND 49 THEN '40대'
+        WHEN YEAR(CURDATE()) - birth_year BETWEEN 50 AND 59 THEN '50대'
+        WHEN YEAR(CURDATE()) - birth_year BETWEEN 60 AND 69 THEN '60대'
+        WHEN YEAR(CURDATE()) - birth_year BETWEEN 70 AND 79 THEN '70대'
+        WHEN YEAR(CURDATE()) - birth_year BETWEEN 80 AND 89 THEN '80대'
+        ELSE '기타'
         END
         AS age,
-            CASE gender
-                    WHEN 'M' THEN '남자'
-                    WHEN 'F' THEN '여자'
+        CASE gender
+        WHEN 'M' THEN '남자'
+        WHEN 'F' THEN '여자'
         END
         AS gender,
-            country,
-            email_accept,
-            promo_accept,
-            user_status
-            FROM user a INNER JOIN plan b ON a.plan_key = b.plan_key
-            WHERE user_key =
-        #{userKey}
+        country,
+        email_accept,
+        promo_accept,
+        user_status
+        FROM user a INNER JOIN plan b ON a.plan_key = b.plan_key
+
+        <choose>
+            <when test="subKey != null">
+                INNER JOIN subscription c ON a.user_key = c.user_key
+                WHERE c.sub_key = #{subKey}
+            </when>
+            <otherwise>
+                <if test="userKey != null">
+                    WHERE a.user_key = #{userKey}
+                </if>
+            </otherwise>
+        </choose>
+
 
     </select>
 
+    <!--가입자 상태 변경-->
     <update id="adminJoinUserDelete" parameterType="UserDTO">
 
         UPDATE user
@@ -198,12 +212,13 @@
           AND NOT EXISTS (
             SELECT 1
             FROM subscription
-            WHERE subscription.user_key = user.user_key
-        )
+            WHERE subscription.user_key = #{userKey}
+            )
 
     </update>
 
 
+    <!--30일 지난 탈타회원 정보삭제-->
     <delete id="deleteUsersWithStatusOlderThanOneMonth">
 
         <![CDATA[
@@ -214,5 +229,121 @@
         ]]>
 
     </delete>
+
+    <!--미결제 회원 리스트-->
+    <select id="getPriceList" parameterType="PriceSearchDTO" resultType="PriceListDTO">
+
+        SELECT user_key,
+        user_name AS 고객명,
+        user_id AS 이메일,
+        phone_number AS 연락처,
+        plan_name AS 플랜,
+        CASE b.plan_type
+        WHEN 'M' THEN '월간'
+        WHEN 'Y' THEN '연간'
+        ELSE b.plan_type
+        END AS 플랜구분,
+        plan_price AS 미결제금액,
+        sub_round AS 회차,
+        out_info AS 미결제안내,
+        user_status AS 활동정지
+        FROM user a
+        INNER JOIN plan b ON a.plan_key = b.plan_key
+        WHERE 1 = 1
+        <if test="userName != 'pass'">
+            AND user_name = #{userName}
+        </if>
+        <if test="planName != 'pass'">
+            AND plan_name = #{planName}
+        </if>
+        <if test="outInfo != 'pass'">
+            AND out_info BETWEEN #{minNum} AND #{maxNum}
+        </if>
+
+    </select>
+
+    <!-- 회원 상태 변경-->
+    <update id="updateUserStatus" parameterType="UserDTO">
+
+        UPDATE user
+        SET user_status = CASE
+                              WHEN user_status = 'N' THEN 'Y'
+                              ELSE 'N'
+            END
+        WHERE user_key = #{userKey}
+
+    </update>
+
+    <!--청약철회 현황-->
+    <select id="getSubscriptionEndList" parameterType="SearchDTO" resultType="PayListDTO">
+
+        SELECT
+        a.user_key,
+        sub_key,
+        user_name AS 고객명,
+        user_id AS 이메일,
+        phone_number AS 연락처,
+        plan_name AS 플랜,
+        CASE b.plan_type
+        WHEN 'M' THEN '월간'
+        WHEN 'Y' THEN '연간'
+        ELSE b.plan_type
+        END AS 플랜구분,
+        CASE c.sub_status
+        WHEN 'N' THEN '청약철회완료'
+        ELSE c.sub_status
+        END AS 청약철회,
+        DATE_FORMAT(c.sub_end_date, '%Y.%m.%d') AS 철회일
+        FROM user a INNER JOIN plan b ON a.plan_key = b.plan_key
+        INNER JOIN subscription c ON a.user_key = c.user_key
+        WHERE sub_end_date IS NOT NULL
+
+        <if test="userName != null and userName != ''">
+            AND user_name = #{userName}
+        </if>
+        <if test="planName != null and planName != ''">
+            AND plan_name = #{planName}
+        </if>
+        <if test="startDate != null and startDate != ''">
+            AND sub_end_date BETWEEN #{startDate} AND #{endDate}
+        </if>
+
+    </select>
+
+
+    <!--인보이스 리스트-->
+    <select id="getInvoiceList" parameterType="SearchDTO" resultType="InvoiceListDTO">
+
+        SELECT
+        invoice_key,
+        user_name AS 고객명,
+        user_id AS 이메일,
+        phone_number AS 연락처,
+        plan_name AS 플랜,
+        CASE b.plan_type
+        WHEN 'M' THEN '월간'
+        WHEN 'Y' THEN '연간'
+        ELSE b.plan_type
+        END AS 플랜구분,
+        DATE_FORMAT(issue_date, '%Y.%m.%d') AS 결제일,
+        invoice_code AS 인보이스,
+        plan_price AS 결제금액
+        FROM user a
+        INNER JOIN plan b ON a.plan_key = b.plan_key
+        INNER JOIN subscription c ON a.user_key = c.user_key
+        INNER JOIN invoice d ON c.sub_key = d.sub_key
+
+        WHERE 1 = 1
+        <if test="userName != null and userName != ''">
+            AND user_name = #{userName}
+        </if>
+        <if test="planName != null and planName != ''">
+            AND plan_name = #{planName}
+        </if>
+        <if test="startDate != null and startDate != ''">
+            AND issue_date BETWEEN #{startDate} AND #{endDate}
+        </if>
+
+    </select>
 
 </mapper>
