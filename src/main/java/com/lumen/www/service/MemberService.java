@@ -54,7 +54,7 @@ public class MemberService {
         String password = adminUser.getPassword();
 
         if (!isValidEmail(username)) {
-            return badRequestResponse(INVALID_EMAIL_MESSAGE);
+            return badRequestResponse();
         }
 
         try {
@@ -106,12 +106,11 @@ public class MemberService {
     /**
      * 잘못된 요청에 대한 응답을 생성하여 반환하는 메서드입니다.
      *
-     * @param message 응답 메시지입니다.
      * @return BAD_REQUEST 상태와 메시지를 포함한 ResponseEntity입니다.
      */
-    private ResponseEntity<String> badRequestResponse(String message) {
+    private ResponseEntity<String> badRequestResponse() {
         HttpHeaders httpHeaders = new HttpHeaders();
-        return new ResponseEntity<>(message, httpHeaders, HttpStatus.BAD_REQUEST);
+        return new ResponseEntity<>(MemberService.INVALID_EMAIL_MESSAGE, httpHeaders, HttpStatus.BAD_REQUEST);
     }
 
     /**
@@ -131,7 +130,7 @@ public class MemberService {
             String newAccessToken = createNewAccessToken(refreshToken);
             return buildResponseWithToken(newAccessToken);
         } catch (Exception e) {
-            return internalServerErrorResponse(ERROR_PROCESSING_MESSAGE);
+            return internalServerErrorResponse();
         }
     }
 
@@ -186,11 +185,10 @@ public class MemberService {
     /**
      * 내부 서버 오류에 대한 응답을 생성하여 반환하는 메서드입니다.
      *
-     * @param message 응답 메시지입니다.
      * @return INTERNAL_SERVER_ERROR 상태와 메시지를 포함한 ResponseEntity입니다.
      */
-    private ResponseEntity<String> internalServerErrorResponse(String message) {
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(message);
+    private ResponseEntity<String> internalServerErrorResponse() {
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(MemberService.ERROR_PROCESSING_MESSAGE);
     }
 
 

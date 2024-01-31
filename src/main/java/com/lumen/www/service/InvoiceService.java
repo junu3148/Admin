@@ -2,7 +2,6 @@ package com.lumen.www.service;
 // 기존의 import 문은 그대로 유지합니다.
 
 import com.itextpdf.io.font.FontConstants;
-import com.itextpdf.io.font.constants.StandardFonts;
 import com.itextpdf.kernel.font.PdfFont;
 import com.itextpdf.kernel.font.PdfFontFactory;
 import com.itextpdf.kernel.pdf.PdfDocument;
@@ -11,10 +10,8 @@ import com.itextpdf.layout.Document;
 import com.itextpdf.layout.element.*;
 import com.itextpdf.layout.property.TextAlignment;
 import com.itextpdf.layout.property.UnitValue;
-import com.lumen.www.dto.EmailMessage;
 import com.lumen.www.dto.InvoiceDTO;
 import com.lumen.www.dto.InvoiceData;
-import com.lumen.www.util.EmailService;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;

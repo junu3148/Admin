@@ -7,7 +7,6 @@ import com.lumen.www.util.EmailService;
 import com.lumen.www.util.JwtTokenUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
-import org.bouncycastle.crypto.signers.ISOTrailers;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;

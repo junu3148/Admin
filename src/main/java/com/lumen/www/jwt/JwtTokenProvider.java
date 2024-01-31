@@ -1,7 +1,6 @@
 package com.lumen.www.jwt;
 
 import com.lumen.www.dao.TokenRepository;
-import com.lumen.www.dto.AdminUser;
 import com.lumen.www.dto.JwtToken;
 import com.lumen.www.dto.RefreshToken;
 import com.lumen.www.exception.InvalidTokenException;
@@ -81,7 +80,7 @@ public class JwtTokenProvider {
         String accessToken = Jwts.builder()
                 .setHeaderParam("typ", TOKEN_TYPE)
                 .setSubject(authentication.getName())
-                .claim("roles", roles)
+                .claim(CLAIM_IS_ADMIN, roles)
                 .setExpiration(accessTokenExpiresIn)
                 .signWith(key, SIGNATURE_ALGORITHM)
                 .compact();
