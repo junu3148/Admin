@@ -54,7 +54,6 @@
 
     </select>
 
-
     <!--가입자 현황-->
     <select id="subscriberCount" resultType="int">
 
@@ -197,7 +196,6 @@
             </otherwise>
         </choose>
 
-
     </select>
 
     <!--가입자 상태 변경-->
@@ -215,7 +213,6 @@
             )
 
     </update>
-
 
     <!--30일 지난 탈타회원 정보삭제-->
     <delete id="deleteUsersWithStatusOlderThanOneMonth">
@@ -309,7 +306,6 @@
 
     </select>
 
-
     <!--인보이스 리스트-->
     <select id="getInvoiceList" parameterType="SearchDTO" resultType="InvoiceListDTO">
 
@@ -381,6 +377,170 @@
 
     </select>
 
+    <!--1:1 문의 현황-->
+    <select id="getInquiryList2" parameterType="SearchDTO" resultType="InquiryListDTO">
+
+        SELECT row_num AS 번호,
+        inquiry_key,
+        inquiry_type AS 유형,
+        user_name AS 이름,
+        user_id AS 이메일,
+        plan_name AS 플랜,
+        CASE
+        WHEN plan_type = 'M' THEN '월간'
+        WHEN plan_type = 'Y' THEN '연간'
+        ELSE plan_type
+        END AS 플랜구분,
+        inquiry_content AS 제목,
+        date_format(inquiry_date, '%Y.%m.%d') AS 문의일자,
+        CASE
+        WHEN inquiry_status = 'N' THEN '미답변'
+        WHEN inquiry_status = 'Y' THEN '답변완료'
+        ELSE inquiry_status
+        END AS 처리상태
+        FROM (SELECT ROW_NUMBER() OVER (ORDER BY c.inquiry_date) AS row_num, c.inquiry_key,
+        c.inquiry_type,
+        a.user_name,
+        a.user_id,
+        b.plan_name,
+        b.plan_type,
+        c.inquiry_content,
+        c.inquiry_date,
+        c.inquiry_status
+        FROM user a
+        INNER JOIN plan b ON a.plan_key = b.plan_key
+        INNER JOIN inquiry c ON a.user_key = c.user_key
+        INNER JOIN subscription d ON a.user_key = d.user_key) AS subquery
+
+
+        WHERE 1 = 1
+
+        <if test="userName != null and userName != ''">
+            AND user_name = #{userName}
+        </if>
+        <if test="planName != null and planName != ''">
+            AND inquiry_type = #{planName}
+        </if>
+        <if test="startDate != null and startDate != ''">
+            AND inquiry_date BETWEEN #{startDate} AND #{endDate}
+        </if>
+
+        ORDER BY row_num desc
+
+    </select>
+
+    <!--1:1 문의 세부 정보-->
+    <select id="getInquiryDetails" parameterType="InquiryDTO" resultType="InquiryDTO">
+
+        SELECT
+            inquiry_key,
+            date_format(inquiry_date, '%Y.%m.%d') AS inquiryDate,
+            CASE
+                WHEN inquiry_status = 'N' THEN
+                    '미답변'
+                WHEN inquiry_status = 'Y' THEN
+                    '답변완료'
+                ELSE
+                    inquiry_status
+                END AS inquiryStatus,
+            inquiry_type,
+            user_name,
+            plan_name,
+            qna,
+            inquiry_content
+        FROM
+            inquiry a
+                INNER JOIN user         b ON a.user_key = b.user_key
+                INNER JOIN plan         c ON b.plan_key = c.plan_key
+                INNER JOIN subscription d ON a.user_key = d.user_key
+        WHERE
+            inquiry_key = #{inquiryKey}
+
+    </select>
+
+    <!--1:1 문의 답변 등록-->
+    <update id="insertInquiryAnswer" parameterType="InquiryDTO">
+
+        UPDATE inquiry
+        SET qna            = #{qna},
+            inquiry_status ='Y'
+        WHERE inquiry_key = #{inquiryKey}
+
+    </update>
+
+    <!--공지사항 현황-->
+    <select id="getNoticeList" parameterType="SearchDTO" resultType="NoticeListDTO">
+
+        SELECT
+        notice_key,
+        row_num AS 번호,
+        notice_title AS 제목,
+        date_format(notice_date, '%Y.%m.%d') AS 등록일자,
+        notice_hits AS 조회수
+        FROM
+        (SELECT
+        ROW_NUMBER() OVER (ORDER BY notice_date) AS row_num,
+        notice_key ,
+        notice_title,
+        notice_date, '%Y.%m.%d',
+        notice_hits
+        FROM notice
+
+        <if test="startDate != null and startDate != ''">
+            WHERE notice_date BETWEEN #{startDate} AND #{endDate}
+        </if>
+
+        ) AS se
+
+        ORDER BY row_num DESC
+
+    </select>
+
+    <!--공지사항 세부 정보-->
+    <select id="getNoticeDetails" parameterType="NoticeDTO" resultType="NoticeDTO">
+
+        SELECT notice_key,
+               notice_title,
+               notice_content,
+               date_format(notice_date, '%Y.%m.%d') AS noticeDate,
+               notice_hits
+        FROM notice
+        WHERE notice_key = #{noticeKey}
+
+    </select>
+
+    <!--공지사항 등록-->
+    <insert id="insertNotice" parameterType="NoticeDTO" >
+
+        INSERT INTO notice (notice_title,
+                            notice_content,
+                            notice_date,
+                            admin_key)
+        SELECT #{noticeTitle},
+               #{noticeContent},
+               NOW(),
+               (SELECT admin_key FROM admin WHERE admin_id = #{adminId})
+
+
+    </insert>
+
+    <!--공지사항 수정-->
+    <update id="updateNotice" parameterType="NoticeDTO">
+
+        UPDATE notice
+        SET notice_title  = #{noticeTitle},
+            notice_content= #{noticeContent}
+        WHERE notice_key = #{noticeKey}
+
+    </update>
+
+    <!--공지사항 삭제-->
+    <delete id="deleteNotice" parameterType="NoticeDTO">
+
+        DELETE FROM notice WHERE notice_key = #{noticeKey}
+
+
+    </delete>
 
 
 </mapper>

@@ -70,13 +70,13 @@ public class AdminRepositoryImpl implements AdminRepository {
         return sqlSession.selectList("admin.getJoinList", searchDTO);
     }
 
-    // 가입자 세부정보
+    // 가입자 세부 정보
     @Override
     public UserDTO getUserDetails(UserDTO userDTO) {
         return sqlSession.selectOne("admin.getUserDetails", userDTO);
     }
 
-    // 가입자 강제탈퇴
+    // 가입자 강제 탈퇴
     @Override
     public int adminJoinUserDelete(UserDTO userDTO) {
         return sqlSession.update("admin.adminJoinUserDelete", userDTO);
@@ -115,15 +115,56 @@ public class AdminRepositoryImpl implements AdminRepository {
     // 인보이스 세부 정보
     @Override
     public InvoiceDTO getInvoiceDetails(InvoiceDTO invoiceDTO) {
-        return sqlSession.selectOne("admin.getInvoiceDetails",invoiceDTO);
+        return sqlSession.selectOne("admin.getInvoiceDetails", invoiceDTO);
     }
 
     // 1:1 문의 현황
     @Override
     public List<InquiryDTO> getInquiryList(SearchDTO searchDTO) {
-
-        System.out.println(searchDTO);
-        //return sqlSession.selectList("admin.getInquiryList",searchDTO);
-        return null;
+        return sqlSession.selectList("admin.getInquiryList2", searchDTO);
     }
+
+    // 1:1 문의 세부 정보
+    @Override
+    public InquiryDTO getInquiryDetails(InquiryDTO inquiryDTO) {
+        return sqlSession.selectOne("admin.getInquiryDetails", inquiryDTO);
+    }
+
+    // 1:1 문의 답변 등록
+    @Override
+    public int insertInquiryAnswer(InquiryDTO inquiryDTO) {
+        return sqlSession.update("admin.insertInquiryAnswer", inquiryDTO);
+    }
+
+    // 공지사항 현황
+    @Override
+    public List<NoticeListDTO> getNoticeList(SearchDTO searchDTO) {
+        return sqlSession.selectList("admin.getNoticeList", searchDTO);
+    }
+
+    // 공지사항 세부 정보
+    @Override
+    public NoticeDTO getNoticeDetails(NoticeDTO noticeDTO) {
+        return sqlSession.selectOne("admin.getNoticeDetails", noticeDTO);
+    }
+
+    // 공지사항 등록
+    @Override
+    public int insertNotice(NoticeDTO noticeDTO) {
+        return sqlSession.insert("admin.insertNotice", noticeDTO);
+    }
+
+    // 공지사항 수정
+    @Override
+    public int updateNotice(NoticeDTO noticeDTO) {
+        return sqlSession.update("admin.updateNotice", noticeDTO);
+    }
+
+    // 공지사항 삭제
+    @Override
+    public int deleteNotice(NoticeDTO noticeDTO) {
+        return sqlSession.delete("admin.deleteNotice", noticeDTO);
+    }
+
+
 }

@@ -3,6 +3,7 @@ package com.lumen.www.controller;
 import com.lumen.www.dto.*;
 import com.lumen.www.files.ImageUploader;
 import com.lumen.www.service.AdminService;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -48,6 +49,7 @@ public class AdminController {
     // 에디터 이미지 저장
     @PostMapping("image/upload")
     public ModelAndView uploadImage(MultipartHttpServletRequest request) throws Exception {
+        System.out.println("호출호출");
         return imageUploader.uploadImage(request);
     }
 
@@ -97,15 +99,59 @@ public class AdminController {
 
     // 인보이스 메일 발송
     @PostMapping("invoice/email")
-    public ResponseEntity<?> invoiceEmailShipment(@RequestBody InvoiceDTO invoiceDTO){
+    public ResponseEntity<?> invoiceEmailShipment(@RequestBody InvoiceDTO invoiceDTO) {
         return adminService.invoiceEmailShipment(invoiceDTO);
     }
 
-
     // 1:1 문의 현황
     @PostMapping("inquiry")
-    public JsonResult adminInquiry(@RequestBody SearchDTO searchDTO){
+    public JsonResult adminInquiry(@RequestBody SearchDTO searchDTO) {
         return adminService.getInquiryList(searchDTO);
+    }
+
+    // 1:1 문의 세부 정보
+    @PostMapping("inquiry/details")
+    public JsonResult adminInquiryDetails(@RequestBody InquiryDTO inquiryDTO) {
+        return adminService.getInquiryDetails(inquiryDTO);
+    }
+
+    // 1:1 문의 답변
+    @PostMapping("inquiry/answer")
+    public ResponseEntity<?> adminInquiryAnswer(@RequestBody InquiryDTO inquiryDTO) {
+
+        System.out.println("durkl" + inquiryDTO);
+        return adminService.insertInquiryAnswer(inquiryDTO);
+    }
+
+    // 공지사항 현황
+    @PostMapping("notice")
+    public JsonResult adminNotice(@RequestBody SearchDTO searchDTO) {
+        return adminService.getNoticeList(searchDTO);
+    }
+
+    // 공지사항 세부 정보
+    @PostMapping("notice/details")
+    public JsonResult adminNoticeDetails(@RequestBody NoticeDTO noticeDTO) {
+        return adminService.getNoticeDetails(noticeDTO);
+    }
+
+    // 공지사항 등록
+    @PostMapping("notice/add-notice")
+    public ResponseEntity<?> adminAddNotice(HttpServletRequest request, @RequestBody NoticeDTO noticeDTO) {
+        return adminService.insertNotice(request, noticeDTO);
+    }
+
+    // 공지사항 수정
+    @PatchMapping("notice/update-notice")
+    public ResponseEntity<?> adminUpdateNotice(@RequestBody NoticeDTO noticeDTO) {
+        return adminService.updateNotice(noticeDTO);
 
     }
+
+    // 공지사항 삭제
+    @DeleteMapping("notice/delete-notice")
+    public ResponseEntity<?> adminDeleteNotice(@RequestBody NoticeDTO noticeDTO) {
+        return adminService.deleteNotice(noticeDTO);
+    }
+
 }

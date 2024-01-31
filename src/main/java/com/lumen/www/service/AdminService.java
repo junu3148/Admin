@@ -129,13 +129,105 @@ public interface AdminService {
      */
     JsonResult getSubscriptionEndList(SearchDTO searchDTO);
 
+    /**
+     * 청구서 목록을 조회합니다.
+     * 이 메서드는 SearchDTO 객체를 인자로 받아 청구서 목록을 조회합니다.
+     *
+     * @param searchDTO 청구서 목록 조회 조건을 포함하는 데이터 전송 객체.
+     * @return 조회된 청구서 목록을 포함하는 JsonResult 객체.
+     */
     JsonResult getInvoiceList(SearchDTO searchDTO);
 
+    /**
+     * 청구서 세부 사항을 조회합니다.
+     * 이 메서드는 InvoiceDTO 객체를 인자로 받아 특정 청구서의 세부 사항을 조회합니다.
+     *
+     * @param invoiceDTO 청구서 세부 사항 조회에 필요한 데이터 전송 객체.
+     * @return 조회된 청구서 세부 정보를 포함하는 JsonResult 객체.
+     */
     JsonResult getInvoiceDetails(InvoiceDTO invoiceDTO);
 
-    ResponseEntity<?> invoiceEmailShipment (@RequestBody InvoiceDTO invoiceDTO);
+    /**
+     * 청구서 이메일 발송을 처리합니다.
+     * 이 메서드는 InvoiceDTO 객체를 인자로 받아 청구서 이메일 발송을 수행합니다.
+     *
+     * @param invoiceDTO 이메일 발송에 필요한 청구서 데이터를 포함하는 데이터 전송 객체.
+     * @return 처리 결과를 나타내는 ResponseEntity 객체.
+     */
+    ResponseEntity<?> invoiceEmailShipment(InvoiceDTO invoiceDTO);
 
-    JsonResult getInquiryList (SearchDTO searchDTO);
+    /**
+     * 1:1 문의 목록을 조회합니다.
+     * 이 메서드는 SearchDTO 객체를 인자로 받아 1:1 문의 목록을 조회합니다.
+     *
+     * @param searchDTO 1:1 문의 목록 조회 조건을 포함하는 데이터 전송 객체.
+     * @return 조회된 1:1 문의 목록을 포함하는 JsonResult 객체.
+     */
+    JsonResult getInquiryList(SearchDTO searchDTO);
+
+    /**
+     * 1:1 문의 세부 사항을 조회합니다.
+     * 이 메서드는 InquiryDTO 객체를 인자로 받아 특정 1:1 문의의 세부 사항을 조회합니다.
+     *
+     * @param inquiryDTO 1:1 문의 세부 사항 조회에 필요한 데이터 전송 객체.
+     * @return 조회된 1:1 문의 세부 정보를 포함하는 JsonResult 객체.
+     */
+    JsonResult getInquiryDetails(InquiryDTO inquiryDTO);
+
+    /**
+     * 1:1 문의 답변을 등록합니다.
+     * 이 메서드는 InquiryDTO 객체를 인자로 받아 1:1 문의에 대한 답변을 등록합니다.
+     *
+     * @param inquiryDTO 1:1 문의 답변 등록에 필요한 데이터를 포함하는 데이터 전송 객체.
+     * @return 처리 결과를 나타내는 ResponseEntity 객체.
+     */
+    ResponseEntity<?> insertInquiryAnswer(InquiryDTO inquiryDTO);
+
+    /**
+     * 공지사항 목록을 조회합니다.
+     * 이 메서드는 SearchDTO 객체를 인자로 받아 공지사항 목록을 조회합니다.
+     *
+     * @param searchDTO 공지사항 목록 조회 조건을 포함하는 데이터 전송 객체.
+     * @return 조회된 공지사항 목록을 포함하는 JsonResult 객체.
+     */
+    JsonResult getNoticeList(SearchDTO searchDTO);
+
+    /**
+     * 공지사항 세부 사항을 조회합니다.
+     * 이 메서드는 NoticeDTO 객체를 인자로 받아 특정 공지사항의 세부 사항을 조회합니다.
+     *
+     * @param noticeDTO 공지사항 세부 사항 조회에 필요한 데이터 전송 객체.
+     * @return 조회된 공지사항 세부 정보를 포함하는 JsonResult 객체.
+     */
+    JsonResult getNoticeDetails(NoticeDTO noticeDTO);
+
+    /**
+     * 공지사항을 등록합니다.
+     * 이 메서드는 HttpServletRequest와 NoticeDTO 객체를 인자로 받아 새로운 공지사항을 등록합니다.
+     *
+     * @param request   HttpServletRequest 객체.
+     * @param noticeDTO 공지사항 등록에 필요한 데이터를 포함하는 데이터 전송 객체.
+     * @return 처리 결과를 나타내는 ResponseEntity 객체.
+     */
+    ResponseEntity<?> insertNotice(HttpServletRequest request, NoticeDTO noticeDTO);
+
+    /**
+     * 공지사항을 업데이트합니다.
+     * 이 메서드는 NoticeDTO 객체를 인자로 받아 기존의 공지사항을 업데이트합니다.
+     *
+     * @param noticeDTO 공지사항 업데이트에 필요한 정보를 포함하는 데이터 전송 객체.
+     * @return 처리 결과를 나타내는 ResponseEntity 객체.
+     */
+    ResponseEntity<?> updateNotice(NoticeDTO noticeDTO);
+
+    /**
+     * 공지사항을 삭제합니다.
+     * 이 메서드는 NoticeDTO 객체를 인자로 받아 특정 공지사항을 삭제합니다.
+     *
+     * @param noticeDTO 삭제할 공지사항의 정보를 포함하는 데이터 전송 객체.
+     * @return 처리 결과를 나타내는 ResponseEntity 객체.
+     */
+    ResponseEntity<?> deleteNotice(NoticeDTO noticeDTO);
 
 
 }

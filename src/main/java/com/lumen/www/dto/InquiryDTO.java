@@ -19,13 +19,11 @@ public class InquiryDTO {
     // FK
     private String userKey;
     private String userName;
-    private String userId;
     private String adminKey;
 
     // 이건 삭제예정
     private String subscriptionPlan;
 
 
-    private int rowNum;
 
 }

@@ -5,14 +5,12 @@ import com.lumen.www.dto.*;
 import com.lumen.www.jwt.JwtTokenProvider;
 import com.lumen.www.util.EmailService;
 import com.lumen.www.util.JwtTokenUtil;
-import jakarta.servlet.ServletOutputStream;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.bind.annotation.RequestBody;
 
 import java.util.List;
 import java.util.Map;
@@ -119,7 +117,7 @@ public class AdminServiceImpl implements AdminService {
         return createJsonResult(adminRepository.getJoinList(searchDTO));
     }
 
-    // 가입자 세부정보
+    // 가입자 세부 정보
     @Override
     public JsonResult getUserDetails(UserDTO userDTO) {
         return createJsonResult(adminRepository.getUserDetails(userDTO));
@@ -138,7 +136,7 @@ public class AdminServiceImpl implements AdminService {
         } else return null;
     }
 
-    // 가입자 강제탈퇴
+    // 가입자 강제 탈퇴
     @Override
     @Transactional
     public ResponseEntity<?> adminJoinUserDelete(UserDTO userDTO) {
@@ -195,19 +193,12 @@ public class AdminServiceImpl implements AdminService {
         return createJsonResult(adminRepository.getPriceList(priceSearchDTO));
     }
 
-    // 회원 상태 변경
+     // 회원 상태 변경
     @Override
     @Transactional
     public ResponseEntity<?> updateUserStatus(UserDTO userDTO) {
-
         int result = adminRepository.updateUserStatus(userDTO);
-        if (result > 0) {
-            // 성공적으로 하나 이상의 행이 업데이트되었을 때
-            return ResponseEntity.ok().body("User status successfully updated.");
-        } else {
-            // 업데이트할 행이 없거나 실패했을 때
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Failed to update user status.");
-        }
+        return createResponse(result, "User status successfully updated.", "Failed to update user status.");
     }
 
     // 청약철회 현황
@@ -224,7 +215,7 @@ public class AdminServiceImpl implements AdminService {
         return createJsonResult(adminRepository.getInvoiceList(searchDTO));
     }
 
-    // 인보이스 세부정보
+    // 인보이스 세부 정보
     @Override
     @Transactional
     public JsonResult getInvoiceDetails(InvoiceDTO invoiceDTO) {
@@ -232,13 +223,13 @@ public class AdminServiceImpl implements AdminService {
     }
 
     @Override
-    public ResponseEntity<?> invoiceEmailShipment(@RequestBody InvoiceDTO invoiceDTO) {
+    public ResponseEntity<?> invoiceEmailShipment(InvoiceDTO invoiceDTO) {
 
         InvoiceDTO invoiceDTO1 = adminRepository.getInvoiceDetails(invoiceDTO);
 
         System.out.println(invoiceDTO1);
 
-       try {
+        try {
             invoiceService.sendInvoiceAsEmail("menstua@viking-lab.com", invoiceDTO1);
         } catch (Exception e) {
 
@@ -249,8 +240,79 @@ public class AdminServiceImpl implements AdminService {
 
     // 1:1 문의 현황
     @Override
+    @Transactional
     public JsonResult getInquiryList(SearchDTO searchDTO) {
         return createJsonResult(adminRepository.getInquiryList(searchDTO));
+    }
+
+
+    // 1:1 문의 세부 정보
+    @Override
+    @Transactional
+    public JsonResult getInquiryDetails(InquiryDTO inquiryDTO) {
+        return createJsonResult(adminRepository.getInquiryDetails(inquiryDTO));
+    }
+
+    // 1:1 문의 답변 등록
+    @Override
+    @Transactional
+    public ResponseEntity<?> insertInquiryAnswer(InquiryDTO inquiryDTO) {
+        int result = adminRepository.insertInquiryAnswer(inquiryDTO);
+        return createResponse(result, "Your inquiry has been successfully registered.", "The answer to the inquiry failed.");
+    }
+
+    // 공지사항 현황
+    @Override
+    @Transactional
+    public JsonResult getNoticeList(SearchDTO searchDTO) {
+        return createJsonResult(adminRepository.getNoticeList(searchDTO));
+    }
+
+    // 공지사항 세부 정보
+    @Override
+    @Transactional
+    public JsonResult getNoticeDetails(NoticeDTO noticeDTO) {
+        return createJsonResult(adminRepository.getNoticeDetails(noticeDTO));
+    }
+
+
+
+    // 공지사항 등록
+    @Override
+    @Transactional
+    public ResponseEntity<?> insertNotice(HttpServletRequest request, NoticeDTO noticeDTO) {
+        // ... [생략된 기존 로직] ...
+        int result = adminRepository.insertNotice(noticeDTO);
+        return createResponse(result, "Notice registration has been successfully executed.", "Announcement registration failed.");
+    }
+
+    // 공지사항 수정
+    @Override
+    @Transactional
+    public ResponseEntity<?> updateNotice(NoticeDTO noticeDTO) {
+        int result = adminRepository.updateNotice(noticeDTO);
+        return createResponse(result, "The announcement has been revised to a successful one.", "Failed to modify the announcement.");
+    }
+
+    // 공지사항 삭제
+    @Override
+    @Transactional
+    public ResponseEntity<?> deleteNotice(NoticeDTO noticeDTO) {
+        int result = adminRepository.deleteNotice(noticeDTO);
+        return createResponse(result, "Delete Announcement has been successfully executed.", "Failed to delete announcement.");
+    }
+
+
+
+    // 공통 응답 생성 메서드
+    private ResponseEntity<String> createResponse(int result, String successMessage, String failureMessage) {
+        if (result > 0) {
+            // 성공적으로 하나 이상의 행이 업데이트되었을 때
+            return ResponseEntity.ok().body(successMessage);
+        } else {
+            // 업데이트할 행이 없거나 실패했을 때
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(failureMessage);
+        }
     }
 
     // JsonResult 생성 & 반환
