@@ -148,18 +148,17 @@
         user_name,
         phone_number,
         DATE_FORMAT(accession_date, '%Y년 %m월 %d일') AS accessionDate,
-        b.plan_name,
-        b.plan_type,
-        CASE b.plan_type
+        plan_name,
+        CASE plan_type
         WHEN 'M' THEN '월간'
         WHEN 'Y' THEN '연간'
         ELSE b.plan_type
         END AS planType,
-        b.plan_price,
+        plan_price,
 
         COALESCE(withdrawal_date, '-') AS withdrawalDate,
-        a.sub_round AS subRound,
-        a.out_info AS outInfo,
+        sub_round AS subRound,
+        out_info AS outInfo,
         COALESCE(withdrawal_date, '-') AS outAmount,
 
         occupation,
@@ -284,14 +283,14 @@
         user_id AS 이메일,
         phone_number AS 연락처,
         plan_name AS 플랜,
-        CASE b.plan_type
+        CASE plan_type
         WHEN 'M' THEN '월간'
         WHEN 'Y' THEN '연간'
-        ELSE b.plan_type
+        ELSE plan_type
         END AS 플랜구분,
-        CASE c.sub_status
+        CASE sub_status
         WHEN 'N' THEN '청약철회완료'
-        ELSE c.sub_status
+        ELSE sub_status
         END AS 청약철회,
         DATE_FORMAT(c.sub_end_date, '%Y.%m.%d') AS 철회일
         FROM user a INNER JOIN plan b ON a.plan_key = b.plan_key
@@ -320,10 +319,10 @@
         user_id AS 이메일,
         phone_number AS 연락처,
         plan_name AS 플랜,
-        CASE b.plan_type
+        CASE plan_type
         WHEN 'M' THEN '월간'
         WHEN 'Y' THEN '연간'
-        ELSE b.plan_type
+        ELSE plan_type
         END AS 플랜구분,
         DATE_FORMAT(issue_date, '%Y.%m.%d') AS 결제일,
         invoice_code AS 인보이스,
@@ -343,6 +342,37 @@
         <if test="startDate != null and startDate != ''">
             AND issue_date BETWEEN #{startDate} AND #{endDate}
         </if>
+
+    </select>
+
+    <!--인보이스 디테일-->
+    <select id="getInvoiceDetails" parameterType="String" resultType="InvoiceDTO">
+
+        SELECT a.user_key,
+               user_id,
+               user_name,
+               phone_number,
+               DATE_FORMAT(accession_date, '%Y년 %m월 %d일') AS accessionDate,
+               plan_name,
+               CASE b.plan_type
+                   WHEN 'M' THEN '월간'
+                   WHEN 'Y' THEN '연간'
+                   ELSE b.plan_type
+                   END                                    AS planType,
+               plan_price,
+               sub_round,
+               city_province,
+               basic_address,
+               detailed_address,
+               vat_id,
+               invoice_code,
+               statement_email
+        FROM user a
+                 INNER JOIN plan b ON a.plan_key = b.plan_key
+                 INNER JOIN cade c ON a.user_key = c.user_key
+                 INNER JOIN subscription d ON a.user_key = d.user_key
+                 INNER JOIN invoice e ON d.sub_key = e.sub_key
+        WHERE invoice_code = #{invoiceCode}
 
     </select>
 

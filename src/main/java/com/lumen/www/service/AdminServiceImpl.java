@@ -217,8 +217,16 @@ public class AdminServiceImpl implements AdminService {
 
     // 인보이스 리스트
     @Override
+    @Transactional
     public JsonResult getInvoiceList(SearchDTO searchDTO) {
         return createJsonResult(adminRepository.getInvoiceList(searchDTO));
+    }
+
+    // 인보이스 세부정보
+    @Override
+    @Transactional
+    public JsonResult getInvoiceDetails(InvoiceDTO invoiceDTO) {
+        return createJsonResult(adminRepository.getInvoiceDetails(invoiceDTO));
     }
 
     // JsonResult 생성 & 반환

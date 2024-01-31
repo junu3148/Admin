@@ -130,5 +130,7 @@ public interface AdminService {
 
     JsonResult getInvoiceList(SearchDTO searchDTO);
 
+    JsonResult getInvoiceDetails(InvoiceDTO invoiceDTO);
+
 
 }

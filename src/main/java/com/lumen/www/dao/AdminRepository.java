@@ -117,4 +117,6 @@ public interface AdminRepository {
     List<PayListDTO> getSubscriptionEndList(SearchDTO searchDTO);
 
     List<InvoiceListDTO> getInvoiceList(SearchDTO searchDTO);
+
+    InvoiceDTO getInvoiceDetails(InvoiceDTO invoiceDTO);
 }

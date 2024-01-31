@@ -111,4 +111,10 @@ public class AdminRepositoryImpl implements AdminRepository {
     public List<InvoiceListDTO> getInvoiceList(SearchDTO searchDTO) {
         return sqlSession.selectList("admin.getInvoiceList", searchDTO);
     }
+
+    // 인보이스 세부 정보
+    @Override
+    public InvoiceDTO getInvoiceDetails(InvoiceDTO invoiceDTO) {
+        return sqlSession.selectOne("admin.getInvoiceDetails",invoiceDTO);
+    }
 }

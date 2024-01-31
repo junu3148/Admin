@@ -88,4 +88,11 @@ public class AdminController {
     public JsonResult adminInvoice(@RequestBody SearchDTO searchDTO) {
         return adminService.getInvoiceList(searchDTO);
     }
+
+    // 인보이스 세부 정보
+    @PostMapping("invoice/details")
+    public  JsonResult adminInvoiceDetails(@RequestBody InvoiceDTO invoiceDTO ){
+
+        return adminService.getInvoiceDetails(invoiceDTO);
+    }
 }
