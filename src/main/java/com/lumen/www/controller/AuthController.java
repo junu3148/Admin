@@ -29,9 +29,9 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 @RequestMapping("admin/")
 public class AuthController {
+
     private final MemberService memberService;
     private final AdminService adminService;
-
 
     // 1차 로그인 토큰발행
     @PostMapping("login")
@@ -40,7 +40,6 @@ public class AuthController {
         // 인증 성공
         if (responseEntity.getStatusCode() == HttpStatus.OK) return responseEntity;
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Authentication failed");
-
     }
 
     // 2차 로그인 추가정보 확인
@@ -64,14 +63,12 @@ public class AuthController {
     // refreshToken 검증
     @PostMapping("refresh-token")
     public ResponseEntity<?> refreshTokenCK(HttpServletRequest request) {
-
         String refreshToken = JwtTokenUtil.resolveToken(request);
         ResponseEntity<?> responseEntity = memberService.refreshTokenCK(refreshToken);
 
         // 인증 성공
         if (responseEntity.getStatusCode() == HttpStatus.OK) return responseEntity;
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Authentication failed");
-
     }
 
 

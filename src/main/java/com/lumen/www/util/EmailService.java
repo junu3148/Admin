@@ -73,6 +73,18 @@ public class EmailService {
     }
 
 
+    /**
+     * 비밀번호 재설정 이메일을 특정 사용자에게 비동기적으로 발송합니다.
+     * <p>
+     * 이 메서드는 주어진 이메일 주소에 대해 비밀번호 재설정 이메일을 비동기적으로 발송합니다.
+     * 이메일 전송이 성공하면 콘솔에 서비스 시간을 출력하고, 실패하면 로그에 오류를 기록하고 RuntimeException을 발생시킵니다.
+     * 메서드 호출 후에는 "ok" 문자열을 반환하여 전송이 시작되었음을 나타냅니다.
+     *
+     * @param emailMessage 발송할 이메일 메시지 객체.
+     * @param email        수신자의 이메일 주소.
+     * @return 이메일 전송이 시작되었음을 나타내는 "ok" 문자열.
+     * @throws RuntimeException 이메일 전송 중 예외가 발생한 경우.
+     */
     public String sendMailPWReset(EmailMessage emailMessage, String email) {
 
         System.out.println(email);
@@ -168,7 +180,16 @@ public class EmailService {
         });
     }
 
-
+    /**
+     * HTML 콘텐츠에서 이미지 URL을 추출합니다.
+     * <p>
+     * 이 메서드는 주어진 HTML 문자열에서 <img> 태그의 src 속성을 분석하여 모든 이미지 URL을 추출합니다.
+     * 정규 표현식을 사용하여 HTML 콘텐츠 내의 <img> 태그를 찾고, 해당 태그의 src 속성 값을 추출합니다.
+     * 추출된 이미지 URL은 리스트 형태로 반환됩니다.
+     *
+     * @param htmlContent 이미지 URL을 추출할 HTML 콘텐츠.
+     * @return 추출된 이미지 URL 목록.
+     */
     // 이미지 경로 검색
     public List<String> extractImageUrls(String htmlContent) {
         List<String> imageUrls = new ArrayList<>();

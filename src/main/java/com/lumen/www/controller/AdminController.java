@@ -18,7 +18,6 @@ import org.springframework.web.servlet.ModelAndView;
 @RequestMapping("admin/")
 public class AdminController {
 
-
     private final AdminService adminService;
     private final ImageUploader imageUploader;
 
@@ -49,7 +48,6 @@ public class AdminController {
     // 에디터 이미지 저장
     @PostMapping("image/upload")
     public ModelAndView uploadImage(MultipartHttpServletRequest request) throws Exception {
-        System.out.println("호출호출");
         return imageUploader.uploadImage(request);
     }
 
@@ -68,7 +66,6 @@ public class AdminController {
     // 회원 활동 정지
     @PostMapping("price/stop")
     public ResponseEntity<?> adminPriceUserStop(@RequestBody UserDTO userDTO) {
-        System.out.println("호출호출");
         return adminService.updateUserStatus(userDTO);
     }
 
@@ -118,8 +115,6 @@ public class AdminController {
     // 1:1 문의 답변
     @PostMapping("inquiry/answer")
     public ResponseEntity<?> adminInquiryAnswer(@RequestBody InquiryDTO inquiryDTO) {
-
-        System.out.println("durkl" + inquiryDTO);
         return adminService.insertInquiryAnswer(inquiryDTO);
     }
 
@@ -142,7 +137,7 @@ public class AdminController {
     }
 
     // 공지사항 수정
-    @PatchMapping("notice/update-notice")
+    @PostMapping("notice/update-notice")
     public ResponseEntity<?> adminUpdateNotice(@RequestBody NoticeDTO noticeDTO) {
         return adminService.updateNotice(noticeDTO);
 

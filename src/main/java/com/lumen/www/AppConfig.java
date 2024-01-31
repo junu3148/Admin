@@ -38,7 +38,7 @@ public class AppConfig {
     // AdminService 빈 정의
     @Bean
     public AdminService adminService() {
-        return new AdminServiceImpl(adminRepository(), emailService(), jwtTokenProvider(),invoiceService());
+        return new AdminServiceImpl(adminRepository(), emailService(), jwtTokenProvider(), invoiceService());
     }
 
     // AdminRepository 빈 정의
@@ -54,13 +54,13 @@ public class AppConfig {
         return new FileStorageProperties();
     }
 
-    // 이미지 업로드
+    // ImageUploader 빈 정의
     @Bean
     public ImageUploader imageUploader(FileStorageProperties fileStorageProperties) {
         return new ImageUploader(fileStorageProperties);
     }
 
-    // EmailService
+    // EmailService 빈 정의
     @Bean
     public EmailService emailService() {
         return new EmailService(javaMailSender, new SpringTemplateEngine());
@@ -90,9 +90,10 @@ public class AppConfig {
         return new UserCleanupTask(adminRepository());
     }
 
+    // InvoiceService 빈 정의
     @Bean
     public InvoiceService invoiceService() {
-        return new InvoiceService(javaMailSender,emailService());
+        return new InvoiceService(javaMailSender);
     }
 
 }

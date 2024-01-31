@@ -62,7 +62,6 @@ public class JwtTokenProvider {
 
     /**
      * 인증된 사용자의 Authentication 객체를 받아 JWT 액세스 토큰과 리프레시 토큰을 생성합니다.
-     *
      * 이 메서드는 사용자의 권한을 기반으로 JWT 액세스 토큰을 생성하며, 해당 토큰은 30분 동안 유효합니다.
      * 또한, 사용자를 위한 리프레시 토큰을 생성하거나 기존에 존재하는 리프레시 토큰을 조회하여 반환합니다.
      * 리프레시 토큰은 8시간 동안 유효합니다.
@@ -79,11 +78,9 @@ public class JwtTokenProvider {
 
         // Access Token 유효시간: 30분 (30 * 60 * 1000)
         Date accessTokenExpiresIn = new Date(now + ACCESS_TOKEN_EXPIRE_COUNT);
-
-        //String uuid = UUID.randomUUID().toString(); // 무작위 UUID 생성
         String accessToken = Jwts.builder()
                 .setHeaderParam("typ", TOKEN_TYPE)
-                .setSubject(authentication.getName()) // UUID를 subject로 설정
+                .setSubject(authentication.getName())
                 .claim("roles", roles)
                 .setExpiration(accessTokenExpiresIn)
                 .signWith(key, SIGNATURE_ALGORITHM)
@@ -100,20 +97,15 @@ public class JwtTokenProvider {
         // 아이디로 리플레시 토큰이 있는지 확인
         Optional<RefreshToken> existingToken = tokenRepository.findRefreshToken(authentication.getName());
 
-        System.out.println("리플레시토큰");
-
         if (existingToken.isPresent() && existingToken.get().getRefreshToken() != null) {
-            System.out.println("안저장");
             // 토큰이 존재하고, 값이 null이 아니면 기존 토큰을 사용합니다.
             RefreshToken refreshTokenObj = existingToken.get();
             refreshToken = refreshTokenObj.getRefreshToken();
             // refreshTokenExpiresIn = refreshTokenObj.getExpiryDate(); // 필요한 경우
         } else {
-            System.out.println("저장");
             // 토큰이 존재하지 않거나 토큰 값이 null인 경우, 새 토큰을 생성 및 저장합니다.
             tokenRepository.saveRefreshToken(authentication.getName(), refreshToken, refreshTokenExpiresIn);
         }
-
 
         return JwtToken.builder()
                 .grantType("Bearer")
@@ -124,7 +116,6 @@ public class JwtTokenProvider {
 
     /**
      * 주어진 RefreshToken 객체를 이용하여 새로운 액세스 토큰을 생성합니다.
-     *
      * 이 메서드는 RefreshToken 객체로부터 사용자의 이름과 역할을 추출하여
      * JWT 토큰을 생성합니다. 생성된 토큰은 30분 동안 유효합니다.
      *
@@ -142,17 +133,14 @@ public class JwtTokenProvider {
         // 액세스 토큰 유효 시간: 30분 (30 * 60 * 1000)
         Date accessTokenExpiresIn = new Date(now + ACCESS_TOKEN_EXPIRE_COUNT);
 
-        String accessToken = Jwts.builder()
+        return Jwts.builder()
                 .setHeaderParam("typ", TOKEN_TYPE)
                 .setSubject(tokenData.get().getUsername()) // adminId를 주제로 설정
                 .claim("roles", roles)
                 .setExpiration(accessTokenExpiresIn)
                 .signWith(key, SIGNATURE_ALGORITHM)
                 .compact();
-
-        return accessToken;
     }
-
 
     /**
      * JWT 토큰에서 관리자 사용자 정보를 추출하여 adminId 반환합니다.
@@ -168,7 +156,6 @@ public class JwtTokenProvider {
         return claims.get(CLAIM_ADMIN_USER_ID, String.class);
 
     }
-
 
     /**
      * 주어진 JWT 토큰을 파싱하여 Claims 객체를 반환합니다.
@@ -232,7 +219,6 @@ public class JwtTokenProvider {
         return new UsernamePasswordAuthenticationToken(principal, "", authorities);
     }
 
-
     /**
      * 주어진 JWT 토큰의 유효성을 검증합니다.
      *
@@ -240,7 +226,6 @@ public class JwtTokenProvider {
      * @return 토큰이 유효한 경우 true, 그렇지 않은 경우 false 반환.
      * @throws InvalidTokenException 유효하지 않은 토큰인 경우 발생할 수 있는 사용자 정의 예외.
      */
-
     public boolean validateToken(String token) {
         try {
             // JWT 토큰을 검증하기 위한 파서를 생성합니다.
@@ -275,7 +260,6 @@ public class JwtTokenProvider {
         return false;
     }
 
-
     /**
      * 주어진 JWT 토큰을 파싱하여 Claims 객체를 반환합니다.
      * 이 메서드는 JWT 토큰의 유효성을 검증하고, 토큰 내부에 저장된 클레임(claim)들을 추출합니다.
@@ -295,12 +279,9 @@ public class JwtTokenProvider {
             // parseClaimsJws 메서드를 사용하여 JWT 토큰을 해석하고, Jws<Claims> 객체를 반환합니다.
             Jws<Claims> jws = parser.parseClaimsJws(accessToken);
 
-            // Jws 객체에서 클레임(Claims)을 추출하여 반환합니다.
-            Claims claims = jws.getBody();
-
             // 만약 토큰이 만료된 경우, ExpiredJwtException 예외가 발생할 수 있습니다.
             // 이 예외를 처리하여 만료된 토큰에 포함된 클레임을 반환합니다.
-            return claims;
+            return jws.getBody();
         } catch (ExpiredJwtException e) {
             // 만료된 토큰의 클레임을 반환합니다.
             return e.getClaims();

@@ -40,6 +40,163 @@ public class MemberService {
     private static final String INVALID_EMAIL_MESSAGE = "아이디는 이메일 형식이어야 합니다.";
 
 
+    /**
+     * 사용자 로그인을 처리하고, JWT 토큰을 생성하여 반환하는 메서드입니다.
+     *
+     * @param adminUser 로그인에 사용할 관리자 사용자 정보를 포함하는 객체입니다.
+     * @return 성공적으로 로그인하고 토큰을 생성한 경우, 해당 토큰을 포함하는 ResponseEntity를 반환합니다.
+     *         유효하지 않은 이메일이 입력된 경우, BAD_REQUEST 상태와 메시지를 포함하는 ResponseEntity를 반환합니다.
+     *         인증이 실패한 경우, UNAUTHORIZED 상태와 메시지를 포함하는 ResponseEntity를 반환합니다.
+     */
+    @Transactional
+    public ResponseEntity<?> signInAndGenerateJwtToken(AdminUser adminUser) {
+        String username = adminUser.getUsername();
+        String password = adminUser.getPassword();
+
+        if (!isValidEmail(username)) {
+            return badRequestResponse(INVALID_EMAIL_MESSAGE);
+        }
+
+        try {
+            JwtToken jwtToken = authenticateAndGenerateToken(username, password);
+            return buildResponseWithToken(jwtToken);
+        } catch (AuthenticationException e) {
+            return unauthorizedResponse(INVALID_CREDENTIALS_MESSAGE);
+        }
+    }
+
+    /**
+     * 주어진 사용자 이름과 비밀번호를 사용하여 사용자를 인증하고, JWT 토큰을 생성하는 메서드입니다.
+     *
+     * @param username 사용자 이름입니다.
+     * @param password 사용자 비밀번호입니다.
+     * @return 생성된 JWT 토큰입니다.
+     */
+    private JwtToken authenticateAndGenerateToken(String username, String password) {
+        Authentication authentication = authenticateUser(username, password);
+        JwtToken jwtToken = jwtTokenProvider.generateToken(authentication);
+        jwtToken.setRole(adminRepository.getRole(username));
+        return jwtToken;
+    }
+
+    /**
+     * 사용자 이름과 비밀번호로 사용자를 인증하는 메서드입니다.
+     *
+     * @param username 사용자 이름입니다.
+     * @param password 사용자 비밀번호입니다.
+     * @return 인증된 사용자의 Authentication 객체입니다.
+     */
+    private Authentication authenticateUser(String username, String password) {
+        UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(username, password);
+        return authenticationManagerBuilder.getObject().authenticate(authenticationToken);
+    }
+
+    /**
+     * JWT 토큰을 포함한 ResponseEntity를 생성하여 반환하는 메서드입니다.
+     *
+     * @param jwtToken JWT 토큰 객체입니다.
+     * @return JWT 토큰을 포함한 ResponseEntity입니다.
+     */
+    private ResponseEntity<?> buildResponseWithToken(JwtToken jwtToken) {
+        HttpHeaders httpHeaders = new HttpHeaders();
+        httpHeaders.add(AUTHORIZATION_HEADER, BEARER_PREFIX + jwtToken.getAccessToken());
+        return new ResponseEntity<>(jwtToken, httpHeaders, HttpStatus.OK);
+    }
+
+    /**
+     * 잘못된 요청에 대한 응답을 생성하여 반환하는 메서드입니다.
+     *
+     * @param message 응답 메시지입니다.
+     * @return BAD_REQUEST 상태와 메시지를 포함한 ResponseEntity입니다.
+     */
+    private ResponseEntity<String> badRequestResponse(String message) {
+        HttpHeaders httpHeaders = new HttpHeaders();
+        return new ResponseEntity<>(message, httpHeaders, HttpStatus.BAD_REQUEST);
+    }
+
+    /**
+     * 리프레시 토큰의 유효성을 검사한 후, 새로운 액세스 토큰을 발행하여 반환하는 메서드입니다.
+     *
+     * @param refreshToken 리프레시 토큰입니다.
+     * @return 새로운 액세스 토큰을 포함하는 ResponseEntity를 반환합니다.
+     *         유효하지 않은 리프레시 토큰인 경우, UNAUTHORIZED 상태와 메시지를 포함하는 ResponseEntity를 반환합니다.
+     *         예외가 발생한 경우, INTERNAL_SERVER_ERROR 상태와 메시지를 포함하는 ResponseEntity를 반환합니다.
+     */
+    public ResponseEntity<?> refreshTokenCK(String refreshToken) {
+        try {
+            if (!isValidRefreshToken(refreshToken)) {
+                return unauthorizedResponse(INVALID_TOKEN_MESSAGE);
+            }
+
+            String newAccessToken = createNewAccessToken(refreshToken);
+            return buildResponseWithToken(newAccessToken);
+        } catch (Exception e) {
+            return internalServerErrorResponse(ERROR_PROCESSING_MESSAGE);
+        }
+    }
+
+    /**
+     * 제공된 리프레시 토큰이 유효한지 검사하는 메서드입니다.
+     *
+     * @param refreshToken 검사할 리프레시 토큰입니다.
+     * @return 토큰이 유효하면 true, 그렇지 않으면 false를 반환합니다.
+     */
+    private boolean isValidRefreshToken(String refreshToken) {
+        return refreshToken != null && jwtTokenProvider.validateToken(refreshToken)
+                && tokenRepository.refreshTokenCK(refreshToken).isPresent();
+    }
+
+    /**
+     * 제공된 리프레시 토큰을 사용하여 새로운 액세스 토큰을 생성하는 메서드입니다.
+     *
+     * @param refreshToken 액세스 토큰을 생성하기 위한 리프레시 토큰입니다.
+     * @return 생성된 새로운 액세스 토큰입니다.
+     */
+    private String createNewAccessToken(String refreshToken) {
+        Optional<RefreshToken> tokenData = tokenRepository.refreshTokenCK(refreshToken);
+        return jwtTokenProvider.generateAccessToken(tokenData);
+    }
+
+    /**
+     * 제공된 토큰을 사용하여 JWT 토큰을 포함한 ResponseEntity를 생성하여 반환하는 메서드입니다.
+     *
+     * @param token JWT 액세스 토큰입니다.
+     * @return JWT 토큰을 포함한 ResponseEntity입니다.
+     */
+    private ResponseEntity<?> buildResponseWithToken(String token) {
+        HttpHeaders headers = new HttpHeaders();
+        headers.add(AUTHORIZATION_HEADER, BEARER_PREFIX + token);
+
+        JwtToken jwtToken = new JwtToken();
+        jwtToken.setAccessToken(token);
+
+        return new ResponseEntity<>(jwtToken, headers, HttpStatus.OK);
+    }
+
+    /**
+     * 인증되지 않은 요청에 대한 응답을 생성하여 반환하는 메서드입니다.
+     *
+     * @param message 응답 메시지입니다.
+     * @return UNAUTHORIZED 상태와 메시지를 포함한 ResponseEntity입니다.
+     */
+    private ResponseEntity<String> unauthorizedResponse(String message) {
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(message);
+    }
+
+    /**
+     * 내부 서버 오류에 대한 응답을 생성하여 반환하는 메서드입니다.
+     *
+     * @param message 응답 메시지입니다.
+     * @return INTERNAL_SERVER_ERROR 상태와 메시지를 포함한 ResponseEntity입니다.
+     */
+    private ResponseEntity<String> internalServerErrorResponse(String message) {
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(message);
+    }
+
+
+
+
+
     // 로그인 토큰 생성
 //   @Transactional
 //    public ResponseEntity<?> signInAndGenerateJwtToken(AdminUser adminUser) {
@@ -82,88 +239,6 @@ public class MemberService {
 //
 //        }
 //    }
-
-    @Transactional
-    public ResponseEntity<?> signInAndGenerateJwtToken(AdminUser adminUser) {
-        String username = adminUser.getUsername();
-        String password = adminUser.getPassword();
-
-        if (!isValidEmail(username)) {
-            return badRequestResponse(INVALID_EMAIL_MESSAGE);
-        }
-
-        try {
-            JwtToken jwtToken = authenticateAndGenerateToken(username, password);
-            return buildResponseWithToken(jwtToken);
-        } catch (AuthenticationException e) {
-            return unauthorizedResponse(INVALID_CREDENTIALS_MESSAGE);
-        }
-    }
-
-    private JwtToken authenticateAndGenerateToken(String username, String password) {
-        Authentication authentication = authenticateUser(username, password);
-        JwtToken jwtToken = jwtTokenProvider.generateToken(authentication);
-        jwtToken.setRole(adminRepository.getRole(username));
-        return jwtToken;
-    }
-
-    private Authentication authenticateUser(String username, String password) {
-        UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(username, password);
-        return authenticationManagerBuilder.getObject().authenticate(authenticationToken);
-    }
-
-    private ResponseEntity<?> buildResponseWithToken(JwtToken jwtToken) {
-        HttpHeaders httpHeaders = new HttpHeaders();
-        httpHeaders.add(AUTHORIZATION_HEADER, BEARER_PREFIX + jwtToken.getAccessToken());
-        return new ResponseEntity<>(jwtToken, httpHeaders, HttpStatus.OK);
-    }
-
-    private ResponseEntity<String> badRequestResponse(String message) {
-        HttpHeaders httpHeaders = new HttpHeaders();
-        return new ResponseEntity<>(message, httpHeaders, HttpStatus.BAD_REQUEST);
-    }
-
-    // 리플레시 토큰 유효성검사 후 에세스토큰 발행
-    public ResponseEntity<?> refreshTokenCK(String refreshToken) {
-        try {
-            if (!isValidRefreshToken(refreshToken)) {
-                return unauthorizedResponse(INVALID_TOKEN_MESSAGE);
-            }
-
-            String newAccessToken = createNewAccessToken(refreshToken);
-            return buildResponseWithToken(newAccessToken);
-        } catch (Exception e) {
-            return internalServerErrorResponse(ERROR_PROCESSING_MESSAGE);
-        }
-    }
-
-    private boolean isValidRefreshToken(String refreshToken) {
-        return refreshToken != null && jwtTokenProvider.validateToken(refreshToken)
-                && tokenRepository.refreshTokenCK(refreshToken).isPresent();
-    }
-
-    private String createNewAccessToken(String refreshToken) {
-        Optional<RefreshToken> tokenData = tokenRepository.refreshTokenCK(refreshToken);
-        return jwtTokenProvider.generateAccessToken(tokenData);
-    }
-
-    private ResponseEntity<?> buildResponseWithToken(String token) {
-        HttpHeaders headers = new HttpHeaders();
-        headers.add(AUTHORIZATION_HEADER, BEARER_PREFIX + token);
-
-        JwtToken jwtToken = new JwtToken();
-        jwtToken.setAccessToken(token);
-
-        return new ResponseEntity<>(jwtToken, headers, HttpStatus.OK);
-    }
-
-    private ResponseEntity<String> unauthorizedResponse(String message) {
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(message);
-    }
-
-    private ResponseEntity<String> internalServerErrorResponse(String message) {
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(message);
-    }
 
    /* @Transactional
     // 리플레시 토큰 유효성검사 후 에세스토큰 발행

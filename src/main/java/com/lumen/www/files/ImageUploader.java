@@ -1,28 +1,27 @@
 package com.lumen.www.files;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.multipart.MultipartHttpServletRequest;
 import org.springframework.web.servlet.ModelAndView;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Objects;
 import java.util.UUID;
 
+@RequiredArgsConstructor
 public class ImageUploader {
 
     private final FileStorageProperties fileStorageProperties;
-
-    public ImageUploader(FileStorageProperties fileStorageProperties) {
-        this.fileStorageProperties = fileStorageProperties;
-    }
 
     public ModelAndView uploadImage(MultipartHttpServletRequest request) throws Exception {
         ModelAndView mav = new ModelAndView("jsonView");  // ModelAndView 객체 생성, JSON 응답을 위해 "jsonView" 사용
 
         try {
             MultipartFile uploadFile = request.getFile("upload");  // 요청에서 'upload' 이름으로 전송된 파일을 가져옴
-            String originalFileName = uploadFile.getOriginalFilename();  // 업로드된 파일의 원본 이름을 가져옴
-            String ext = originalFileName.substring(originalFileName.indexOf("."));  // 파일 확장자 추출
+            String originalFileName = Objects.requireNonNull(uploadFile).getOriginalFilename();  // 업로드된 파일의 원본 이름을 가져옴
+            String ext = Objects.requireNonNull(originalFileName).substring(originalFileName.indexOf("."));  // 파일 확장자 추출
             String newFileName = UUID.randomUUID() + ext;  // 고유한 파일 이름 생성을 위해 UUID와 확장자 결합
             String savePath = fileStorageProperties.getUploadDir() + newFileName;  // 파일 저장 경로 설정
 

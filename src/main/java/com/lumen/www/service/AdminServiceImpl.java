@@ -7,6 +7,7 @@ import com.lumen.www.util.EmailService;
 import com.lumen.www.util.JwtTokenUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import org.bouncycastle.crypto.signers.ISOTrailers;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -154,11 +155,12 @@ public class AdminServiceImpl implements AdminService {
         }
     }
 
-    // 비밀번호 변경 메일발송
+    // 비밀번호 변경 메일발송 - 추후에 회원 메일 받아서 해야함
     @Override
     public JsonResult adminJoinPWReset(UserDTO userDTO) {
 
         EmailMessage emailMessage = EmailMessage.builder().subject("비밀번호 초기화 메일알림").message("비밀번호 초기화 해주세요").build();
+
         // 이메일 전송 후 결과를 반환받음
         String result = emailService.sendMailPWReset(emailMessage, "menstua@viking-lab.com");
 
@@ -222,6 +224,7 @@ public class AdminServiceImpl implements AdminService {
         return createJsonResult(adminRepository.getInvoiceDetails(invoiceDTO));
     }
 
+    // 인보이스 메일 발송
     @Override
     public ResponseEntity<?> invoiceEmailShipment(InvoiceDTO invoiceDTO) {
 
@@ -275,8 +278,6 @@ public class AdminServiceImpl implements AdminService {
         return createJsonResult(adminRepository.getNoticeDetails(noticeDTO));
     }
 
-
-
     // 공지사항 등록
     @Override
     @Transactional
@@ -306,6 +307,7 @@ public class AdminServiceImpl implements AdminService {
 
     // 공통 응답 생성 메서드
     private ResponseEntity<String> createResponse(int result, String successMessage, String failureMessage) {
+        System.out.println("리턴값 " + result);
         if (result > 0) {
             // 성공적으로 하나 이상의 행이 업데이트되었을 때
             return ResponseEntity.ok().body(successMessage);

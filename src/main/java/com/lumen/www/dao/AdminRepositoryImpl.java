@@ -21,7 +21,6 @@ public class AdminRepositoryImpl implements AdminRepository {
         return Optional.ofNullable(sqlSession.selectOne("admin.findByUsername", adminId));
     }
 
-
     // 관리자 권한
     @Override
     public int getRole(String adminId) {

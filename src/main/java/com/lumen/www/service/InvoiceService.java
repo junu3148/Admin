@@ -18,6 +18,7 @@ import com.lumen.www.util.EmailService;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
@@ -33,20 +34,21 @@ import java.time.format.DateTimeFormatter;
 public class InvoiceService {
 
     private final JavaMailSender javaMailSender;
-    private final EmailService emailService;
+
+    @Value("${spring.mail.username}")
+    private String email;
+
 
     // InvoiceDTO를 받아서 PDF 문서를 생성하고 이메일로 보내는 메서드
     public void sendInvoiceAsEmail(String recipientEmail, InvoiceDTO invoiceDTO) throws IOException, MessagingException {
 
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-        System.out.println("호출1");
+
         // PDF 문서 생성
         createPdf(outputStream, invoiceDTO);
-        System.out.println("호출2");
 
         // 이메일 발송
         sendEmailWithAttachment(recipientEmail, outputStream.toByteArray(), "Invoice_" + invoiceDTO.getInvoiceCode() + ".pdf");
-        System.out.println("호출3");
     }
 
     private InvoiceData setUpInvoiceDataFromDTO(InvoiceDTO dto) {
@@ -156,7 +158,6 @@ public class InvoiceService {
     // 이메일 발송 메서드
     private void sendEmailWithAttachment(String recipientEmail, byte[] attachment, String filename) throws MessagingException {
 
-        System.out.println("호출 3-1");
         // MimeMessage 생성
         MimeMessage message = javaMailSender.createMimeMessage();
 
@@ -167,17 +168,13 @@ public class InvoiceService {
         helper.setTo(recipientEmail);
         helper.setSubject("Invoice: " + filename);
         helper.setText("Please find attached your invoice.");
-        helper.setFrom("junu3148@gmail.com");
-
+        helper.setFrom(email);
 
         // 첨부 파일 추가
         helper.addAttachment(filename, new ByteArrayResource(attachment));
 
-        System.out.println("호출 3-2");
         // 이메일 발송
         javaMailSender.send(message);
-
-        System.out.println("호출 3-3");
     }
 
 }
