@@ -45,7 +45,6 @@ public class AdminController {
         return adminService.adminJoinUserDelete(userDTO);
     }
 
-
     // 에디터 이미지 저장
     @PostMapping("image/upload")
     public ModelAndView uploadImage(MultipartHttpServletRequest request) throws Exception {
@@ -91,8 +90,22 @@ public class AdminController {
 
     // 인보이스 세부 정보
     @PostMapping("invoice/details")
-    public  JsonResult adminInvoiceDetails(@RequestBody InvoiceDTO invoiceDTO ){
-
+    public JsonResult adminInvoiceDetails(@RequestBody InvoiceDTO invoiceDTO) {
         return adminService.getInvoiceDetails(invoiceDTO);
+    }
+
+
+    // 인보이스 메일 발송
+    @PostMapping("invoice/email")
+    public ResponseEntity<?> invoiceEmailShipment(@RequestBody InvoiceDTO invoiceDTO){
+        return adminService.invoiceEmailShipment(invoiceDTO);
+    }
+
+
+    // 1:1 문의 현황
+    @PostMapping("inquiry")
+    public JsonResult adminInquiry(@RequestBody SearchDTO searchDTO){
+        return adminService.getInquiryList(searchDTO);
+
     }
 }

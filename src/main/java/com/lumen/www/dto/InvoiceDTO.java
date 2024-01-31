@@ -19,6 +19,11 @@ public class InvoiceDTO {
     private String detailedAddress;
     private String vatId;
     private String invoiceCode;
+    private String cadeNumber;
     private String statementEmail;
+    private String issueDate;
+    
+    // 추후 미결제금액 수정
+    private String outAmount;
 
 }

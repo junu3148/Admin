@@ -117,4 +117,13 @@ public class AdminRepositoryImpl implements AdminRepository {
     public InvoiceDTO getInvoiceDetails(InvoiceDTO invoiceDTO) {
         return sqlSession.selectOne("admin.getInvoiceDetails",invoiceDTO);
     }
+
+    // 1:1 문의 현황
+    @Override
+    public List<InquiryDTO> getInquiryList(SearchDTO searchDTO) {
+
+        System.out.println(searchDTO);
+        //return sqlSession.selectList("admin.getInquiryList",searchDTO);
+        return null;
+    }
 }

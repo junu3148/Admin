@@ -360,12 +360,17 @@
                    ELSE b.plan_type
                    END                                    AS planType,
                plan_price,
+               CONCAT(
+                   LEFT(cade_number, LENGTH(cade_number) - 9), '**** ****'
+               )                                          AS cadeNumber,
+               '-'                                        AS outAmount,
                sub_round,
                city_province,
                basic_address,
                detailed_address,
                vat_id,
                invoice_code,
+               DATE_FORMAT(issue_date, '%Y.%m.%d')        AS issueDate,
                statement_email
         FROM user a
                  INNER JOIN plan b ON a.plan_key = b.plan_key
@@ -375,5 +380,7 @@
         WHERE invoice_code = #{invoiceCode}
 
     </select>
+
+
 
 </mapper>

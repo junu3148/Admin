@@ -137,7 +137,7 @@ CREATE TABLE CADE
     basic_address    VARCHAR(255) NOT NULL,
     detailed_address VARCHAR(255) NOT NULL,
     postal_code      VARCHAR(255) NOT NULL,
-    statement_email  VARCHAR(255) NULL,
+    statement_email  VARCHAR(255) NOT NULL,
     vat_id           VARCHAR(255) NULL,
     country          VARCHAR(255) NOT NULL,
     user_key         BIGINT UNSIGNED,

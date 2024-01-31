@@ -61,6 +61,7 @@ public class AuthController {
         return ResponseEntity.ok().body("Request is valid and authenticated");
     }
 
+    // refreshToken 검증
     @PostMapping("refresh-token")
     public ResponseEntity<?> refreshTokenCK(HttpServletRequest request) {
 

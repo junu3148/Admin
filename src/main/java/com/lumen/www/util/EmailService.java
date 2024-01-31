@@ -73,7 +73,7 @@ public class EmailService {
     }
 
 
-    public String sendMail2(EmailMessage emailMessage, String email) {
+    public String sendMailPWReset(EmailMessage emailMessage, String email) {
 
         System.out.println(email);
         // 정의된 수신자 목록
@@ -95,6 +95,7 @@ public class EmailService {
             throw new RuntimeException("Failed to send email", e);
         }
     }
+
 
     /**
      * 주어진 이메일 메시지를 비동기적으로 특정 수신자에게 발송합니다.
@@ -126,6 +127,7 @@ public class EmailService {
             throw e; // MessagingException을 다시 던집니다.
         }
     }
+
 
     /**
      * 이메일 본문에 포함된 이미지를 처리하여 MIME 메시지에 첨부합니다.
@@ -167,6 +169,22 @@ public class EmailService {
     }
 
 
+    // 이미지 경로 검색
+    public List<String> extractImageUrls(String htmlContent) {
+        List<String> imageUrls = new ArrayList<>();
+        Pattern pattern = Pattern.compile("<img [^>]*src=[\"']([^\"']+)[\"']", Pattern.CASE_INSENSITIVE);
+        Matcher matcher = pattern.matcher(htmlContent);
+
+        while (matcher.find()) {
+            imageUrls.add(matcher.group(1)); // 모든 일치하는 이미지의 src 값을 리스트에 추가
+        }
+
+        return imageUrls;
+    }
+
+
+
+
     // 인증번호 및 임시 비밀번호 생성 메서드
     public String createCode() {
         Random random = new Random();
@@ -196,18 +214,6 @@ public class EmailService {
         return templateEngine.process(type, context);
     }
 
-    // 이미지 경로 검색
-    public List<String> extractImageUrls(String htmlContent) {
-        List<String> imageUrls = new ArrayList<>();
-        Pattern pattern = Pattern.compile("<img [^>]*src=[\"']([^\"']+)[\"']", Pattern.CASE_INSENSITIVE);
-        Matcher matcher = pattern.matcher(htmlContent);
-
-        while (matcher.find()) {
-            imageUrls.add(matcher.group(1)); // 모든 일치하는 이미지의 src 값을 리스트에 추가
-        }
-
-        return imageUrls;
-    }
 
 
 }

@@ -119,4 +119,6 @@ public interface AdminRepository {
     List<InvoiceListDTO> getInvoiceList(SearchDTO searchDTO);
 
     InvoiceDTO getInvoiceDetails(InvoiceDTO invoiceDTO);
+
+    List<InquiryDTO> getInquiryList(SearchDTO searchDTO);
 }

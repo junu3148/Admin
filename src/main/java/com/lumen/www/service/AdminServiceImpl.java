@@ -12,6 +12,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.bind.annotation.RequestBody;
 
 import java.util.List;
 import java.util.Map;
@@ -26,6 +27,7 @@ public class AdminServiceImpl implements AdminService {
     private final AdminRepository adminRepository;
     private final EmailService emailService;
     private final JwtTokenProvider jwtTokenProvider;
+    private final InvoiceService invoiceService;
 
 
     // 2차 로그인
@@ -160,7 +162,7 @@ public class AdminServiceImpl implements AdminService {
 
         EmailMessage emailMessage = EmailMessage.builder().subject("비밀번호 초기화 메일알림").message("비밀번호 초기화 해주세요").build();
         // 이메일 전송 후 결과를 반환받음
-        String result = emailService.sendMail2(emailMessage, "menstua@viking-lab.com");
+        String result = emailService.sendMailPWReset(emailMessage, "menstua@viking-lab.com");
 
         if (result.equals("ok")) {
             return createJsonResult(result);
@@ -227,6 +229,28 @@ public class AdminServiceImpl implements AdminService {
     @Transactional
     public JsonResult getInvoiceDetails(InvoiceDTO invoiceDTO) {
         return createJsonResult(adminRepository.getInvoiceDetails(invoiceDTO));
+    }
+
+    @Override
+    public ResponseEntity<?> invoiceEmailShipment(@RequestBody InvoiceDTO invoiceDTO) {
+
+        InvoiceDTO invoiceDTO1 = adminRepository.getInvoiceDetails(invoiceDTO);
+
+        System.out.println(invoiceDTO1);
+
+       try {
+            invoiceService.sendInvoiceAsEmail("menstua@viking-lab.com", invoiceDTO1);
+        } catch (Exception e) {
+
+        }
+
+        return null;
+    }
+
+    // 1:1 문의 현황
+    @Override
+    public JsonResult getInquiryList(SearchDTO searchDTO) {
+        return createJsonResult(adminRepository.getInquiryList(searchDTO));
     }
 
     // JsonResult 생성 & 반환

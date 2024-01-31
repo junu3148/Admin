@@ -6,10 +6,7 @@ import com.lumen.www.dao.TokenRepository;
 import com.lumen.www.files.FileStorageProperties;
 import com.lumen.www.files.ImageUploader;
 import com.lumen.www.jwt.JwtTokenProvider;
-import com.lumen.www.service.AdminService;
-import com.lumen.www.service.AdminServiceImpl;
-import com.lumen.www.service.MemberService;
-import com.lumen.www.service.UserCleanupTask;
+import com.lumen.www.service.*;
 import com.lumen.www.util.EmailService;
 import org.apache.ibatis.session.SqlSession;
 import org.springframework.beans.factory.annotation.Value;
@@ -41,7 +38,7 @@ public class AppConfig {
     // AdminService 빈 정의
     @Bean
     public AdminService adminService() {
-        return new AdminServiceImpl(adminRepository(), emailService(), jwtTokenProvider());
+        return new AdminServiceImpl(adminRepository(), emailService(), jwtTokenProvider(),invoiceService());
     }
 
     // AdminRepository 빈 정의
@@ -91,6 +88,11 @@ public class AppConfig {
     @Bean
     public UserCleanupTask userCleanupTask() {
         return new UserCleanupTask(adminRepository());
+    }
+
+    @Bean
+    public InvoiceService invoiceService() {
+        return new InvoiceService(javaMailSender,emailService());
     }
 
 }
