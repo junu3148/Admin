@@ -229,4 +229,12 @@ public interface AdminRepository {
     int deleteNotice(NoticeDTO noticeDTO);
 
 
+
+    List<FaqDTO> getFaqList(SearchDTO searchDTO);
+
+
+    int insertFaq(FaqDTO faqDTO);
+    int updateFaq(FaqDTO faqDTO);
+    int deleteFaq(FaqDTO faqDTO);
+
 }

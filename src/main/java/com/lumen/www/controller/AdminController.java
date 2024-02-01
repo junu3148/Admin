@@ -27,8 +27,8 @@ public class AdminController {
     }
 
     // 가입자 세부 정보
-    @PostMapping("join/details")
-    public JsonResult adminJoinDetails(@RequestBody UserDTO userDTO) {
+    @PostMapping("user/details")
+    public JsonResult adminUserDetails(@RequestBody UserDTO userDTO) {
         return adminService.getUserDetails(userDTO);
     }
 
@@ -39,8 +39,8 @@ public class AdminController {
     }
 
     // 가입자 강제 탈퇴
-    @PostMapping("join/details/user-delete")
-    public ResponseEntity<?> adminJoinUserDelete(@RequestBody UserDTO userDTO) {
+    @PostMapping("user/details/delete")
+    public ResponseEntity<?> adminUserDelete(@RequestBody UserDTO userDTO) {
         return adminService.adminJoinUserDelete(userDTO);
     }
 
@@ -148,4 +148,50 @@ public class AdminController {
         return adminService.deleteNotice(noticeDTO);
     }
 
+    // FAQ 형황
+    @PostMapping("faq")
+    public JsonResult adminFaq(@RequestBody SearchDTO searchDTO){
+        return adminService.getFaqList(searchDTO);
+    }
+
+    // FAQ 등록
+    @PostMapping("faq/add-faq")
+    public ResponseEntity<?> adminAddFaq(HttpServletRequest request, @RequestBody FaqDTO faqDTO){
+        return adminService.insertFaq(request,faqDTO);
+
+    }
+    // FAQ 수정
+    @PostMapping("faq/update-faq")
+    public ResponseEntity<?> adminUpdateFaq(@RequestBody FaqDTO faqDTO){
+        return adminService.updateFaq(faqDTO);
+
+    }
+    // FAQ 삭제
+    @PostMapping("faq/delete-faq")
+    public ResponseEntity<?> adminDeleteFaq(@RequestBody FaqDTO faqDTO){
+        return adminService.deleteFaq(faqDTO);
+
+    }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

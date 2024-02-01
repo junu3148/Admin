@@ -165,5 +165,24 @@ public class AdminRepositoryImpl implements AdminRepository {
         return sqlSession.delete("admin.deleteNotice", noticeDTO);
     }
 
+    // FAQ 현황
+    @Override
+    public List<FaqDTO> getFaqList(SearchDTO searchDTO) {
+        return sqlSession.selectList("admin.getFaqList", searchDTO);
+    }
 
+    @Override
+    public int insertFaq(FaqDTO faqDTO) {
+        return sqlSession.insert("admin.insertFaq", faqDTO);
+    }
+
+    @Override
+    public int updateFaq(FaqDTO faqDTO) {
+        return sqlSession.update("admin.updateFaq",faqDTO);
+    }
+
+    @Override
+    public int deleteFaq(FaqDTO faqDTO) {
+        return sqlSession.delete("admin.deleteFaq",faqDTO);
+    }
 }

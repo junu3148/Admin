@@ -227,4 +227,11 @@ public interface AdminService {
     ResponseEntity<?> deleteNotice(NoticeDTO noticeDTO);
 
 
+    JsonResult getFaqList(SearchDTO searchDTO);
+
+    ResponseEntity<?> insertFaq(HttpServletRequest request,FaqDTO faqDTO);
+    ResponseEntity<?> updateFaq(FaqDTO faqDTO);
+    ResponseEntity<?> deleteFaq(FaqDTO faqDTO);
+
+
 }

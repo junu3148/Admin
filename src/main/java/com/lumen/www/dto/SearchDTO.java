@@ -10,6 +10,7 @@ public class SearchDTO {
     private String planName;
     private String startDate;
     private String endDate;
-
+    private String keyword;
+    private String searchType;
 
 }

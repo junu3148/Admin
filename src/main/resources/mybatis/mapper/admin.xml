@@ -539,6 +539,59 @@
 
         DELETE FROM notice WHERE notice_key = #{noticeKey}
 
+    </delete>
+
+    <!--FAQ 현황-->
+    <select id="getFaqList" parameterType="SearchDTO" resultType="FaqDTO">
+
+        SELECT faq_key,
+        faq_title,
+        faq_content,
+        faq_type
+        FROM faq
+        WHERE 1 = 1
+        <if test="keyword != null and keyword != ''">
+            AND faq_title LIKE CONCAT('%', #{keyword}, '%')
+        </if>
+        <if test="searchType != null and searchType != ''">
+            AND faq_type = #{searchType}
+        </if>
+
+    </select>
+
+
+    <!--FAQ 등록-->
+    <insert id="insertFaq" parameterType="FaqDTO">
+
+        INSERT INTO faq (faq_title,
+                         faq_content,
+                         faq_type,
+                         admin_key)
+        SELECT #{faqTitle},
+               #{faqContent},
+               #{faqType},
+               (SELECT admin_key FROM admin WHERE admin_id = #{adminId})
+
+
+    </insert>
+
+    <!--FAQ 수정-->
+    <update id="updateFaq" parameterType="FaqDTO">
+
+        UPDATE faq
+        SET faq_title   = #{faqTitle},
+            faq_content = #{faqContent},
+            faq_type    = #{faqType}
+        WHERE faq_key = #{faqKey}
+
+    </update>
+
+    <!--FAQ 삭제-->
+    <delete id="deleteFaq" parameterType="FaqDTO">
+
+        DELETE
+        FROM faq
+        WHERE faq_key = #{faqKey}
 
     </delete>
 

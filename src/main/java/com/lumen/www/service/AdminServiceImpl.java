@@ -194,7 +194,7 @@ public class AdminServiceImpl implements AdminService {
         return createJsonResult(adminRepository.getPriceList(priceSearchDTO));
     }
 
-     // 회원 상태 변경
+    // 회원 상태 변경
     @Override
     @Transactional
     public ResponseEntity<?> updateUserStatus(UserDTO userDTO) {
@@ -281,7 +281,14 @@ public class AdminServiceImpl implements AdminService {
     @Override
     @Transactional
     public ResponseEntity<?> insertNotice(HttpServletRequest request, NoticeDTO noticeDTO) {
-        // ... [생략된 기존 로직] ...
+
+        // 토큰 추출
+        String token = JwtTokenUtil.resolveToken(request);
+
+        // 토큰에서 아이디 추출
+        String userId = jwtTokenProvider.getAdminUserInfoFromToken(token);
+        noticeDTO.setAdminId(userId);
+
         int result = adminRepository.insertNotice(noticeDTO);
         return createResponse(result, "Notice registration has been successfully executed.", "Announcement registration failed.");
     }
@@ -302,7 +309,49 @@ public class AdminServiceImpl implements AdminService {
         return createResponse(result, "Delete Announcement has been successfully executed.", "Failed to delete announcement.");
     }
 
+    // FAQ 현황
+    @Override
+    @Transactional
+    public JsonResult getFaqList(SearchDTO searchDTO) {
+        return createJsonResult(adminRepository.getFaqList(searchDTO));
+    }
 
+    // FAQ 등록
+    @Override
+    @Transactional
+    public ResponseEntity<?> insertFaq(HttpServletRequest request, FaqDTO faqDTO) {
+
+        // 토큰 추출
+        String token = JwtTokenUtil.resolveToken(request);
+
+        // 토큰에서 아이디 추출
+        String userId = jwtTokenProvider.getAdminUserInfoFromToken(token);
+        faqDTO.setAdminId(userId);
+
+        int result = adminRepository.insertFaq(faqDTO);
+
+        return createResponse(result, "FAQ registration has been executed successfully.", "FAQ registration failed.");
+    }
+
+    // FAQ 수정
+    @Override
+    @Transactional
+    public ResponseEntity<?> updateFaq(FaqDTO faqDTO) {
+
+        int result = adminRepository.updateFaq(faqDTO);
+
+        return createResponse(result, "The FAQ modification was executed successfully.", "FAQ modification failed.");
+    }
+
+    // FAQ 삭제
+    @Override
+    @Transactional
+    public ResponseEntity<?> deleteFaq(FaqDTO faqDTO) {
+
+        int result = adminRepository.deleteFaq(faqDTO);
+
+        return createResponse(result, "FAQ deletion has been successfully executed.", "Failed to delete FAQ.");
+    }
 
     // 공통 응답 생성 메서드
     private ResponseEntity<String> createResponse(int result, String successMessage, String failureMessage) {
