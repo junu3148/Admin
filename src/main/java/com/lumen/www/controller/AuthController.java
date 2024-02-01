@@ -2,6 +2,7 @@ package com.lumen.www.controller;
 
 import com.lumen.www.dto.AdminUser;
 import com.lumen.www.dto.JsonResult;
+import com.lumen.www.dto.UserDTO;
 import com.lumen.www.service.AdminService;
 import com.lumen.www.service.MemberService;
 import com.lumen.www.util.JwtTokenUtil;
@@ -27,10 +28,7 @@ public class AuthController {
     // 1차 로그인 토큰발행
     @PostMapping("login")
     public ResponseEntity<?> signIn(@RequestBody AdminUser adminUser) {
-        ResponseEntity<?> responseEntity = memberService.signInAndGenerateJwtToken(adminUser);
-        // 인증 성공
-        if (responseEntity.getStatusCode() == HttpStatus.OK) return responseEntity;
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Authentication failed");
+        return memberService.signInAndGenerateJwtToken(adminUser);
     }
 
     // 2차 로그인 추가정보 확인
@@ -45,6 +43,12 @@ public class AuthController {
         return adminService.getAdminUser(request);
     }
 
+    // 관리자 정보 수정
+    @PostMapping("admin-user/update")
+    public ResponseEntity<?> adminUserUpdate(@RequestBody AdminUser adminUser) {
+        return adminService.updateAdminUser(adminUser);
+    }
+
     // accessToken 검증
     @PostMapping("access-token")
     public ResponseEntity<?> accessTokenCK() {
@@ -54,13 +58,7 @@ public class AuthController {
     // refreshToken 검증
     @PostMapping("refresh-token")
     public ResponseEntity<?> refreshTokenCK(HttpServletRequest request) {
-        String refreshToken = JwtTokenUtil.resolveToken(request);
-        ResponseEntity<?> responseEntity = memberService.refreshTokenCK(refreshToken);
-
-        // 인증 성공
-        if (responseEntity.getStatusCode() == HttpStatus.OK) return responseEntity;
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Authentication failed");
+        return memberService.refreshTokenCK(JwtTokenUtil.resolveToken(request));
     }
-
 
 }

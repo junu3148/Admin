@@ -7,6 +7,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.parameters.P;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartHttpServletRequest;
 import org.springframework.web.servlet.ModelAndView;
@@ -92,7 +93,6 @@ public class AdminController {
         return adminService.getInvoiceDetails(invoiceDTO);
     }
 
-
     // 인보이스 메일 발송
     @PostMapping("invoice/email")
     public ResponseEntity<?> invoiceEmailShipment(@RequestBody InvoiceDTO invoiceDTO) {
@@ -139,7 +139,6 @@ public class AdminController {
     @PostMapping("notice/update-notice")
     public ResponseEntity<?> adminUpdateNotice(@RequestBody NoticeDTO noticeDTO) {
         return adminService.updateNotice(noticeDTO);
-
     }
 
     // 공지사항 삭제
@@ -154,24 +153,43 @@ public class AdminController {
         return adminService.getFaqList(searchDTO);
     }
 
+    // FAQ 세부 정보
+    @PostMapping("faq/details")
+    public JsonResult adminFaqDetails(@RequestBody FaqDTO faqDTO){
+        return adminService.getFaq(faqDTO);
+    }
+
     // FAQ 등록
     @PostMapping("faq/add-faq")
     public ResponseEntity<?> adminAddFaq(HttpServletRequest request, @RequestBody FaqDTO faqDTO){
         return adminService.insertFaq(request,faqDTO);
-
     }
+
     // FAQ 수정
     @PostMapping("faq/update-faq")
     public ResponseEntity<?> adminUpdateFaq(@RequestBody FaqDTO faqDTO){
         return adminService.updateFaq(faqDTO);
-
     }
+
     // FAQ 삭제
     @PostMapping("faq/delete-faq")
     public ResponseEntity<?> adminDeleteFaq(@RequestBody FaqDTO faqDTO){
         return adminService.deleteFaq(faqDTO);
-
     }
+
+    // Terms 정보
+    @GetMapping("terms/details")
+    public JsonResult adminTermsDetails(){
+        return adminService.getTerms();
+    }
+
+    // Terms 수정
+    @PostMapping("terms/update-terms")
+    public ResponseEntity<?> adminTerms(@RequestBody TermsDTO termsDTO){
+        return adminService.updateTerms(termsDTO);
+    }
+
+
 }
 
 

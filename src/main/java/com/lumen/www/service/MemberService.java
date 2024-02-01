@@ -104,6 +104,22 @@ public class MemberService {
     }
 
     /**
+     * 제공된 토큰을 사용하여 JWT 토큰을 포함한 ResponseEntity를 생성하여 반환하는 메서드입니다.
+     *
+     * @param token JWT 액세스 토큰입니다.
+     * @return JWT 토큰을 포함한 ResponseEntity입니다.
+     */
+    private ResponseEntity<?> buildResponseWithToken(String token) {
+        HttpHeaders headers = new HttpHeaders();
+        headers.add(AUTHORIZATION_HEADER, BEARER_PREFIX + token);
+
+        JwtToken jwtToken = new JwtToken();
+        jwtToken.setAccessToken(token);
+
+        return new ResponseEntity<>(jwtToken, headers, HttpStatus.OK);
+    }
+
+    /**
      * 잘못된 요청에 대한 응답을 생성하여 반환하는 메서드입니다.
      *
      * @return BAD_REQUEST 상태와 메시지를 포함한 ResponseEntity입니다.
@@ -154,22 +170,6 @@ public class MemberService {
     private String createNewAccessToken(String refreshToken) {
         Optional<RefreshToken> tokenData = tokenRepository.refreshTokenCK(refreshToken);
         return jwtTokenProvider.generateAccessToken(tokenData);
-    }
-
-    /**
-     * 제공된 토큰을 사용하여 JWT 토큰을 포함한 ResponseEntity를 생성하여 반환하는 메서드입니다.
-     *
-     * @param token JWT 액세스 토큰입니다.
-     * @return JWT 토큰을 포함한 ResponseEntity입니다.
-     */
-    private ResponseEntity<?> buildResponseWithToken(String token) {
-        HttpHeaders headers = new HttpHeaders();
-        headers.add(AUTHORIZATION_HEADER, BEARER_PREFIX + token);
-
-        JwtToken jwtToken = new JwtToken();
-        jwtToken.setAccessToken(token);
-
-        return new ResponseEntity<>(jwtToken, headers, HttpStatus.OK);
     }
 
     /**

@@ -132,6 +132,15 @@ CREATE TABLE CALCULATE
     FOREIGN KEY (admin_key) REFERENCES ADMIN (admin_key)
 );
 
+SELECT
+    SUM(calculate_price) AS 총합계
+FROM
+    calculate
+WHERE
+    YEAR(calculate_date) = 2024
+  AND MONTH(calculate_date) BETWEEN 1 AND 3
+  AND MONTH(calculate_date) = 1;
+
 -- 9. 리플레시 토큰
 CREATE TABLE refresh_tokens
 (

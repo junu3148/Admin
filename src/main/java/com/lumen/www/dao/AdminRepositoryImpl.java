@@ -15,7 +15,7 @@ public class AdminRepositoryImpl implements AdminRepository {
 
     private final SqlSession sqlSession;
 
-    // 아이디
+    // 아이디 확인
     @Override
     public Optional<AdminUser> findByUsername(String adminId) {
         return Optional.ofNullable(sqlSession.selectOne("admin.findByUsername", adminId));
@@ -27,16 +27,22 @@ public class AdminRepositoryImpl implements AdminRepository {
         return sqlSession.selectOne("admin.getRole", adminId);
     }
 
-    // 유저 정보 가져오기
+    // 2차 로그인
+    @Override
+    public Optional<AdminUser> adminLoginCk(AdminUser adminUser) {
+        return Optional.ofNullable(sqlSession.selectOne("admin.adminLoginCk", adminUser));
+    }
+
+    // 관리자 세부 정보
     @Override
     public AdminDTO getAdminUser(String adminId) {
         return sqlSession.selectOne("admin.getAdminUser", adminId);
     }
 
-    // 2차 로그인
+    // 관리자 정부 수정
     @Override
-    public Optional<AdminUser> adminLoginCk(AdminUser adminUser) {
-        return Optional.ofNullable(sqlSession.selectOne("admin.adminLoginCk", adminUser));
+    public int updateAdminUser(AdminUser adminUser) {
+        return sqlSession.update("admin.updateAdminUser", adminUser);
     }
 
     // 가입자 현황
@@ -171,18 +177,42 @@ public class AdminRepositoryImpl implements AdminRepository {
         return sqlSession.selectList("admin.getFaqList", searchDTO);
     }
 
+    // FAQ 세부 정보
+    @Override
+    public FaqDTO getFaq(FaqDTO faqDTO) {
+        return sqlSession.selectOne("admin.getFaq", faqDTO);
+    }
+
+    // FAQ 등록
     @Override
     public int insertFaq(FaqDTO faqDTO) {
         return sqlSession.insert("admin.insertFaq", faqDTO);
     }
 
+    // FAQ 수정
     @Override
     public int updateFaq(FaqDTO faqDTO) {
-        return sqlSession.update("admin.updateFaq",faqDTO);
+        return sqlSession.update("admin.updateFaq", faqDTO);
     }
 
+    // FAQ 삭제
     @Override
     public int deleteFaq(FaqDTO faqDTO) {
-        return sqlSession.delete("admin.deleteFaq",faqDTO);
+        return sqlSession.delete("admin.deleteFaq", faqDTO);
     }
+
+    // Terms 정보
+    @Override
+    public TermsDTO getTerms() {
+        return sqlSession.selectOne("admin.getTerms");
+    }
+
+    // Terms 수정
+    @Override
+    public int updateTerms(TermsDTO termsDTO) {
+        System.out.println(termsDTO);
+
+        return sqlSession.update("admin.updateTerms", termsDTO);
+    }
+
 }

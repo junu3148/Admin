@@ -24,6 +24,8 @@ public interface AdminService {
      */
     JsonResult getAdminUser(HttpServletRequest request);
 
+    ResponseEntity<?> updateAdminUser(AdminUser adminUser);
+
     /**
      * 가입자 현황을 반환합니다.
      * 가입자 현황을 반환합니다.
@@ -226,12 +228,69 @@ public interface AdminService {
      */
     ResponseEntity<?> deleteNotice(NoticeDTO noticeDTO);
 
-
+    /**
+     * 자주 묻는 질문(FAQ) 목록을 조회합니다.
+     * 이 메서드는 검색 조건을 담고 있는 SearchDTO 객체를 인자로 받아 해당 조건에 맞는 FAQ 목록을 조회합니다.
+     *
+     * @param searchDTO 검색 조건을 포함하는 데이터 전송 객체.
+     * @return 조회된 FAQ 목록을 담고 있는 JsonResult 객체.
+     */
     JsonResult getFaqList(SearchDTO searchDTO);
 
-    ResponseEntity<?> insertFaq(HttpServletRequest request,FaqDTO faqDTO);
+    /**
+     * 특정 FAQ를 조회합니다.
+     * 이 메서드는 FaqDTO 객체를 인자로 받아 해당 객체에 지정된 조건에 맞는 FAQ 정보를 조회합니다.
+     *
+     * @param faqDTO 조회할 FAQ의 정보를 포함하는 데이터 전송 객체.
+     * @return 조회된 FAQ 정보를 담고 있는 JsonResult 객체.
+     */
+    JsonResult getFaq(FaqDTO faqDTO);
+
+    /**
+     * FAQ를 추가합니다.
+     * 이 메서드는 HttpServletRequest와 FaqDTO 객체를 인자로 받아 새로운 FAQ를 추가합니다.
+     *
+     * @param request 클라이언트의 요청 정보를 담고 있는 HttpServletRequest 객체.
+     * @param faqDTO 추가할 FAQ의 정보를 포함하는 데이터 전송 객체.
+     * @return 처리 결과를 나타내는 ResponseEntity 객체.
+     */
+    ResponseEntity<?> insertFaq(HttpServletRequest request, FaqDTO faqDTO);
+
+    /**
+     * FAQ를 업데이트합니다.
+     * 이 메서드는 FaqDTO 객체를 인자로 받아 특정 FAQ의 정보를 업데이트합니다.
+     *
+     * @param faqDTO 업데이트할 FAQ의 정보를 포함하는 데이터 전송 객체.
+     * @return 처리 결과를 나타내는 ResponseEntity 객체.
+     */
     ResponseEntity<?> updateFaq(FaqDTO faqDTO);
+
+    /**
+     * FAQ를 삭제합니다.
+     * 이 메서드는 FaqDTO 객체를 인자로 받아 특정 FAQ를 삭제합니다.
+     *
+     * @param faqDTO 삭제할 FAQ의 정보를 포함하는 데이터 전송 객체.
+     * @return 처리 결과를 나타내는 ResponseEntity 객체.
+     */
     ResponseEntity<?> deleteFaq(FaqDTO faqDTO);
+
+    /**
+     * 서비스 이용 약관을 조회합니다.
+     * 이 메서드는 서비스의 현재 이용 약관을 조회하여 반환합니다.
+     *
+     * @return 이용 약관을 담고 있는 JsonResult 객체.
+     */
+    JsonResult getTerms();
+
+    /**
+     * 서비스 이용 약관을 업데이트합니다.
+     * 이 메서드는 TermsDTO 객체를 인자로 받아 서비스 이용 약관을 업데이트합니다.
+     *
+     * @param termsDTO 업데이트할 이용 약관의 정보를 포함하는 데이터 전송 객체.
+     * @return 처리 결과를 나타내는 ResponseEntity 객체.
+     */
+    ResponseEntity<?> updateTerms(TermsDTO termsDTO);
+
 
 
 }

@@ -9,6 +9,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -44,7 +45,7 @@ public class AdminServiceImpl implements AdminService {
         }
     }
 
-    // 관리자 정보 가져오기
+    // 관리자 세부 정보
     @Override
     @Transactional
     public JsonResult getAdminUser(HttpServletRequest request) {
@@ -64,6 +65,23 @@ public class AdminServiceImpl implements AdminService {
         return createJsonResult(adminDTO);
     }
 
+    // 관리자 정보 수정
+    @Override
+    @Transactional
+    public ResponseEntity<?> updateAdminUser(AdminUser adminUser) {
+
+        // 비밀번호 BCrypt 변환
+        BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+        String encodedPassword = passwordEncoder.encode(adminUser.getPassword());
+        adminUser.setAdminPassword(encodedPassword);
+
+        int result = adminRepository.updateAdminUser(adminUser);
+
+        return createResponse(result, "Modifying administrator information was performed normally.", "Modifying administrator information failed.");
+    }
+
+
+    // ------------------------------------------------------------------------------------- Main -----------------------------------------------------------------------------------------
     // 가입자 현황
     @Override
     @Transactional
@@ -110,6 +128,8 @@ public class AdminServiceImpl implements AdminService {
         return createJsonResult(adminRepository.getInquiryList());
     }
 
+
+    // ------------------------------------------------------------------------------------- Join -----------------------------------------------------------------------------------------
     // 가입자 리스트
     @Override
     @Transactional
@@ -119,21 +139,9 @@ public class AdminServiceImpl implements AdminService {
 
     // 가입자 세부 정보
     @Override
+    @Transactional
     public JsonResult getUserDetails(UserDTO userDTO) {
         return createJsonResult(adminRepository.getUserDetails(userDTO));
-    }
-
-    // 프로모션 메일 발송
-    @Override
-    public JsonResult addPromotions(PromotionsDTO promotionsDTO) {
-
-        EmailMessage emailMessage = EmailMessage.builder().subject(promotionsDTO.getPromotionsTitle()).message(promotionsDTO.getPromotionsContent()).build();
-        // 이메일 전송 후 결과를 반환받음
-        String result = emailService.sendMail(emailMessage, "test");
-
-        if (result.equals("ok")) {
-            return createJsonResult(result);
-        } else return null;
     }
 
     // 가입자 강제 탈퇴
@@ -168,6 +176,23 @@ public class AdminServiceImpl implements AdminService {
         } else return null;
     }
 
+
+    // ------------------------------------------------------------------------------------- Promo -----------------------------------------------------------------------------------------
+    // 프로모션 메일 발송
+    @Override
+    public JsonResult addPromotions(PromotionsDTO promotionsDTO) {
+
+        EmailMessage emailMessage = EmailMessage.builder().subject(promotionsDTO.getPromotionsTitle()).message(promotionsDTO.getPromotionsContent()).build();
+        // 이메일 전송 후 결과를 반환받음
+        String result = emailService.sendMail(emailMessage, "test");
+
+        if (result.equals("ok")) {
+            return createJsonResult(result);
+        } else return null;
+    }
+
+
+    // ------------------------------------------------------------------------------------- Price -----------------------------------------------------------------------------------------
     // 미결제 회원 리스트
     @Override
     @Transactional
@@ -202,6 +227,8 @@ public class AdminServiceImpl implements AdminService {
         return createResponse(result, "User status successfully updated.", "Failed to update user status.");
     }
 
+
+    // ------------------------------------------------------------------------------------- Pay -----------------------------------------------------------------------------------------
     // 청약철회 현황
     @Override
     @Transactional
@@ -209,6 +236,8 @@ public class AdminServiceImpl implements AdminService {
         return createJsonResult(adminRepository.getSubscriptionEndList(searchDTO));
     }
 
+
+    // ------------------------------------------------------------------------------------- Invoice -----------------------------------------------------------------------------------------
     // 인보이스 리스트
     @Override
     @Transactional
@@ -240,6 +269,8 @@ public class AdminServiceImpl implements AdminService {
         return null;
     }
 
+
+    // ------------------------------------------------------------------------------------- 1:1 -----------------------------------------------------------------------------------------
     // 1:1 문의 현황
     @Override
     @Transactional
@@ -263,6 +294,8 @@ public class AdminServiceImpl implements AdminService {
         return createResponse(result, "Your inquiry has been successfully registered.", "The answer to the inquiry failed.");
     }
 
+
+    // ------------------------------------------------------------------------------------- Notice -----------------------------------------------------------------------------------------
     // 공지사항 현황
     @Override
     @Transactional
@@ -309,11 +342,20 @@ public class AdminServiceImpl implements AdminService {
         return createResponse(result, "Delete Announcement has been successfully executed.", "Failed to delete announcement.");
     }
 
+
+    // ------------------------------------------------------------------------------------- FAQ -----------------------------------------------------------------------------------------
     // FAQ 현황
     @Override
     @Transactional
     public JsonResult getFaqList(SearchDTO searchDTO) {
         return createJsonResult(adminRepository.getFaqList(searchDTO));
+    }
+
+    // FAQ 세부 정보
+    @Override
+    @Transactional
+    public JsonResult getFaq(FaqDTO faqDTO) {
+        return createJsonResult(adminRepository.getFaq(faqDTO));
     }
 
     // FAQ 등록
@@ -353,6 +395,28 @@ public class AdminServiceImpl implements AdminService {
         return createResponse(result, "FAQ deletion has been successfully executed.", "Failed to delete FAQ.");
     }
 
+
+    // ------------------------------------------------------------------------------------- Terms -----------------------------------------------------------------------------------------
+    // Terms 정보
+    @Override
+    public JsonResult getTerms() {
+        return createJsonResult(adminRepository.getTerms());
+    }
+
+    // Terms 수정
+    @Override
+    public ResponseEntity<?> updateTerms(TermsDTO termsDTO) {
+
+        int result = adminRepository.updateTerms(termsDTO);
+
+        return createResponse(result, "FAQ registration has been executed successfully.", "FAQ registration failed.");
+    }
+
+
+
+
+
+    // ------------------------------------------------------------------------------------- 공통로직 -----------------------------------------------------------------------------------------
     // 공통 응답 생성 메서드
     private ResponseEntity<String> createResponse(int result, String successMessage, String failureMessage) {
         System.out.println("리턴값 " + result);
@@ -367,7 +431,7 @@ public class AdminServiceImpl implements AdminService {
 
     // JsonResult 생성 & 반환
     private JsonResult createJsonResult(Object data) {
-        System.out.println("리턴 " + data);
+        System.out.println("리턴값 " + data);
         JsonResult jsonResult = new JsonResult();
         if (data != null) jsonResult.success(data);
         else jsonResult.fail(LOG_FAILURE_MESSAGE);

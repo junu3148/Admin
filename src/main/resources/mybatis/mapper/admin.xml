@@ -22,7 +22,7 @@
 
     </select>
 
-    <!--2차 로그인 adminUser 정보가져오기-->
+    <!--2차 로그인 관리자 정보-->
     <select id="adminLoginCk" parameterType="AdminUser" resultType="AdminUser">
 
         SELECT admin_key
@@ -39,7 +39,7 @@
 
     </select>
 
-    <!--AdminUser 정보 가져오기-->
+    <!--관리자 세부 정보-->
     <select id="getAdminUser" parameterType="String" resultType="AdminDTO">
 
         SELECT admin_key,
@@ -51,14 +51,39 @@
         FROM admin
         WHERE admin_id = #{adminId}
 
-
     </select>
 
+    <!--관리자 정보 수정-->
+    <update id="updateAdminUser" parameterType="AdminUser">
+
+        UPDATE
+        admin
+        SET
+
+        <if test="role == 1">
+            depositor = #{depositor},
+            account_number = #{accountNumber},
+            bank_name = #{bankName},
+        </if>
+        <if test="adminPassword != null and adminPassword != ''">
+            admin_password = #{adminPassword},
+        </if>
+        admin_name = #{adminName}
+
+        WHERE admin_key = #{adminKey}
+
+    </update>
+
+
+
+
+
+    <!--                                                                                                          Main                                                                                  -->
     <!--가입자 현황-->
     <select id="subscriberCount" resultType="int">
 
-        SELECT count(admin_key)
-        FROM ADMIN
+        SELECT count(user_key)
+        FROM user
 
     </select>
 
@@ -96,9 +121,15 @@
         FROM inquiry a
                  INNER JOIN user b ON a.user_key = b.user_key
                  INNER JOIN plan c ON b.plan_key = c.plan_key
+        ORDER BY inquiry_date DESC
 
     </select>
 
+
+
+
+
+    <!--                                                                                                          Join                                                                                  -->
     <!--가입자 리스트-->
     <select id="getJoinList" parameterType="SearchDTO" resultType="JoinListDTO">
 
@@ -226,6 +257,11 @@
 
     </delete>
 
+
+
+
+
+    <!--                                                                                                          Price                                                                                  -->
     <!--미결제 회원 리스트-->
     <select id="getPriceList" parameterType="PriceSearchDTO" resultType="PriceListDTO">
 
@@ -270,6 +306,11 @@
 
     </update>
 
+
+
+
+
+    <!--                                                                                                          Pay                                                                                  -->
     <!--청약철회 현황-->
     <select id="getSubscriptionEndList" parameterType="SearchDTO" resultType="PayListDTO">
 
@@ -306,6 +347,11 @@
 
     </select>
 
+
+
+
+
+    <!--                                                                                                          Invoice                                                                                  -->
     <!--인보이스 리스트-->
     <select id="getInvoiceList" parameterType="SearchDTO" resultType="InvoiceListDTO">
 
@@ -377,6 +423,11 @@
 
     </select>
 
+
+
+
+
+    <!--                                                                                                          1:1                                                                                  -->
     <!--1:1 문의 현황-->
     <select id="getInquiryList2" parameterType="SearchDTO" resultType="InquiryListDTO">
 
@@ -432,29 +483,26 @@
     <!--1:1 문의 세부 정보-->
     <select id="getInquiryDetails" parameterType="InquiryDTO" resultType="InquiryDTO">
 
-        SELECT
-            inquiry_key,
-            date_format(inquiry_date, '%Y.%m.%d') AS inquiryDate,
-            CASE
-                WHEN inquiry_status = 'N' THEN
-                    '미답변'
-                WHEN inquiry_status = 'Y' THEN
-                    '답변완료'
-                ELSE
-                    inquiry_status
-                END AS inquiryStatus,
-            inquiry_type,
-            user_name,
-            plan_name,
-            qna,
-            inquiry_content
-        FROM
-            inquiry a
-                INNER JOIN user         b ON a.user_key = b.user_key
-                INNER JOIN plan         c ON b.plan_key = c.plan_key
-                INNER JOIN subscription d ON a.user_key = d.user_key
-        WHERE
-            inquiry_key = #{inquiryKey}
+        SELECT inquiry_key,
+               date_format(inquiry_date, '%Y.%m.%d') AS inquiryDate,
+               CASE
+                   WHEN inquiry_status = 'N' THEN
+                       '미답변'
+                   WHEN inquiry_status = 'Y' THEN
+                       '답변완료'
+                   ELSE
+                       inquiry_status
+                   END                               AS inquiryStatus,
+               inquiry_type,
+               user_name,
+               plan_name,
+               qna,
+               inquiry_content
+        FROM inquiry a
+                 INNER JOIN user b ON a.user_key = b.user_key
+                 INNER JOIN plan c ON b.plan_key = c.plan_key
+                 INNER JOIN subscription d ON a.user_key = d.user_key
+        WHERE inquiry_key = #{inquiryKey}
 
     </select>
 
@@ -468,6 +516,11 @@
 
     </update>
 
+
+
+
+
+    <!--                                                                                                          Notice                                                                                  -->
     <!--공지사항 현황-->
     <select id="getNoticeList" parameterType="SearchDTO" resultType="NoticeListDTO">
 
@@ -510,7 +563,7 @@
     </select>
 
     <!--공지사항 등록-->
-    <insert id="insertNotice" parameterType="NoticeDTO" >
+    <insert id="insertNotice" parameterType="NoticeDTO">
 
         INSERT INTO notice (notice_title,
                             notice_content,
@@ -537,10 +590,17 @@
     <!--공지사항 삭제-->
     <delete id="deleteNotice" parameterType="NoticeDTO">
 
-        DELETE FROM notice WHERE notice_key = #{noticeKey}
+        DELETE
+        FROM notice
+        WHERE notice_key = #{noticeKey}
 
     </delete>
 
+
+
+
+
+    <!--                                                                                                          FAQ                                                                                  -->
     <!--FAQ 현황-->
     <select id="getFaqList" parameterType="SearchDTO" resultType="FaqDTO">
 
@@ -556,6 +616,18 @@
         <if test="searchType != null and searchType != ''">
             AND faq_type = #{searchType}
         </if>
+
+    </select>
+
+    <!--FAQ 세부 정보-->
+    <select id="getFaq" parameterType="FaqDTO" resultType="FaqDTO">
+
+        SELECT faq_key,
+               faq_title,
+               faq_content,
+               faq_type
+        FROM faq
+        WHERE faq_key = #{faqKey}
 
     </select>
 
@@ -594,6 +666,39 @@
         WHERE faq_key = #{faqKey}
 
     </delete>
+
+
+
+
+
+    <!--                                                                                                          Terms                                                                                  -->
+    <!--Terms 세부정보-->
+    <select id="getTerms" resultType="TermsDTO">
+
+        SELECT
+            terms_key,
+            terms_use,
+            info_policy
+        FROM
+            terms
+
+    </select>
+
+    <!--Terms 수정-->
+    <update id="updateTerms" parameterType="TermsDTO">
+
+        UPDATE terms
+        SET
+
+        <if test="termsUse != null and termsUse != ''">
+            terms_use = #{termsUse}
+        </if>
+
+        <if test="infoPolicy != null and infoPolicy != ''">
+            info_policy =#{infoPolicy}
+        </if>
+
+    </update>
 
 
 </mapper>
