@@ -16,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 @Service
@@ -23,6 +24,7 @@ import java.util.stream.Collectors;
 public class AdminServiceImpl implements AdminService {
 
     private static final String LOG_FAILURE_MESSAGE = "실패";
+    private static final String NO_INQUIRY_RESULTS = "조회 결과가 없습니다.";
     private final AdminRepository adminRepository;
     private final EmailService emailService;
     private final JwtTokenProvider jwtTokenProvider;
@@ -47,7 +49,7 @@ public class AdminServiceImpl implements AdminService {
 
     // 관리자 세부 정보
     @Override
-    @Transactional
+    @Transactional(readOnly = true)
     public JsonResult getAdminUser(HttpServletRequest request) {
         // 1. 토큰 추출
         String token = JwtTokenUtil.resolveToken(request);
@@ -70,11 +72,12 @@ public class AdminServiceImpl implements AdminService {
     @Transactional
     public ResponseEntity<?> updateAdminUser(AdminUser adminUser) {
 
-        // 비밀번호 BCrypt 변환
-        BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
-        String encodedPassword = passwordEncoder.encode(adminUser.getPassword());
-        adminUser.setAdminPassword(encodedPassword);
-
+        if (adminUser.getPassword() != null) {
+            // 비밀번호 BCrypt 변환
+            BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+            String encodedPassword = passwordEncoder.encode(adminUser.getPassword());
+            adminUser.setAdminPassword(encodedPassword);
+        }
         int result = adminRepository.updateAdminUser(adminUser);
 
         return createResponse(result, "Modifying administrator information was performed normally.", "Modifying administrator information failed.");
@@ -91,8 +94,9 @@ public class AdminServiceImpl implements AdminService {
 
     // 메인페이지 월별가입자 그래프
     @Override
-    @Transactional
+    @Transactional(readOnly = true)
     public JsonResult getMonthlySalesChart() {
+        System.out.println("호출");
         List<Map<String, Object>> resultList = adminRepository.getMonthlySubscriber();
 
         // 'resultList'를 'monthList'로 변환
@@ -116,14 +120,14 @@ public class AdminServiceImpl implements AdminService {
 
     // 메인페이지 현황지표
     @Override
-    @Transactional
+    @Transactional(readOnly = true)
     public JsonResult getCurrentSituation() {
         return createJsonResult(adminRepository.getUserActivity());
     }
 
     // 메인페이지 문의현황
     @Override
-    @Transactional
+    @Transactional(readOnly = true)
     public JsonResult getMainInquiryList() {
         return createJsonResult(adminRepository.getInquiryList());
     }
@@ -132,14 +136,24 @@ public class AdminServiceImpl implements AdminService {
     // ------------------------------------------------------------------------------------- Join -----------------------------------------------------------------------------------------
     // 가입자 리스트
     @Override
-    @Transactional
+    @Transactional(readOnly = true)
     public JsonResult getJoinList(SearchDTO searchDTO) {
-        return createJsonResult(adminRepository.getJoinList(searchDTO));
+
+
+        List<JoinListDTO> joinListDTOS = adminRepository.getJoinList(searchDTO);
+
+        createListWithDefaultValueIfEmpty(joinListDTOS, () -> {
+            JoinListDTO joinListDTO = new JoinListDTO();
+            joinListDTO.set이메일(NO_INQUIRY_RESULTS); // 상수값
+            return joinListDTO;
+        });
+
+        return createJsonResult(joinListDTOS);
     }
 
     // 가입자 세부 정보
     @Override
-    @Transactional
+    @Transactional(readOnly = true)
     public JsonResult getUserDetails(UserDTO userDTO) {
         return createJsonResult(adminRepository.getUserDetails(userDTO));
     }
@@ -193,10 +207,11 @@ public class AdminServiceImpl implements AdminService {
 
 
     // ------------------------------------------------------------------------------------- Price -----------------------------------------------------------------------------------------
-    // 미결제 회원 리스트
+    // 미결제 회원 현황
     @Override
-    @Transactional
+    @Transactional(readOnly = true)
     public JsonResult getPriceList(PriceSearchDTO priceSearchDTO) {
+        System.out.println(priceSearchDTO);
 
         final String outInfo = priceSearchDTO.getOutInfo();
         if (outInfo != null) {
@@ -215,8 +230,16 @@ public class AdminServiceImpl implements AdminService {
                     priceSearchDTO.setMaxNum(10);
             }
         }
-        System.out.println(priceSearchDTO);
-        return createJsonResult(adminRepository.getPriceList(priceSearchDTO));
+
+        List<PriceListDTO> priceListDTOS = adminRepository.getPriceList(priceSearchDTO);
+
+        createListWithDefaultValueIfEmpty(priceListDTOS, () -> {
+            PriceListDTO priceListDTO = new PriceListDTO();
+            priceListDTO.set이메일(NO_INQUIRY_RESULTS); // 상수값
+            return priceListDTO;
+        });
+
+        return createJsonResult(priceListDTOS);
     }
 
     // 회원 상태 변경
@@ -231,23 +254,33 @@ public class AdminServiceImpl implements AdminService {
     // ------------------------------------------------------------------------------------- Pay -----------------------------------------------------------------------------------------
     // 청약철회 현황
     @Override
-    @Transactional
+    @Transactional(readOnly = true)
     public JsonResult getSubscriptionEndList(SearchDTO searchDTO) {
-        return createJsonResult(adminRepository.getSubscriptionEndList(searchDTO));
+
+
+        List<PayListDTO> payListDTOS = adminRepository.getSubscriptionEndList(searchDTO);
+
+        createListWithDefaultValueIfEmpty(payListDTOS, () -> {
+            PayListDTO payListDTO = new PayListDTO();
+            payListDTO.set이메일(NO_INQUIRY_RESULTS); // 상수값
+            return payListDTO;
+        });
+
+        return createJsonResult(payListDTOS);
     }
 
 
     // ------------------------------------------------------------------------------------- Invoice -----------------------------------------------------------------------------------------
     // 인보이스 리스트
     @Override
-    @Transactional
+    @Transactional(readOnly = true)
     public JsonResult getInvoiceList(SearchDTO searchDTO) {
         return createJsonResult(adminRepository.getInvoiceList(searchDTO));
     }
 
     // 인보이스 세부 정보
     @Override
-    @Transactional
+    @Transactional(readOnly = true)
     public JsonResult getInvoiceDetails(InvoiceDTO invoiceDTO) {
         return createJsonResult(adminRepository.getInvoiceDetails(invoiceDTO));
     }
@@ -273,15 +306,25 @@ public class AdminServiceImpl implements AdminService {
     // ------------------------------------------------------------------------------------- 1:1 -----------------------------------------------------------------------------------------
     // 1:1 문의 현황
     @Override
-    @Transactional
+    @Transactional(readOnly = true)
     public JsonResult getInquiryList(SearchDTO searchDTO) {
-        return createJsonResult(adminRepository.getInquiryList(searchDTO));
+
+        List<InquiryListDTO> inquiryListDTOS = adminRepository.getInquiryList(searchDTO);
+
+        createListWithDefaultValueIfEmpty(inquiryListDTOS, () -> {
+            InquiryListDTO inquiryListDTO = new InquiryListDTO();
+            inquiryListDTO.set이메일(NO_INQUIRY_RESULTS); // 상수값
+            return inquiryListDTO;
+        });
+
+        return createJsonResult(inquiryListDTOS);
+
     }
 
 
     // 1:1 문의 세부 정보
     @Override
-    @Transactional
+    @Transactional(readOnly = true)
     public JsonResult getInquiryDetails(InquiryDTO inquiryDTO) {
         return createJsonResult(adminRepository.getInquiryDetails(inquiryDTO));
     }
@@ -298,14 +341,23 @@ public class AdminServiceImpl implements AdminService {
     // ------------------------------------------------------------------------------------- Notice -----------------------------------------------------------------------------------------
     // 공지사항 현황
     @Override
-    @Transactional
+    @Transactional(readOnly = true)
     public JsonResult getNoticeList(SearchDTO searchDTO) {
-        return createJsonResult(adminRepository.getNoticeList(searchDTO));
+
+        List<NoticeListDTO> noticeListDTOS = adminRepository.getNoticeList(searchDTO);
+
+        createListWithDefaultValueIfEmpty(noticeListDTOS, () -> {
+            NoticeListDTO noticeListDTO = new NoticeListDTO();
+            noticeListDTO.set제목(NO_INQUIRY_RESULTS); // 상수값
+            return noticeListDTO;
+        });
+
+        return createJsonResult(noticeListDTOS);
     }
 
     // 공지사항 세부 정보
     @Override
-    @Transactional
+    @Transactional(readOnly = true)
     public JsonResult getNoticeDetails(NoticeDTO noticeDTO) {
         return createJsonResult(adminRepository.getNoticeDetails(noticeDTO));
     }
@@ -346,14 +398,19 @@ public class AdminServiceImpl implements AdminService {
     // ------------------------------------------------------------------------------------- FAQ -----------------------------------------------------------------------------------------
     // FAQ 현황
     @Override
-    @Transactional
+    @Transactional(readOnly = true)
     public JsonResult getFaqList(SearchDTO searchDTO) {
+
+        List<FaqDTO> faqDTOS = adminRepository.getFaqList(searchDTO);
+
+        createListWithDefaultValueIfEmpty(faqDTOS, FaqDTO::new);
+
         return createJsonResult(adminRepository.getFaqList(searchDTO));
     }
 
     // FAQ 세부 정보
     @Override
-    @Transactional
+    @Transactional(readOnly = true)
     public JsonResult getFaq(FaqDTO faqDTO) {
         return createJsonResult(adminRepository.getFaq(faqDTO));
     }
@@ -398,7 +455,7 @@ public class AdminServiceImpl implements AdminService {
 
     // ------------------------------------------------------------------------------------- Terms -----------------------------------------------------------------------------------------
     // Terms 정보
-    @Override
+    @Transactional(readOnly = true)
     public JsonResult getTerms() {
         return createJsonResult(adminRepository.getTerms());
     }
@@ -411,9 +468,6 @@ public class AdminServiceImpl implements AdminService {
 
         return createResponse(result, "FAQ registration has been executed successfully.", "FAQ registration failed.");
     }
-
-
-
 
 
     // ------------------------------------------------------------------------------------- 공통로직 -----------------------------------------------------------------------------------------
@@ -438,4 +492,11 @@ public class AdminServiceImpl implements AdminService {
         return jsonResult;
     }
 
+    // 함수형 인터페이스를 매개변수로 받는 범용 메소드
+    private <T> void createListWithDefaultValueIfEmpty(List<T> list, Supplier<T> defaultSupplier) {
+        if (list.isEmpty()) {
+            T defaultValue = defaultSupplier.get(); // 기본 객체 생성
+            list.add(defaultValue);
+        }
+    }
 }

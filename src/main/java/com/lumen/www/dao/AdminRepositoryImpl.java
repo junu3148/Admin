@@ -125,7 +125,7 @@ public class AdminRepositoryImpl implements AdminRepository {
 
     // 1:1 문의 현황
     @Override
-    public List<InquiryDTO> getInquiryList(SearchDTO searchDTO) {
+    public List<InquiryListDTO> getInquiryList(SearchDTO searchDTO) {
         return sqlSession.selectList("admin.getInquiryList2", searchDTO);
     }
 

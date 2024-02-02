@@ -4,6 +4,29 @@
 <mapper namespace="admin">
 
     <!--로그인 인증-->
+    <update id="updateAdminUser" parameterType="AdminUser">
+
+        UPDATE
+        admin
+        SET
+
+        <if test="role == 1">
+            depositor = #{depositor},
+            account_number = #{accountNumber},
+            bank_name = #{bankName},
+        </if>
+
+        <if test="adminPassword != null and adminPassword != ''">
+            admin_password = #{adminPassword},
+        </if>
+
+        admin_name = #{adminName}
+
+        WHERE admin_key = #{adminKey}
+
+    </update>
+
+    <!--권한정보 조회-->
     <select id="findByUsername" parameterType="String" resultType="AdminUser">
 
         SELECT admin_id,
@@ -13,7 +36,7 @@
 
     </select>
 
-    <!--권한정보 조회-->
+    <!--2차 로그인 관리자 정보-->
     <select id="getRole" parameterType="String" resultType="int">
 
         SELECT role
@@ -22,7 +45,7 @@
 
     </select>
 
-    <!--2차 로그인 관리자 정보-->
+    <!--관리자 세부 정보-->
     <select id="adminLoginCk" parameterType="AdminUser" resultType="AdminUser">
 
         SELECT admin_key
@@ -39,7 +62,7 @@
 
     </select>
 
-    <!--관리자 세부 정보-->
+    <!--관리자 정보 수정-->
     <select id="getAdminUser" parameterType="String" resultType="AdminDTO">
 
         SELECT admin_key,
@@ -52,27 +75,6 @@
         WHERE admin_id = #{adminId}
 
     </select>
-
-    <!--관리자 정보 수정-->
-    <update id="updateAdminUser" parameterType="AdminUser">
-
-        UPDATE
-        admin
-        SET
-
-        <if test="role == 1">
-            depositor = #{depositor},
-            account_number = #{accountNumber},
-            bank_name = #{bankName},
-        </if>
-        <if test="adminPassword != null and adminPassword != ''">
-            admin_password = #{adminPassword},
-        </if>
-        admin_name = #{adminName}
-
-        WHERE admin_key = #{adminKey}
-
-    </update>
 
 
 
@@ -89,6 +91,25 @@
 
     <!--메인페이지 월별가입자 그래프-->
     <select id="getMonthlySubscriber" resultType="java.util.Map">
+
+        WITH RECURSIVE date_generator AS (
+            SELECT CURDATE() - INTERVAL 1 MONTH AS date -- 시작 날짜 설정
+        UNION ALL
+        SELECT date - INTERVAL 1 MONTH
+        FROM date_generator
+        WHERE date > CURDATE() - INTERVAL 12 MONTH
+            )
+            , months AS (
+        SELECT YEAR(date) AS year, MONTH(date) AS month
+        FROM date_generator
+            )
+        SELECT
+            CONCAT(m.year, '년 ', m.month, '월') AS month,
+            COALESCE(COUNT(u.user_key), 0) AS subscribers_count
+        FROM months m
+            LEFT JOIN user u ON YEAR(u.accession_date) = m.year AND MONTH(u.accession_date) = m.month AND u.is_deleted = 0
+        GROUP BY m.year, m.month
+        ORDER BY m.year , m.month;
 
         SELECT month, subscribers_count
         FROM monthly_subscribers
@@ -150,9 +171,13 @@
         WHEN YEAR(CURDATE()) - birth_year BETWEEN 60 AND 69 THEN '60대'
         WHEN YEAR(CURDATE()) - birth_year BETWEEN 70 AND 79 THEN '70대'
         WHEN YEAR(CURDATE()) - birth_year BETWEEN 80 AND 89 THEN '80대'
-        ELSE '기타'
+        ELSE NULL
         END AS 연령,
-        gender AS 성별,
+        CASE gender
+        WHEN 'M' THEN '남자'
+        WHEN 'F' THEN '여자'
+        END
+        AS 성별,
         country AS 국가
         FROM USER A
         INNER JOIN PLAN B ON A.plan_key = B.plan_key
@@ -160,12 +185,13 @@
         <if test="userName != null and userName != ''">
             AND user_name = #{userName}
         </if>
-        <if test="planName != null and planName != ''">
+        <if test="planName != null and planName != '' and planName != 'All'">
             AND plan_name = #{planName}
         </if>
         <if test="startDate != null and startDate != ''">
             AND accession_date BETWEEN #{startDate} AND #{endDate}
         </if>
+        ORDER BY accession_date DESC
 
     </select>
 
@@ -201,7 +227,7 @@
         WHEN YEAR(CURDATE()) - birth_year BETWEEN 60 AND 69 THEN '60대'
         WHEN YEAR(CURDATE()) - birth_year BETWEEN 70 AND 79 THEN '70대'
         WHEN YEAR(CURDATE()) - birth_year BETWEEN 80 AND 89 THEN '80대'
-        ELSE '기타'
+        ELSE NULL
         END
         AS age,
         CASE gender
@@ -281,16 +307,19 @@
         user_status AS 활동정지
         FROM user a
         INNER JOIN plan b ON a.plan_key = b.plan_key
-        WHERE 1 = 1
+        WHERE is_deleted = 0
+            AND out_info > 0
         <if test="userName != 'pass'">
             AND user_name = #{userName}
         </if>
-        <if test="planName != 'pass'">
+        <if test="planName != 'pass' and planName != 'All' ">
             AND plan_name = #{planName}
         </if>
         <if test="outInfo != 'pass'">
             AND out_info BETWEEN #{minNum} AND #{maxNum}
         </if>
+
+        ORDER BY accession_date DESC
 
     </select>
 
@@ -338,12 +367,14 @@
         <if test="userName != null and userName != ''">
             AND user_name = #{userName}
         </if>
-        <if test="planName != null and planName != ''">
+        <if test="planName != null and planName != '' and planName != 'All'">
             AND plan_name = #{planName}
         </if>
         <if test="startDate != null and startDate != ''">
             AND sub_end_date BETWEEN #{startDate} AND #{endDate}
         </if>
+
+        ORDER BY accession_date DESC
 
     </select>
 
@@ -384,6 +415,8 @@
         <if test="startDate != null and startDate != ''">
             AND issue_date BETWEEN #{startDate} AND #{endDate}
         </if>
+
+        ORDER BY issue_date DESC
 
     </select>
 
@@ -469,7 +502,7 @@
         <if test="userName != null and userName != ''">
             AND user_name = #{userName}
         </if>
-        <if test="planName != null and planName != ''">
+        <if test="planName != null and planName != '' and planName !='전체조회'">
             AND inquiry_type = #{planName}
         </if>
         <if test="startDate != null and startDate != ''">
@@ -613,7 +646,7 @@
         <if test="keyword != null and keyword != ''">
             AND faq_title LIKE CONCAT('%', #{keyword}, '%')
         </if>
-        <if test="searchType != null and searchType != ''">
+        <if test="searchType != null and searchType != '' and searchType != '전체조회'">
             AND faq_type = #{searchType}
         </if>
 

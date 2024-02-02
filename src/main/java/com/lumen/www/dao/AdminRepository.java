@@ -167,7 +167,7 @@ public interface AdminRepository {
      * @param searchDTO 1:1 문의 목록 조회에 사용되는 조건을 포함하는 데이터 전송 객체.
      * @return 조회된 1:1 문의 목록을 포함하는 InquiryDTO 객체 리스트.
      */
-    List<InquiryDTO> getInquiryList(SearchDTO searchDTO);
+    List<InquiryListDTO> getInquiryList(SearchDTO searchDTO);
 
     /**
      * 1:1 문의 세부 사항을 조회합니다.

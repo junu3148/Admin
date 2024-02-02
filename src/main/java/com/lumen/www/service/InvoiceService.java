@@ -5,6 +5,7 @@ import com.itextpdf.io.font.FontConstants;
 import com.itextpdf.kernel.font.PdfFont;
 import com.itextpdf.kernel.font.PdfFontFactory;
 import com.itextpdf.kernel.pdf.PdfDocument;
+import com.itextpdf.kernel.pdf.PdfPage;
 import com.itextpdf.kernel.pdf.PdfWriter;
 import com.itextpdf.layout.Document;
 import com.itextpdf.layout.element.*;
@@ -152,6 +153,9 @@ public class InvoiceService {
         // 문서를 닫습니다.
         document.close();
     }
+
+
+
 
     // 이메일 발송 메서드
     private void sendEmailWithAttachment(String recipientEmail, byte[] attachment, String filename) throws MessagingException {

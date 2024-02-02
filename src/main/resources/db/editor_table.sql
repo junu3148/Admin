@@ -49,6 +49,7 @@ CREATE TABLE user
     company         VARCHAR(255) NULL,
     plan_key        BIGINT UNSIGNED DEFAULT 1,
     is_deleted      TINYINT(1) NOT NULL DEFAULT 0,
+    logo_image      VARCHAR(255) NULL,
     FOREIGN KEY (plan_key) REFERENCES PLAN (plan_key)
 
 );

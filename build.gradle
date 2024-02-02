@@ -64,6 +64,14 @@ dependencies {
     // pdf
     implementation 'com.itextpdf:itext7-core:7.1.16'
 
+
+    // Spring AOP 의존성
+    implementation 'org.springframework.boot:spring-boot-starter-aop'
+
+// AspectJ 의존성
+    implementation 'org.aspectj:aspectjweaver'
+
+
 }
 
 tasks.named('test') {

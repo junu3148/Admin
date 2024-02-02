@@ -151,3 +151,23 @@ CREATE TABLE refresh_tokens
     creation_date DATETIME DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (admin_key) REFERENCES Admin (admin_key)
 );
+
+
+WITH RECURSIVE date_generator AS (
+    SELECT CURDATE() - INTERVAL 1 MONTH AS date -- 시작 날짜 설정
+    UNION ALL
+    SELECT date - INTERVAL 1 MONTH
+    FROM date_generator
+    WHERE date > CURDATE() - INTERVAL 12 MONTH
+)
+   , months AS (
+    SELECT YEAR(date) AS year, MONTH(date) AS month
+    FROM date_generator
+)
+SELECT
+    CONCAT(m.year, '년 ', m.month, '월') AS month_formatted,
+    COALESCE(COUNT(u.user_key), 0) AS total_signups
+FROM months m
+         LEFT JOIN user u ON YEAR(u.accession_date) = m.year AND MONTH(u.accession_date) = m.month AND u.is_deleted = 0
+GROUP BY m.year, m.month
+ORDER BY m.year , m.month;

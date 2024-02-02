@@ -46,6 +46,9 @@ public class AuthController {
     // 관리자 정보 수정
     @PostMapping("admin-user/update")
     public ResponseEntity<?> adminUserUpdate(@RequestBody AdminUser adminUser) {
+
+        System.out.println(adminUser);
+
         return adminService.updateAdminUser(adminUser);
     }
 
