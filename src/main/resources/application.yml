@@ -73,3 +73,11 @@ file:
 # JWT 설정
 jwt:
   secret: 64461f01e1s23mf93ngrg2fd9501ce59142452199ff112fb5404c8e7e98e3ff
+
+# 로그설정
+logging:
+  level:
+    root: INFO
+    com.lumen.www: DEBUG
+  file:
+    name: logs/myapp.log
