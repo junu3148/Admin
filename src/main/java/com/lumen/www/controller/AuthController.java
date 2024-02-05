@@ -2,13 +2,18 @@ package com.lumen.www.controller;
 
 import com.lumen.www.dto.user.AdminUser;
 import com.lumen.www.dto.common.JsonResult;
+import com.lumen.www.jwt.JwtTokenProvider;
 import com.lumen.www.service.AdminService;
 import com.lumen.www.service.MemberService;
 import com.lumen.www.util.JwtTokenUtil;
+import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -49,22 +54,23 @@ public class AuthController {
 
     // accessToken 검증
     @PostMapping("access-token")
-    public ResponseEntity<?> accessTokenCK() {
-        return ResponseEntity.ok().body("Request is valid and authenticated");
+    public ResponseEntity<?> accessTokenCK(HttpServletRequest request) {
+        return memberService.accessTokenCK(request);
     }
+
 
     // refreshToken 검증
     @PostMapping("refresh-token")
     public ResponseEntity<?> refreshTokenCK(HttpServletRequest request) {
+        System.out.println("호출되니");
         return memberService.refreshTokenCK(JwtTokenUtil.resolveToken(request));
     }
 
     // logout
     @PostMapping("logout")
-    public void adminLogout(HttpServletRequest request){
+    public void adminLogout(HttpServletRequest request) {
         adminService.logout(request);
     }
-
 
 
 }

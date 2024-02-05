@@ -27,8 +27,8 @@ public class JwtTokenProvider {
 
     private final Key key;
     private final TokenRepository tokenRepository;
-    public final long ACCESS_TOKEN_EXPIRE_COUNT = 60 * 60 * 1000L; // 1시간
-    public final long REFRESH_TOKEN_EXPIRE_COUNT = (8 * 60 * 60 * 1000); //8시간
+    public final long ACCESS_TOKEN_EXPIRE_COUNT = 30 * 60 * 1000L; // 30분
+    public final long REFRESH_TOKEN_EXPIRE_COUNT = 8 * 60 * 60 * 1000L; // 8시간
     private static final String TOKEN_TYPE = "JWT";
     private static final SignatureAlgorithm SIGNATURE_ALGORITHM = SignatureAlgorithm.HS256;
     private static final String CLAIM_ADMIN_USER_ID = "sub";
@@ -75,16 +75,30 @@ public class JwtTokenProvider {
 
         // Access Token 유효시간: 30분 (30 * 60 * 1000)
         Date accessTokenExpiresIn = new Date(now + ACCESS_TOKEN_EXPIRE_COUNT);
-        String accessToken = Jwts.builder().setHeaderParam("typ", TOKEN_TYPE).setSubject(authentication.getName()).claim(CLAIM_IS_ADMIN, roles).setExpiration(accessTokenExpiresIn).signWith(key, SIGNATURE_ALGORITHM).compact();
+        String accessToken = Jwts.builder()
+                .setHeaderParam("typ", TOKEN_TYPE)
+                .setSubject(authentication.getName())
+                .claim(CLAIM_IS_ADMIN, roles)
+                .setExpiration(accessTokenExpiresIn)
+                .signWith(key, SIGNATURE_ALGORITHM)
+                .compact();
 
         // Refresh Token 유효시간: 8시간 (8 * 60 * 60 * 1000)
         Date refreshTokenExpiresIn = new Date(now + REFRESH_TOKEN_EXPIRE_COUNT);
-        String refreshToken = Jwts.builder().setHeaderParam("typ", TOKEN_TYPE).setExpiration(refreshTokenExpiresIn).signWith(key, SIGNATURE_ALGORITHM).compact();
+        String refreshToken = Jwts.builder()
+                .setHeaderParam("typ", TOKEN_TYPE)
+                .setExpiration(refreshTokenExpiresIn)
+                .signWith(key, SIGNATURE_ALGORITHM)
+                .compact();
 
         // 리플레시 토큰 저장
         tokenRepository.saveRefreshToken(authentication.getName(), refreshToken, refreshTokenExpiresIn);
 
-        return JwtToken.builder().grantType("Bearer").accessToken(accessToken).refreshToken(refreshToken).build();
+        return JwtToken.builder()
+                .grantType("Bearer")
+                .accessToken(accessToken)
+                .refreshToken(refreshToken)
+                .build();
     }
 
     /**
