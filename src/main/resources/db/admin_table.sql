@@ -171,3 +171,28 @@ FROM months m
          LEFT JOIN user u ON YEAR(u.accession_date) = m.year AND MONTH(u.accession_date) = m.month AND u.is_deleted = 0
 GROUP BY m.year, m.month
 ORDER BY m.year , m.month;
+
+
+-- 리플레시 토큰 자정에 자동 삭제
+SET GLOBAL event_scheduler = ON;
+
+CREATE EVENT IF NOT EXISTS delete_expired_tokens_07
+    ON SCHEDULE EVERY 1 DAY STARTS TIMESTAMP(CURRENT_DATE, '07:00:00')
+    DO
+    DELETE FROM REFRESH_TOKENS WHERE expiry_date < NOW();
+
+
+CREATE EVENT IF NOT EXISTS delete_expired_tokens_19
+    ON SCHEDULE EVERY 1 DAY STARTS TIMESTAMP(CURRENT_DATE, '19:00:00')
+    DO
+    DELETE FROM REFRESH_TOKENS WHERE expiry_date < NOW();
+
+CREATE EVENT IF NOT EXISTS delete_expired_tokens_21
+    ON SCHEDULE EVERY 1 DAY STARTS TIMESTAMP(CURRENT_DATE, '21:00:00')
+    DO
+    DELETE FROM REFRESH_TOKENS WHERE expiry_date < NOW();
+
+CREATE EVENT IF NOT EXISTS delete_expired_tokens_00
+    ON SCHEDULE EVERY 1 DAY STARTS TIMESTAMP(CURRENT_DATE, '00:00:00')
+    DO
+    DELETE FROM REFRESH_TOKENS WHERE expiry_date < NOW();

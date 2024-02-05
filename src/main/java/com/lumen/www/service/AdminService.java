@@ -1,6 +1,16 @@
 package com.lumen.www.service;
 
-import com.lumen.www.dto.*;
+import com.lumen.www.dto.common.JsonResult;
+import com.lumen.www.dto.common.SearchDTO;
+import com.lumen.www.dto.faq.FaqDTO;
+import com.lumen.www.dto.inquiry.InquiryDTO;
+import com.lumen.www.dto.invoice.InvoiceDTO;
+import com.lumen.www.dto.notice.NoticeDTO;
+import com.lumen.www.dto.pricing.PriceSearchDTO;
+import com.lumen.www.dto.promotion.PromotionsDTO;
+import com.lumen.www.dto.terms.TermsDTO;
+import com.lumen.www.dto.user.AdminUser;
+import com.lumen.www.dto.user.UserDTO;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.ResponseEntity;
 
@@ -24,7 +34,22 @@ public interface AdminService {
      */
     JsonResult getAdminUser(HttpServletRequest request);
 
+
+    /**
+     * 관리자 사용자 정보를 업데이트하는 메서드입니다.
+     *
+     * @param adminUser 업데이트할 관리자 사용자 정보를 포함하는 AdminUser 객체
+     * @return 업데이트가 성공하면 HTTP 상태 코드 200을 반환하고, 실패하면 오류 코드와 함께 적절한 응답을 반환합니다.
+     */
     ResponseEntity<?> updateAdminUser(AdminUser adminUser);
+
+    /**
+     * 사용자를 로그아웃하는 메서드입니다.
+     * 이 메서드는 현재 사용자의 세션을 종료하고 로그아웃 처리를 수행합니다.
+     *
+     * @param request 로그아웃 요청을 처리하는 HTTP 요청 객체.
+     */
+    void logout(HttpServletRequest request);
 
     /**
      * 가입자 현황을 반환합니다.
@@ -73,11 +98,10 @@ public interface AdminService {
 
     /**
      * 새로운 프로모션을 등록합니다.
-     *
      * @param promotionsDTO 등록할 프로모션의 데이터 전송 객체.
      * @return 프로모션 등록 결과를 포함하는 JsonResult 객체.
      */
-    JsonResult addPromotions(PromotionsDTO promotionsDTO);
+    JsonResult sendPromotionEmail(PromotionsDTO promotionsDTO);
 
     /**
      * 가입자의 강제 탈퇴 처리를 수행합니다.
@@ -251,7 +275,7 @@ public interface AdminService {
      * 이 메서드는 HttpServletRequest와 FaqDTO 객체를 인자로 받아 새로운 FAQ를 추가합니다.
      *
      * @param request 클라이언트의 요청 정보를 담고 있는 HttpServletRequest 객체.
-     * @param faqDTO 추가할 FAQ의 정보를 포함하는 데이터 전송 객체.
+     * @param faqDTO  추가할 FAQ의 정보를 포함하는 데이터 전송 객체.
      * @return 처리 결과를 나타내는 ResponseEntity 객체.
      */
     ResponseEntity<?> insertFaq(HttpServletRequest request, FaqDTO faqDTO);
@@ -290,7 +314,6 @@ public interface AdminService {
      * @return 처리 결과를 나타내는 ResponseEntity 객체.
      */
     ResponseEntity<?> updateTerms(TermsDTO termsDTO);
-
 
 
 }

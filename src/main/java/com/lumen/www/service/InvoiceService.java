@@ -5,14 +5,14 @@ import com.itextpdf.io.font.FontConstants;
 import com.itextpdf.kernel.font.PdfFont;
 import com.itextpdf.kernel.font.PdfFontFactory;
 import com.itextpdf.kernel.pdf.PdfDocument;
-import com.itextpdf.kernel.pdf.PdfPage;
 import com.itextpdf.kernel.pdf.PdfWriter;
 import com.itextpdf.layout.Document;
+import com.itextpdf.layout.borders.Border;
 import com.itextpdf.layout.element.*;
 import com.itextpdf.layout.property.TextAlignment;
 import com.itextpdf.layout.property.UnitValue;
-import com.lumen.www.dto.InvoiceDTO;
-import com.lumen.www.dto.InvoiceData;
+import com.lumen.www.dto.invoice.InvoiceDTO;
+import com.lumen.www.dto.invoice.InvoiceData;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
@@ -68,7 +68,102 @@ public class InvoiceService {
         return data;
     }
 
-    // PDF 문서 생성 메서드
+    /// PDF 문서 생성 메서드
+    private void createPdf(ByteArrayOutputStream outputStream, InvoiceDTO dto) throws IOException {
+        // InvoiceDTO에서 필요한 데이터를 추출하여 InvoiceData 객체를 생성합니다.
+        InvoiceData invoiceData = setUpInvoiceDataFromDTO(dto);
+
+        // PDF 문서를 만드는 과정입니다.
+        PdfWriter writer = new PdfWriter(outputStream);
+        PdfDocument pdf = new PdfDocument(writer);
+        Document document = new Document(pdf);
+
+        // 폰트 생성
+        PdfFont font = PdfFontFactory.createFont(FontConstants.HELVETICA);
+
+        // 한글 폰트 설정
+        //PdfFont font = PdfFontFactory.createFont("resources/fonts/NanumGothic.ttf", PdfEncodings.IDENTITY_H, true);
+
+
+        // 인보이스 헤더를 추가합니다.
+        document.add(new Paragraph("Invoice").setTextAlignment(TextAlignment.CENTER).setBold().setFontSize(25));
+
+
+        // 날짜 형식을 변환합니다.
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy년 MM월 dd일");
+        LocalDate issuedDate = LocalDate.parse(invoiceData.getDateOfIssue(), formatter);
+        LocalDate dueDate = LocalDate.parse(invoiceData.getDateDue(), formatter);
+
+        // 인보이스 번호, 발행일, 만기일
+        document.add(new Paragraph(String.format("Invoice Number: %s\nDate of issue: %s\nDate due: %s",
+                dto.getInvoiceCode(), dto.getIssueDate(), dto.getIssueDate())).setFont(font));
+
+        document.add(new Paragraph("\n")); // 여기에 공백 추가
+
+        // 공급자 정보
+          Table infoTable = new Table(UnitValue.createPercentArray(new float[]{1, 1, 1}))
+                .useAllAvailableWidth();
+
+        infoTable.addCell(new Cell().add(new Paragraph("Lumen, Inc.\n1102-ho, B-dong,\nHanam-daero 947, Hanam-si,\nGyeonggido\nKorea\n+82 123 4567\nhelp@lumeninc.com"))
+                .setFont(font).setBorder(Border.NO_BORDER));
+        infoTable.addCell(new Cell().add(new Paragraph("Bill to\nCompany Name\nAddress 1\nAddress 2\nKorea\nZip Code\nEmail Address"))
+                .setFont(font).setTextAlignment(TextAlignment.CENTER).setBorder(Border.NO_BORDER));
+        infoTable.addCell(new Cell().add(new Paragraph("Ship to\nCompany Name\nAddress 1\nAddress 2\nKorea\nZip Code\nEmail Address"))
+                .setFont(font).setTextAlignment(TextAlignment.RIGHT).setBorder(Border.NO_BORDER));
+
+        document.add(infoTable);
+
+        document.add(new Paragraph("\n")); // 여기에 공백 추가
+
+
+        // 상품 정보를 테이블에 추가합니다.
+        Table table = new Table(UnitValue.createPercentArray(new float[]{1, 5, 2, 2}))
+                .useAllAvailableWidth();
+
+        // 헤더 셀에 선 제거 적용
+        table.addHeaderCell(new Cell().add(new Paragraph("Description")).setBorder(Border.NO_BORDER));
+        table.addHeaderCell(new Cell().add(new Paragraph("Qty")).setBorder(Border.NO_BORDER));
+        table.addHeaderCell(new Cell().add(new Paragraph("Unit price")).setBorder(Border.NO_BORDER));
+        table.addHeaderCell(new Cell().add(new Paragraph("Amount")).setBorder(Border.NO_BORDER));
+
+        // 데이터 셀에 선 제거 적용
+        table.addCell(new Cell().add(new Paragraph(dto.getPlanName() + " (" + dto.getPlanType() + ")")).setBorder(Border.NO_BORDER));
+        table.addCell(new Cell().add(new Paragraph(String.valueOf(dto.getSubRound()))).setBorder(Border.NO_BORDER));
+        table.addCell(new Cell().add(new Paragraph("$" + dto.getPlanPrice())).setBorder(Border.NO_BORDER));
+        table.addCell(new Cell().add(new Paragraph("$" + dto.getPlanPrice())).setBorder(Border.NO_BORDER));
+
+        document.add(table);
+
+        document.add(new Paragraph("\n")); // 여기에 공백 추가
+
+
+
+        // 소계, 세금, 총계 및 최종 금액을 오른쪽 정렬로 표시하기 위한 테이블 생성
+        Table financialTable = new Table(UnitValue.createPercentArray(new float[]{1, 2})).useAllAvailableWidth();
+        // financialTable에 선을 추가합니다.
+        financialTable.addCell(new Cell(1, 2).add(new Paragraph("-------------------------------------------------")).setTextAlignment(TextAlignment.RIGHT).setBorder(Border.NO_BORDER));
+        financialTable.addCell(new Cell(1, 2).add(new Paragraph("Subtotal                                       $" + invoiceData.getSubTotal())).setTextAlignment(TextAlignment.RIGHT).setBorder(Border.NO_BORDER));
+        financialTable.addCell(new Cell(1, 2).add(new Paragraph("-------------------------------------------------")).setTextAlignment(TextAlignment.RIGHT).setBorder(Border.NO_BORDER));
+        financialTable.addCell(new Cell(1, 2).add(new Paragraph("Total excluding tax                      $" + invoiceData.getSubTotal())).setTextAlignment(TextAlignment.RIGHT).setBorder(Border.NO_BORDER));
+        financialTable.addCell(new Cell(1, 2).add(new Paragraph("-------------------------------------------------")).setTextAlignment(TextAlignment.RIGHT).setBorder(Border.NO_BORDER));
+        financialTable.addCell(new Cell(1, 2).add(new Paragraph("Tax                                                $" + invoiceData.getTax())).setTextAlignment(TextAlignment.RIGHT).setBorder(Border.NO_BORDER));
+        financialTable.addCell(new Cell(1, 2).add(new Paragraph("-------------------------------------------------")).setTextAlignment(TextAlignment.RIGHT).setBorder(Border.NO_BORDER));
+        financialTable.addCell(new Cell(1, 2).add(new Paragraph("Total                                            $" + invoiceData.getTotal())).setTextAlignment(TextAlignment.RIGHT).setBorder(Border.NO_BORDER));
+        financialTable.addCell(new Cell(1, 2).add(new Paragraph("-------------------------------------------------")).setTextAlignment(TextAlignment.RIGHT).setBorder(Border.NO_BORDER));
+        financialTable.addCell(new Cell(1, 2).add(new Paragraph("Amount due                        $" + invoiceData.getTotal() + " USD")).setTextAlignment(TextAlignment.RIGHT).setBorder(Border.NO_BORDER));
+
+        document.add(financialTable);
+
+
+
+        // 문서를 닫습니다.
+        document.close();
+    }
+
+
+/*
+
+    /// PDF 문서 생성 메서드
     private void createPdf(ByteArrayOutputStream outputStream, InvoiceDTO dto) throws IOException {
         // InvoiceDTO에서 필요한 데이터를 추출하여 InvoiceData 객체를 생성합니다.
         InvoiceData invoiceData = setUpInvoiceDataFromDTO(dto);
@@ -155,6 +250,7 @@ public class InvoiceService {
     }
 
 
+*/
 
 
     // 이메일 발송 메서드

@@ -1,6 +1,22 @@
 package com.lumen.www.dao;
 
-import com.lumen.www.dto.*;
+import com.lumen.www.dto.user.JoinListDTO;
+import com.lumen.www.dto.common.SearchDTO;
+import com.lumen.www.dto.faq.FaqDTO;
+import com.lumen.www.dto.inquiry.InquiryDTO;
+import com.lumen.www.dto.inquiry.InquiryListDTO;
+import com.lumen.www.dto.invoice.InvoiceDTO;
+import com.lumen.www.dto.invoice.InvoiceListDTO;
+import com.lumen.www.dto.notice.NoticeDTO;
+import com.lumen.www.dto.notice.NoticeListDTO;
+import com.lumen.www.dto.payment.PayListDTO;
+import com.lumen.www.dto.pricing.PriceListDTO;
+import com.lumen.www.dto.pricing.PriceSearchDTO;
+import com.lumen.www.dto.terms.TermsDTO;
+import com.lumen.www.dto.user.AdminDTO;
+import com.lumen.www.dto.user.AdminUser;
+import com.lumen.www.dto.main.UserActivityDTO;
+import com.lumen.www.dto.user.UserDTO;
 
 import java.util.List;
 import java.util.Map;
@@ -47,6 +63,12 @@ public interface AdminRepository {
      */
     AdminDTO getAdminUser(String adminId);
 
+    /**
+     * 관리자 사용자 정보를 업데이트하는 메서드입니다.
+     *
+     * @param adminUser 업데이트할 관리자 사용자 정보를 포함하는 AdminUser 객체
+     * @return 업데이트가 성공하면 1을 반환하고, 실패하면 0을 반환합니다.
+     */
     int updateAdminUser(AdminUser adminUser);
 
     /**

@@ -1,6 +1,22 @@
 package com.lumen.www.dao;
 
-import com.lumen.www.dto.*;
+import com.lumen.www.dto.user.JoinListDTO;
+import com.lumen.www.dto.common.SearchDTO;
+import com.lumen.www.dto.faq.FaqDTO;
+import com.lumen.www.dto.inquiry.InquiryDTO;
+import com.lumen.www.dto.inquiry.InquiryListDTO;
+import com.lumen.www.dto.invoice.InvoiceDTO;
+import com.lumen.www.dto.invoice.InvoiceListDTO;
+import com.lumen.www.dto.notice.NoticeDTO;
+import com.lumen.www.dto.notice.NoticeListDTO;
+import com.lumen.www.dto.payment.PayListDTO;
+import com.lumen.www.dto.pricing.PriceListDTO;
+import com.lumen.www.dto.pricing.PriceSearchDTO;
+import com.lumen.www.dto.terms.TermsDTO;
+import com.lumen.www.dto.user.AdminDTO;
+import com.lumen.www.dto.user.AdminUser;
+import com.lumen.www.dto.main.UserActivityDTO;
+import com.lumen.www.dto.user.UserDTO;
 import lombok.RequiredArgsConstructor;
 import org.apache.ibatis.session.SqlSession;
 import org.springframework.stereotype.Repository;

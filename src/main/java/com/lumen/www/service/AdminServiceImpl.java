@@ -1,15 +1,34 @@
 package com.lumen.www.service;
 
 import com.lumen.www.dao.AdminRepository;
-import com.lumen.www.dto.*;
+import com.lumen.www.dao.TokenRepository;
+import com.lumen.www.dto.user.JoinListDTO;
+import com.lumen.www.dto.common.JsonResult;
+import com.lumen.www.dto.common.SearchDTO;
+import com.lumen.www.dto.email.EmailMessage;
+import com.lumen.www.dto.faq.FaqDTO;
+import com.lumen.www.dto.inquiry.InquiryDTO;
+import com.lumen.www.dto.inquiry.InquiryListDTO;
+import com.lumen.www.dto.invoice.InvoiceDTO;
+import com.lumen.www.dto.notice.NoticeDTO;
+import com.lumen.www.dto.notice.NoticeListDTO;
+import com.lumen.www.dto.payment.PayListDTO;
+import com.lumen.www.dto.pricing.PriceListDTO;
+import com.lumen.www.dto.pricing.PriceSearchDTO;
+import com.lumen.www.dto.promotion.PromotionsDTO;
+import com.lumen.www.dto.terms.TermsDTO;
+import com.lumen.www.dto.user.AdminDTO;
+import com.lumen.www.dto.user.AdminUser;
+import com.lumen.www.dto.main.MonthlySubscriberDTO;
+import com.lumen.www.dto.user.UserDTO;
 import com.lumen.www.jwt.JwtTokenProvider;
-import com.lumen.www.util.EmailService;
 import com.lumen.www.util.JwtTokenUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -31,7 +50,7 @@ public class AdminServiceImpl implements AdminService {
     private final EmailService emailService;
     private final JwtTokenProvider jwtTokenProvider;
     private final InvoiceService invoiceService;
-
+    private final TokenRepository tokenRepository;
 
     // 2차 로그인
     @Override
@@ -51,7 +70,7 @@ public class AdminServiceImpl implements AdminService {
 
     // 관리자 세부 정보
     @Override
-    @Transactional(readOnly = true)
+    @Transactional(readOnly = true) // 정보를 가져올수만 있음.
     public JsonResult getAdminUser(HttpServletRequest request) {
         // 1. 토큰 추출
         String token = JwtTokenUtil.resolveToken(request);
@@ -72,7 +91,14 @@ public class AdminServiceImpl implements AdminService {
     // 관리자 정보 수정
     @Override
     @Transactional
+    //@PreAuthorize("#adminUser.username == authentication.principal.username") //현재 인증된 사용자가 수정하려는 AdminUser의 adminId와 일치하는 경우에만 메서드 실행이 진행됩니다.
+    //@PreAuthorize("#adminUser.getUsername() == authentication.principal.username")
     public ResponseEntity<?> updateAdminUser(AdminUser adminUser) {
+
+        // 메서드 내에서 값 확인을 위한 로깅
+        System.out.println("adminUser.adminId: " + adminUser.getAdminId());
+        System.out.println("authentication.principal.username: " + SecurityContextHolder.getContext().getAuthentication().getPrincipal());
+
 
         if (adminUser.getPassword() != null) {
             // 비밀번호 BCrypt 변환
@@ -85,6 +111,16 @@ public class AdminServiceImpl implements AdminService {
         return createResponse(result, "Modifying administrator information was performed normally.", "Modifying administrator information failed.");
     }
 
+    @Override
+    public void logout(HttpServletRequest request) {
+
+        String token = JwtTokenUtil.resolveToken(request);
+
+        String adminId = jwtTokenProvider.getAdminUserInfoFromToken(token);
+
+        tokenRepository.deleteRefreshToken(adminId);
+
+    }
 
     // ------------------------------------------------------------------------------------- Main -----------------------------------------------------------------------------------------
     // 가입자 현황
@@ -196,11 +232,11 @@ public class AdminServiceImpl implements AdminService {
     // ------------------------------------------------------------------------------------- Promo -----------------------------------------------------------------------------------------
     // 프로모션 메일 발송
     @Override
-    public JsonResult addPromotions(PromotionsDTO promotionsDTO) {
+    public JsonResult sendPromotionEmail(PromotionsDTO promotionsDTO) {
 
         EmailMessage emailMessage = EmailMessage.builder().subject(promotionsDTO.getPromotionsTitle()).message(promotionsDTO.getPromotionsContent()).build();
         // 이메일 전송 후 결과를 반환받음
-        String result = emailService.sendMail(emailMessage, "test");
+        String result = emailService.sendMail(emailMessage);
 
         if (result.equals("ok")) {
             return createJsonResult(result);

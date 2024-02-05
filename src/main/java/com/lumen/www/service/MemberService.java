@@ -2,12 +2,11 @@ package com.lumen.www.service;
 
 import com.lumen.www.dao.AdminRepository;
 import com.lumen.www.dao.TokenRepository;
-import com.lumen.www.dto.AdminUser;
-import com.lumen.www.dto.JwtToken;
-import com.lumen.www.dto.RefreshToken;
+import com.lumen.www.dto.user.AdminUser;
+import com.lumen.www.dto.auth.JwtToken;
+import com.lumen.www.dto.auth.RefreshToken;
 import com.lumen.www.jwt.JwtTokenProvider;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -25,8 +24,8 @@ import java.util.regex.Pattern;
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
-@Slf4j
 public class MemberService {
+
     private final AdminRepository adminRepository;
     private final AuthenticationManagerBuilder authenticationManagerBuilder;
     private final JwtTokenProvider jwtTokenProvider;

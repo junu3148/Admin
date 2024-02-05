@@ -1,8 +1,8 @@
 package com.lumen.www.jwt;
 
 import com.lumen.www.dao.TokenRepository;
-import com.lumen.www.dto.JwtToken;
-import com.lumen.www.dto.RefreshToken;
+import com.lumen.www.dto.auth.JwtToken;
+import com.lumen.www.dto.auth.RefreshToken;
 import com.lumen.www.exception.InvalidTokenException;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;
@@ -69,48 +69,22 @@ public class JwtTokenProvider {
      * @return 생성된 JWT 액세스 토큰과 리프레시 토큰이 포함된 JwtToken 객체.
      */
     public JwtToken generateToken(Authentication authentication) {
-        String roles = authentication.getAuthorities().stream()
-                .map(GrantedAuthority::getAuthority)
-                .collect(Collectors.joining(","));
+        String roles = authentication.getAuthorities().stream().map(GrantedAuthority::getAuthority).collect(Collectors.joining(","));
 
         long now = (new Date()).getTime();
 
         // Access Token 유효시간: 30분 (30 * 60 * 1000)
         Date accessTokenExpiresIn = new Date(now + ACCESS_TOKEN_EXPIRE_COUNT);
-        String accessToken = Jwts.builder()
-                .setHeaderParam("typ", TOKEN_TYPE)
-                .setSubject(authentication.getName())
-                .claim(CLAIM_IS_ADMIN, roles)
-                .setExpiration(accessTokenExpiresIn)
-                .signWith(key, SIGNATURE_ALGORITHM)
-                .compact();
+        String accessToken = Jwts.builder().setHeaderParam("typ", TOKEN_TYPE).setSubject(authentication.getName()).claim(CLAIM_IS_ADMIN, roles).setExpiration(accessTokenExpiresIn).signWith(key, SIGNATURE_ALGORITHM).compact();
 
         // Refresh Token 유효시간: 8시간 (8 * 60 * 60 * 1000)
         Date refreshTokenExpiresIn = new Date(now + REFRESH_TOKEN_EXPIRE_COUNT);
-        String refreshToken = Jwts.builder()
-                .setHeaderParam("typ", TOKEN_TYPE)
-                .setExpiration(refreshTokenExpiresIn)
-                .signWith(key, SIGNATURE_ALGORITHM)
-                .compact();
+        String refreshToken = Jwts.builder().setHeaderParam("typ", TOKEN_TYPE).setExpiration(refreshTokenExpiresIn).signWith(key, SIGNATURE_ALGORITHM).compact();
 
-        // 아이디로 리플레시 토큰이 있는지 확인
-        Optional<RefreshToken> existingToken = tokenRepository.findRefreshToken(authentication.getName());
+        // 리플레시 토큰 저장
+        tokenRepository.saveRefreshToken(authentication.getName(), refreshToken, refreshTokenExpiresIn);
 
-        if (existingToken.isPresent() && existingToken.get().getRefreshToken() != null) {
-            // 토큰이 존재하고, 값이 null이 아니면 기존 토큰을 사용합니다.
-            RefreshToken refreshTokenObj = existingToken.get();
-            refreshToken = refreshTokenObj.getRefreshToken();
-            // refreshTokenExpiresIn = refreshTokenObj.getExpiryDate(); // 필요한 경우
-        } else {
-            // 토큰이 존재하지 않거나 토큰 값이 null인 경우, 새 토큰을 생성 및 저장합니다.
-            tokenRepository.saveRefreshToken(authentication.getName(), refreshToken, refreshTokenExpiresIn);
-        }
-
-        return JwtToken.builder()
-                .grantType("Bearer")
-                .accessToken(accessToken)
-                .refreshToken(refreshToken)
-                .build();
+        return JwtToken.builder().grantType("Bearer").accessToken(accessToken).refreshToken(refreshToken).build();
     }
 
     /**
@@ -122,23 +96,18 @@ public class JwtTokenProvider {
      *                  이 데이터는 사용자의 이름과 역할 정보를 포함하고 있어야 합니다.
      * @return 생성된 JWT 액세스 토큰 문자열.
      */
-    public String generateAccessToken(Optional<RefreshToken>  tokenData) {
+    public String generateAccessToken(Optional<RefreshToken> tokenData) {
 
         // 관리자에 대한 역할은 사전에 정의되어 있거나 어딘가에서 가져오는 것으로 가정합니다.
-        String roles = "ROLE_" +tokenData.get().getRole(); // 실제 역할 가져오는 로직으로 필요에 따라 교체하세요.
+        String roles = "ROLE_" + tokenData.get().getRole(); // 실제 역할 가져오는 로직으로 필요에 따라 교체하세요.
 
         long now = (new Date()).getTime();
 
         // 액세스 토큰 유효 시간: 30분 (30 * 60 * 1000)
         Date accessTokenExpiresIn = new Date(now + ACCESS_TOKEN_EXPIRE_COUNT);
 
-        return Jwts.builder()
-                .setHeaderParam("typ", TOKEN_TYPE)
-                .setSubject(tokenData.get().getUsername()) // adminId를 주제로 설정
-                .claim("roles", roles)
-                .setExpiration(accessTokenExpiresIn)
-                .signWith(key, SIGNATURE_ALGORITHM)
-                .compact();
+        return Jwts.builder().setHeaderParam("typ", TOKEN_TYPE).setSubject(tokenData.get().getUsername()) // adminId를 주제로 설정
+                .claim("roles", roles).setExpiration(accessTokenExpiresIn).signWith(key, SIGNATURE_ALGORITHM).compact();
     }
 
     /**
@@ -165,19 +134,14 @@ public class JwtTokenProvider {
      * @throws io.jsonwebtoken.JwtException 토큰이 유효하지 않거나 파싱 중 문제가 발생한 경우.
      */
     public Claims parseToken(String token) {
-        return Jwts.parserBuilder()
-                .setSigningKey(key) // JWT 토큰을 검증하기 위한 서명 키 설정
+        return Jwts.parserBuilder().setSigningKey(key) // JWT 토큰을 검증하기 위한 서명 키 설정
                 .build()           // JwtParserBuilder 인스턴스를 JwtParser로 빌드
                 .parseClaimsJws(token) // 토큰을 파싱하여 Claims JWS 객체를 얻음
                 .getBody();            // Claims JWS 객체에서 Claims(클레임 세트)를 추출
     }
 
     public Date getExpirationDateFromToken(String token) {
-        Claims claims = Jwts.parserBuilder()
-                .setSigningKey(key)
-                .build()
-                .parseClaimsJws(token)
-                .getBody();
+        Claims claims = Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token).getBody();
 
         return claims.getExpiration();
     }
@@ -208,9 +172,7 @@ public class JwtTokenProvider {
             authorities = Collections.singletonList(new SimpleGrantedAuthority("ROLE_DEFAULT"));
         } else {
             // 권한 정보를 쉼표(,)로 분리하고 Spring Security의 GrantedAuthority로 변환합니다.
-            authorities = Arrays.stream(rolesStr.split(","))
-                    .map(SimpleGrantedAuthority::new)
-                    .collect(Collectors.toList());
+            authorities = Arrays.stream(rolesStr.split(",")).map(SimpleGrantedAuthority::new).collect(Collectors.toList());
         }
 
         // UserDetails 객체를 생성하여 Authentication 객체를 반환합니다.
@@ -229,8 +191,7 @@ public class JwtTokenProvider {
         try {
             // JWT 토큰을 검증하기 위한 파서를 생성합니다.
             // 파서는 사용자 지정 키(key)를 사용하여 토큰을 검증합니다.
-            JwtParser parser = Jwts.parserBuilder()
-                    .setSigningKey(key) // 사용자 지정 키로 서명을 검증합니다.
+            JwtParser parser = Jwts.parserBuilder().setSigningKey(key) // 사용자 지정 키로 서명을 검증합니다.
                     .build();
 
             // parseClaimsJws 메서드를 사용하여 JWT 토큰을 검증합니다.
@@ -271,8 +232,7 @@ public class JwtTokenProvider {
         try {
             // JWT 토큰을 해석하기 위한 파서를 생성합니다.
             // 파서는 사용자 지정 키(key)를 사용하여 토큰을 검증합니다.
-            JwtParser parser = Jwts.parserBuilder()
-                    .setSigningKey(key) // 사용자 지정 키로 서명을 검증합니다.
+            JwtParser parser = Jwts.parserBuilder().setSigningKey(key) // 사용자 지정 키로 서명을 검증합니다.
                     .build();
 
             // parseClaimsJws 메서드를 사용하여 JWT 토큰을 해석하고, Jws<Claims> 객체를 반환합니다.

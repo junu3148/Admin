@@ -1,33 +1,35 @@
 package com.lumen.www.dao;
 
-import com.lumen.www.dto.RefreshToken;
-import lombok.RequiredArgsConstructor;
-import org.apache.ibatis.session.SqlSession;
-import org.springframework.stereotype.Repository;
+import com.lumen.www.dto.auth.RefreshToken;
 
 import java.util.Date;
-import java.util.Map;
 import java.util.Optional;
 
-@Repository
-@RequiredArgsConstructor
-public class TokenRepository {
+public interface TokenRepository {
 
-    private final SqlSession sqlSession;
+    /**
+     * 새로운 리프레시 토큰을 저장하는 메서드입니다.
+     *
+     * @param userName     리프레시 토큰과 연결된 사용자의 이름
+     * @param refreshToken 저장할 리프레시 토큰 값
+     * @param expiryDate   리프레시 토큰의 만료 날짜 및 시간
+     */
+    void saveRefreshToken(String userName, String refreshToken, Date expiryDate);
 
-    // 토근 저장
-    public void saveRefreshToken(String userName, String refreshToken, Date expiryDate) {
-        sqlSession.insert("token.saveRefreshToken", Map.of("userName", userName, "refreshToken", refreshToken, "expiryDate", expiryDate));
-    }
+    /**
+     * 특정 사용자의 리프레시 토큰을 삭제하는 메서드입니다.
+     *
+     * @param adminId 삭제할 사용자의 아이디
+     */
+    void deleteRefreshToken(String adminId);
 
-    // 데이터베이스에서 사용자 이름에 해당하는 리프레시 토큰을 조회
-    public Optional<RefreshToken> findRefreshToken(String userName) {
-        return Optional.ofNullable(sqlSession.selectOne("token.findRefreshToken", userName));
-    }
+    /**
+     * 데이터베이스에서 리프레시 토큰을 검증하는 메서드입니다.
+     *
+     * @param refreshToken 확인할 리프레시 토큰 값
+     * @return 주어진 리프레시 토큰이 유효한 경우 해당 토큰을 포함하는 Optional 객체, 그렇지 않으면 비어있는 Optional 객체를 반환합니다.
+     */
+    Optional<RefreshToken> refreshTokenCK(String refreshToken);
 
-    // 데이터베이스의 리플레시 토큰 유효 확인. 파라미터가 따로 관리;
-    public Optional<RefreshToken> refreshTokenCK(String refreshToken){
-        return  Optional.ofNullable(sqlSession.selectOne("token.refreshTokenCK", refreshToken));
-    }
 
 }

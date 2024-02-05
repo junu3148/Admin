@@ -1,15 +1,13 @@
 package com.lumen.www.controller;
 
-import com.lumen.www.dto.AdminUser;
-import com.lumen.www.dto.JsonResult;
-import com.lumen.www.dto.UserDTO;
+import com.lumen.www.dto.user.AdminUser;
+import com.lumen.www.dto.common.JsonResult;
 import com.lumen.www.service.AdminService;
 import com.lumen.www.service.MemberService;
 import com.lumen.www.util.JwtTokenUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -46,9 +44,6 @@ public class AuthController {
     // 관리자 정보 수정
     @PostMapping("admin-user/update")
     public ResponseEntity<?> adminUserUpdate(@RequestBody AdminUser adminUser) {
-
-        System.out.println(adminUser);
-
         return adminService.updateAdminUser(adminUser);
     }
 
@@ -63,5 +58,13 @@ public class AuthController {
     public ResponseEntity<?> refreshTokenCK(HttpServletRequest request) {
         return memberService.refreshTokenCK(JwtTokenUtil.resolveToken(request));
     }
+
+    // logout
+    @PostMapping("logout")
+    public void adminLogout(HttpServletRequest request){
+        adminService.logout(request);
+    }
+
+
 
 }

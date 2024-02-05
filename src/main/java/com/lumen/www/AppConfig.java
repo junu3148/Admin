@@ -3,11 +3,12 @@ package com.lumen.www;
 import com.lumen.www.dao.AdminRepository;
 import com.lumen.www.dao.AdminRepositoryImpl;
 import com.lumen.www.dao.TokenRepository;
+import com.lumen.www.dao.TokenRepositoryImpl;
 import com.lumen.www.files.FileStorageProperties;
 import com.lumen.www.files.ImageUploader;
 import com.lumen.www.jwt.JwtTokenProvider;
 import com.lumen.www.service.*;
-import com.lumen.www.util.EmailService;
+import com.lumen.www.service.EmailService;
 import org.apache.ibatis.session.SqlSession;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.ConfigurationProperties;
@@ -36,7 +37,7 @@ public class AppConfig {
     // AdminService 빈 정의
     @Bean
     public AdminService adminService() {
-        return new AdminServiceImpl(adminRepository(), emailService(), jwtTokenProvider(), invoiceService());
+        return new AdminServiceImpl(adminRepository(), emailService(), jwtTokenProvider(), invoiceService(), tokenRepository());
     }
 
     // AdminRepository 빈 정의
@@ -73,7 +74,7 @@ public class AppConfig {
     // TokenRepository 빈 정의
     @Bean
     public TokenRepository tokenRepository() {
-        return new TokenRepository(sqlSession);
+        return new TokenRepositoryImpl(sqlSession);
     }
 
     // AuthenticationManagerBuilder를 주입받아 사용

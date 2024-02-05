@@ -13,6 +13,30 @@
 
     </insert>
 
+    <!--리플레시 토큰 삭제-->
+    <delete id="deleteRefreshToken" parameterType="String">
+
+        DELETE
+        FROM refresh_tokens
+        WHERE (SELECT admin_key FROM ADMIN WHERE admin_id = #{adminId})
+
+    </delete>
+
+    <!-- 리플레시토큰 체크-->
+    <select id="refreshTokenCK" parameterType="String" resultType="RefreshToken">
+
+        SELECT admin_id AS userName,
+               role,
+               refresh_token,
+               expiry_date
+        FROM refresh_tokens a
+                 INNER JOIN admin b ON a.admin_key = b.admin_key
+        WHERE refresh_token = #{refreshToken}
+          AND expiry_date > NOW()
+
+    </select>
+
+
     <!--리플레시토큰 유효성검사-->
     <select id="findRefreshToken" parameterType="String" resultType="RefreshToken">
 
@@ -20,19 +44,6 @@
                expiry_date
         FROM refresh_tokens
         WHERE ADMIN_KEY = (SELECT ADMIN_KEY FROM ADMIN WHERE ADMIN_ID = #{userName})
-          AND expiry_date > NOW()
-
-    </select>
-
-   <!-- 리플레시토큰 체크-->
-    <select id="refreshTokenCK" parameterType="String" resultType="RefreshToken">
-
-        SELECT admin_id AS userName,
-               role,
-               refresh_token,
-               expiry_date
-        FROM refresh_tokens a INNER JOIN admin b ON a.admin_key = b.admin_key
-        WHERE refresh_token = #{refreshToken}
           AND expiry_date > NOW()
 
     </select>

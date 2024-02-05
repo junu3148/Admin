@@ -1,13 +1,21 @@
 package com.lumen.www.controller;
 
-import com.lumen.www.dto.*;
+import com.lumen.www.dto.common.JsonResult;
+import com.lumen.www.dto.common.SearchDTO;
+import com.lumen.www.dto.faq.FaqDTO;
+import com.lumen.www.dto.inquiry.InquiryDTO;
+import com.lumen.www.dto.invoice.InvoiceDTO;
+import com.lumen.www.dto.notice.NoticeDTO;
+import com.lumen.www.dto.pricing.PriceSearchDTO;
+import com.lumen.www.dto.promotion.PromotionsDTO;
+import com.lumen.www.dto.terms.TermsDTO;
+import com.lumen.www.dto.user.UserDTO;
 import com.lumen.www.files.ImageUploader;
 import com.lumen.www.service.AdminService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.parameters.P;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartHttpServletRequest;
 import org.springframework.web.servlet.ModelAndView;
@@ -52,9 +60,9 @@ public class AdminController {
     }
 
     // 프로모션 등록
-    @PostMapping("add-promotions")
+    @PostMapping("send/promotions")
     public JsonResult addPromotions(@RequestBody PromotionsDTO promotionsDTO) {
-        return adminService.addPromotions(promotionsDTO);
+        return adminService.sendPromotionEmail(promotionsDTO);
     }
 
     // 미결제 관리

@@ -1,7 +1,7 @@
 package com.lumen.www.service;
 
 import com.lumen.www.dao.AdminRepository;
-import com.lumen.www.dto.AdminUser;
+import com.lumen.www.dto.user.AdminUser;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
