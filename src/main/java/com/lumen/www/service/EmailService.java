@@ -76,7 +76,6 @@ public class EmailService {
      */
     public String sendMailPWReset(EmailMessage emailMessage, String email) {
 
-        System.out.println(email);
         // 정의된 수신자 목록
         try {
             // 모든 수신자에 대해 이메일을 비동기적으로 발송

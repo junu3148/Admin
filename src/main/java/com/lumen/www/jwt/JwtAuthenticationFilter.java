@@ -31,7 +31,11 @@ public class JwtAuthenticationFilter extends GenericFilterBean {
                 return;
             }
             // 1. Request Header에서 JWT 토큰 추출
-            String token = JwtTokenUtil.resolveToken((HttpServletRequest) request);
+            String token = JwtTokenUtil.resolveToken(httpRequest);
+            if (token != null && jwtTokenProvider.validateToken(token)) {
+                Authentication authentication = jwtTokenProvider.getAuthentication(token);
+                SecurityContextHolder.getContext().setAuthentication(authentication);
+            }
 
             // 2. validateToken으로 토큰 유효성 검사
             if (token != null && jwtTokenProvider.validateToken(token)) {
@@ -42,6 +46,11 @@ public class JwtAuthenticationFilter extends GenericFilterBean {
 
             // 요청을 다음 필터 또는 대상 서블릿으로 전달
             chain.doFilter(request, response);
+        } catch (CustomExpiredJwtException e) {
+            ((HttpServletResponse) response).setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            response.setContentType("application/json");
+            response.setCharacterEncoding("UTF-8");
+            response.getWriter().write("{\"error\": \"Token expired.\"}");
         } catch (Exception e) {
             // 다른 JWT 관련 예외 처리
             ((HttpServletResponse) response).sendError(HttpServletResponse.SC_UNAUTHORIZED, e.getMessage());

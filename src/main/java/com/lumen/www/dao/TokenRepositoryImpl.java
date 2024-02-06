@@ -24,11 +24,10 @@ public class TokenRepositoryImpl implements TokenRepository {
     // 데이터베이스에서 사용자 이름으로 리플레시 토큰 삭제
     @Override
     public void deleteRefreshToken(String adminId) {
-        System.out.println("리포지토리" + adminId);
         sqlSession.delete("token.deleteRefreshToken", adminId);
     }
 
-    // 데이터베이스의 리플레시 토큰 유효 확인. 파라미터가 따로 관리;
+    // 데이터베이스의 리플레시 토큰 유효 확인.
     @Override
     public Optional<RefreshToken> refreshTokenCK(String refreshToken) {
         return Optional.ofNullable(sqlSession.selectOne("token.refreshTokenCK", refreshToken));

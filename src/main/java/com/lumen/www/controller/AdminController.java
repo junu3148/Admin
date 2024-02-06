@@ -20,7 +20,6 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartHttpServletRequest;
 import org.springframework.web.servlet.ModelAndView;
 
-@Slf4j
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("admin/")
@@ -30,8 +29,8 @@ public class AdminController {
     private final ImageUploader imageUploader;
 
     // 가입자 관리
-    @PostMapping("join")
-    public JsonResult adminJoin(@RequestBody SearchDTO searchDTO) {
+    @GetMapping("join")
+    public JsonResult adminJoin(@ModelAttribute SearchDTO searchDTO) {
         return adminService.getJoinList(searchDTO);
     }
 
@@ -42,13 +41,13 @@ public class AdminController {
     }
 
     // 가입자 비밀번호 초기화
-    @PostMapping("join/details/pw-reset")
+    @PostMapping("user")
     public JsonResult adminJoinPWReset(@RequestBody UserDTO userDTO) {
         return adminService.adminJoinPWReset(userDTO);
     }
 
     // 가입자 강제 탈퇴
-    @PostMapping("user/details/delete")
+    @PatchMapping("user")
     public ResponseEntity<?> adminUserDelete(@RequestBody UserDTO userDTO) {
         return adminService.adminJoinUserDelete(userDTO);
     }
@@ -59,39 +58,39 @@ public class AdminController {
         return imageUploader.uploadImage(request);
     }
 
-    // 프로모션 등록
+    // 프로모션 메일 발송
     @PostMapping("send/promotions")
     public JsonResult addPromotions(@RequestBody PromotionsDTO promotionsDTO) {
         return adminService.sendPromotionEmail(promotionsDTO);
     }
 
     // 미결제 관리
-    @PostMapping("price")
-    public JsonResult adminPrice(@RequestBody PriceSearchDTO priceSearchDTO) {
+    @GetMapping("price")
+    public JsonResult adminPrice(@ModelAttribute PriceSearchDTO priceSearchDTO) {
         return adminService.getPriceList(priceSearchDTO);
     }
 
     // 회원 활동 정지
-    @PostMapping("price/stop")
+    @PatchMapping("price")
     public ResponseEntity<?> adminPriceUserStop(@RequestBody UserDTO userDTO) {
         return adminService.updateUserStatus(userDTO);
     }
 
     // 청약철회 현황
-    @PostMapping("pay")
-    public JsonResult adminPay(@RequestBody SearchDTO searchDTO) {
+    @GetMapping("pay")
+    public JsonResult adminPay(@ModelAttribute SearchDTO searchDTO) {
         return adminService.getSubscriptionEndList(searchDTO);
     }
 
-    // 청약철회 회원 정보
+    // 청약철회 회원 세부 정보
     @PostMapping("pay/details")
     public JsonResult adminPayDetails(@RequestBody UserDTO userDTO) {
         return adminService.getUserDetails(userDTO);
     }
 
     // 인보이스 현황
-    @PostMapping("invoice")
-    public JsonResult adminInvoice(@RequestBody SearchDTO searchDTO) {
+    @GetMapping("invoice")
+    public JsonResult adminInvoice(@ModelAttribute SearchDTO searchDTO) {
         return adminService.getInvoiceList(searchDTO);
     }
 
@@ -108,8 +107,8 @@ public class AdminController {
     }
 
     // 1:1 문의 현황
-    @PostMapping("inquiry")
-    public JsonResult adminInquiry(@RequestBody SearchDTO searchDTO) {
+    @GetMapping("inquiry")
+    public JsonResult adminInquiry(@ModelAttribute SearchDTO searchDTO) {
         return adminService.getInquiryList(searchDTO);
     }
 
@@ -120,14 +119,14 @@ public class AdminController {
     }
 
     // 1:1 문의 답변
-    @PostMapping("inquiry/answer")
+    @PatchMapping("inquiry")
     public ResponseEntity<?> adminInquiryAnswer(@RequestBody InquiryDTO inquiryDTO) {
         return adminService.insertInquiryAnswer(inquiryDTO);
     }
 
     // 공지사항 현황
-    @PostMapping("notice")
-    public JsonResult adminNotice(@RequestBody SearchDTO searchDTO) {
+    @GetMapping("notice")
+    public JsonResult adminNotice(@ModelAttribute SearchDTO searchDTO) {
         return adminService.getNoticeList(searchDTO);
     }
 
@@ -138,26 +137,26 @@ public class AdminController {
     }
 
     // 공지사항 등록
-    @PostMapping("notice/add-notice")
+    @PostMapping("notice")
     public ResponseEntity<?> adminAddNotice(HttpServletRequest request, @RequestBody NoticeDTO noticeDTO) {
         return adminService.insertNotice(request, noticeDTO);
     }
 
     // 공지사항 수정
-    @PostMapping("notice/update-notice")
+    @PatchMapping("notice")
     public ResponseEntity<?> adminUpdateNotice(@RequestBody NoticeDTO noticeDTO) {
         return adminService.updateNotice(noticeDTO);
     }
 
     // 공지사항 삭제
-    @DeleteMapping("notice/delete-notice")
+    @DeleteMapping("notice")
     public ResponseEntity<?> adminDeleteNotice(@RequestBody NoticeDTO noticeDTO) {
         return adminService.deleteNotice(noticeDTO);
     }
 
     // FAQ 형황
-    @PostMapping("faq")
-    public JsonResult adminFaq(@RequestBody SearchDTO searchDTO){
+    @GetMapping("faq")
+    public JsonResult adminFaq(@ModelAttribute SearchDTO searchDTO){
         return adminService.getFaqList(searchDTO);
     }
 
@@ -168,31 +167,31 @@ public class AdminController {
     }
 
     // FAQ 등록
-    @PostMapping("faq/add-faq")
+    @PostMapping("faq")
     public ResponseEntity<?> adminAddFaq(HttpServletRequest request, @RequestBody FaqDTO faqDTO){
         return adminService.insertFaq(request,faqDTO);
     }
 
     // FAQ 수정
-    @PostMapping("faq/update-faq")
+    @PatchMapping("faq")
     public ResponseEntity<?> adminUpdateFaq(@RequestBody FaqDTO faqDTO){
         return adminService.updateFaq(faqDTO);
     }
 
     // FAQ 삭제
-    @PostMapping("faq/delete-faq")
+    @DeleteMapping("faq")
     public ResponseEntity<?> adminDeleteFaq(@RequestBody FaqDTO faqDTO){
         return adminService.deleteFaq(faqDTO);
     }
 
     // Terms 정보
-    @GetMapping("terms/details")
+    @GetMapping("terms")
     public JsonResult adminTermsDetails(){
         return adminService.getTerms();
     }
 
     // Terms 수정
-    @PostMapping("terms/update-terms")
+    @PatchMapping("terms")
     public ResponseEntity<?> adminTerms(@RequestBody TermsDTO termsDTO){
         return adminService.updateTerms(termsDTO);
     }

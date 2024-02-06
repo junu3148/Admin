@@ -2,12 +2,10 @@ package com.lumen.www.service;
 
 import com.lumen.www.dao.AdminRepository;
 import com.lumen.www.dao.TokenRepository;
-import com.lumen.www.dto.user.AdminUser;
 import com.lumen.www.dto.auth.JwtToken;
 import com.lumen.www.dto.auth.RefreshToken;
+import com.lumen.www.dto.user.AdminUser;
 import com.lumen.www.jwt.JwtTokenProvider;
-import com.lumen.www.util.JwtTokenUtil;
-import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -131,33 +129,6 @@ public class MemberService {
     }
 
     /**
-     * 주어진 HttpServletRequest에서 액세스 토큰을 추출하고 해당 토큰의 유효성을 검사하여 결과를 반환하는 메서드입니다.
-     *
-     * @param request HttpServletRequest 객체로부터 액세스 토큰을 추출합니다.
-     * @return 유효한 액세스 토큰인 경우 200 OK 상태와 "Access Token is valid" 메시지를 포함하는 ResponseEntity를 반환합니다.
-     * 유효하지 않거나 만료된 액세스 토큰인 경우 401 Unauthorized 상태와 "Access Token is invalid or expired" 메시지를 포함하는 ResponseEntity를 반환합니다.
-     * 예외가 발생한 경우 500 Internal Server Error 상태와 "An error occurred" 메시지를 포함하는 ResponseEntity를 반환합니다.
-     */
-    public ResponseEntity<?> accessTokenCK(HttpServletRequest request) {
-
-        String accessToken = JwtTokenUtil.resolveToken(request);
-        try {
-
-            if (jwtTokenProvider.validateToken(accessToken)) {
-                return ResponseEntity.ok().body("Access Token is valid");
-
-            } else {
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Access Token is invalid or expired");
-            }
-
-        } catch (Exception e) {
-            // 예외 처리
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred");
-        }
-    }
-
-
-    /**
      * 리프레시 토큰의 유효성을 검사한 후, 새로운 액세스 토큰을 발행하여 반환하는 메서드입니다.
      *
      * @param refreshToken 리프레시 토큰입니다.
@@ -166,17 +137,26 @@ public class MemberService {
      * 예외가 발생한 경우, INTERNAL_SERVER_ERROR 상태와 메시지를 포함하는 ResponseEntity를 반환합니다.
      */
     public ResponseEntity<?> refreshTokenCK(String refreshToken) {
+
         try {
             if (!isValidRefreshToken(refreshToken)) {
                 return unauthorizedResponse(INVALID_TOKEN_MESSAGE);
-            }
+            } else {
 
-            String newAccessToken = createNewAccessToken(refreshToken);
-            return buildResponseWithToken(newAccessToken);
+                Optional<RefreshToken> refreshTokenOpt = tokenRepository.refreshTokenCK(refreshToken);
+                if (refreshTokenOpt.isPresent()) {
+                    // 토큰이 존재하는 경우, 새로운 액세스 토큰을 생성
+                    String newAccessToken = createNewAccessToken(refreshToken);
+                    return buildResponseWithToken(newAccessToken);
+                }
+            }
         } catch (Exception e) {
             return internalServerErrorResponse();
         }
+        // 토큰이 유효하지 않거나 조회되지 않는 경우, 적절한 응답 반환
+        return unauthorizedResponse(INVALID_TOKEN_MESSAGE);
     }
+
 
     /**
      * 제공된 리프레시 토큰이 유효한지 검사하는 메서드입니다.

@@ -109,18 +109,17 @@
         FROM months m
             LEFT JOIN user u ON YEAR(u.accession_date) = m.year AND MONTH(u.accession_date) = m.month AND u.is_deleted = 0
         GROUP BY m.year, m.month
-        ORDER BY m.year , m.month;
-
-        SELECT month, subscribers_count
-        FROM monthly_subscribers
+        ORDER BY m.year , m.month
 
     </select>
 
     <!--메인페이지 현황지표-->
     <select id="getUserActivity" resultType="UserActivityDTO">
 
-        SELECT user_count, up_down, percentage
-        FROM user_activity
+        SELECT userCount,
+               upDown,
+               percentage
+        FROM view_user_activity
 
     </select>
 
@@ -409,7 +408,7 @@
         <if test="userName != null and userName != ''">
             AND user_name = #{userName}
         </if>
-        <if test="planName != null and planName != ''">
+        <if test="planName != null and planName != '' and planName !='All'">
             AND plan_name = #{planName}
         </if>
         <if test="startDate != null and startDate != ''">
@@ -649,6 +648,7 @@
         <if test="searchType != null and searchType != '' and searchType != '전체조회'">
             AND faq_type = #{searchType}
         </if>
+        ORDER BY faq_key DESC
 
     </select>
 

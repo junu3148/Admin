@@ -132,14 +132,7 @@ CREATE TABLE CALCULATE
     FOREIGN KEY (admin_key) REFERENCES ADMIN (admin_key)
 );
 
-SELECT
-    SUM(calculate_price) AS 총합계
-FROM
-    calculate
-WHERE
-    YEAR(calculate_date) = 2024
-  AND MONTH(calculate_date) BETWEEN 1 AND 3
-  AND MONTH(calculate_date) = 1;
+
 
 -- 9. 리플레시 토큰
 CREATE TABLE refresh_tokens
@@ -153,46 +146,3 @@ CREATE TABLE refresh_tokens
 );
 
 
-WITH RECURSIVE date_generator AS (
-    SELECT CURDATE() - INTERVAL 1 MONTH AS date -- 시작 날짜 설정
-    UNION ALL
-    SELECT date - INTERVAL 1 MONTH
-    FROM date_generator
-    WHERE date > CURDATE() - INTERVAL 12 MONTH
-)
-   , months AS (
-    SELECT YEAR(date) AS year, MONTH(date) AS month
-    FROM date_generator
-)
-SELECT
-    CONCAT(m.year, '년 ', m.month, '월') AS month_formatted,
-    COALESCE(COUNT(u.user_key), 0) AS total_signups
-FROM months m
-         LEFT JOIN user u ON YEAR(u.accession_date) = m.year AND MONTH(u.accession_date) = m.month AND u.is_deleted = 0
-GROUP BY m.year, m.month
-ORDER BY m.year , m.month;
-
-
--- 리플레시 토큰 자정에 자동 삭제
-SET GLOBAL event_scheduler = ON;
-
-CREATE EVENT IF NOT EXISTS delete_expired_tokens_07
-    ON SCHEDULE EVERY 1 DAY STARTS TIMESTAMP(CURRENT_DATE, '07:00:00')
-    DO
-    DELETE FROM REFRESH_TOKENS WHERE expiry_date < NOW();
-
-
-CREATE EVENT IF NOT EXISTS delete_expired_tokens_19
-    ON SCHEDULE EVERY 1 DAY STARTS TIMESTAMP(CURRENT_DATE, '19:00:00')
-    DO
-    DELETE FROM REFRESH_TOKENS WHERE expiry_date < NOW();
-
-CREATE EVENT IF NOT EXISTS delete_expired_tokens_21
-    ON SCHEDULE EVERY 1 DAY STARTS TIMESTAMP(CURRENT_DATE, '21:00:00')
-    DO
-    DELETE FROM REFRESH_TOKENS WHERE expiry_date < NOW();
-
-CREATE EVENT IF NOT EXISTS delete_expired_tokens_00
-    ON SCHEDULE EVERY 1 DAY STARTS TIMESTAMP(CURRENT_DATE, '00:00:00')
-    DO
-    DELETE FROM REFRESH_TOKENS WHERE expiry_date < NOW();

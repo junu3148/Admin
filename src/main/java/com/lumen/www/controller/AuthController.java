@@ -53,16 +53,13 @@ public class AuthController {
     }
 
     // accessToken 검증
-    @PostMapping("access-token")
-    public ResponseEntity<?> accessTokenCK(HttpServletRequest request) {
-        return memberService.accessTokenCK(request);
+    @PostMapping("access-token") // 02.06 수정 토큰 유효성 검사에 유효시간 지난 에러 처리가 없었다.
+    public void accessTokenCK() {
     }
-
 
     // refreshToken 검증
     @PostMapping("refresh-token")
     public ResponseEntity<?> refreshTokenCK(HttpServletRequest request) {
-        System.out.println("호출되니");
         return memberService.refreshTokenCK(JwtTokenUtil.resolveToken(request));
     }
 

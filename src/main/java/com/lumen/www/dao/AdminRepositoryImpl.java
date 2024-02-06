@@ -226,8 +226,6 @@ public class AdminRepositoryImpl implements AdminRepository {
     // Terms 수정
     @Override
     public int updateTerms(TermsDTO termsDTO) {
-        System.out.println(termsDTO);
-
         return sqlSession.update("admin.updateTerms", termsDTO);
     }
 

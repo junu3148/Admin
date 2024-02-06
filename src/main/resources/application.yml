@@ -16,8 +16,8 @@ spring:
   mail:
     host: smtp.gmail.com # 1
     port: 587 # 2
-    username: junu3148@gmail.com # 3
-    password: jvjfcwbibikqtvyo # 4
+    username: ${mail.username} # 3
+    password: ${mail.password} # 4
     properties:
       mail:
         smtp:
@@ -26,7 +26,7 @@ spring:
           starttls:
             enable: true # 7
         mime:
-          charset : UTF-8
+          charset: UTF-8
 
 
 

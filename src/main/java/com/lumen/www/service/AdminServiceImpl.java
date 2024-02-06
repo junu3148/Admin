@@ -2,6 +2,7 @@ package com.lumen.www.service;
 
 import com.lumen.www.dao.AdminRepository;
 import com.lumen.www.dao.TokenRepository;
+import com.lumen.www.dto.invoice.InvoiceListDTO;
 import com.lumen.www.dto.user.JoinListDTO;
 import com.lumen.www.dto.common.JsonResult;
 import com.lumen.www.dto.common.SearchDTO;
@@ -78,7 +79,6 @@ public class AdminServiceImpl implements AdminService {
         // 2. 사용자 정보 조회
         AdminDTO adminDTO = adminRepository.getAdminUser(jwtTokenProvider.getAdminUserInfoFromToken(token));
 
-        System.out.println("2" + adminDTO);
         if (adminDTO == null) {
             // 사용자 정보가 없는 경우의 처리
             return createJsonResult(null);
@@ -94,10 +94,6 @@ public class AdminServiceImpl implements AdminService {
     //@PreAuthorize("#adminUser.username == authentication.principal.username") //현재 인증된 사용자가 수정하려는 AdminUser의 adminId와 일치하는 경우에만 메서드 실행이 진행됩니다.
     //@PreAuthorize("#adminUser.getUsername() == authentication.principal.username")
     public ResponseEntity<?> updateAdminUser(AdminUser adminUser) {
-
-        // 메서드 내에서 값 확인을 위한 로깅
-        System.out.println("adminUser.adminId: " + adminUser.getAdminId());
-        System.out.println("authentication.principal.username: " + SecurityContextHolder.getContext().getAuthentication().getPrincipal());
 
 
         if (adminUser.getPassword() != null) {
@@ -134,21 +130,15 @@ public class AdminServiceImpl implements AdminService {
     @Override
     @Transactional(readOnly = true)
     public JsonResult getMonthlySalesChart() {
-        System.out.println("호출");
+
         List<Map<String, Object>> resultList = adminRepository.getMonthlySubscriber();
 
-        // 'resultList'를 'monthList'로 변환
         List<String> monthList = resultList.stream()
-                // 'resultList'의 각 요소에서 'month' 키의 값을 추출하고 String으로 형변환
                 .map(resultMap -> (String) resultMap.get("month"))
-                // 변환된 값들을 리스트로 수집
                 .collect(Collectors.toList());
 
-        // 'resultList'를 'subscribersCountList'로 변환
         List<Integer> subscribersCountList = resultList.stream()
-                // 'resultList'의 각 요소에서 'subscribers_count' 키의 값을 추출하고 Integer로 형변환
-                .map(resultMap -> (Integer) resultMap.get("subscribers_count"))
-                // 변환된 값들을 리스트로 수집
+                .map(resultMap -> ((Number) resultMap.get("subscribers_count")).intValue())
                 .collect(Collectors.toList());
 
         MonthlySubscriberDTO monthlySubscriberDTO = new MonthlySubscriberDTO(monthList, subscribersCountList);
@@ -249,7 +239,6 @@ public class AdminServiceImpl implements AdminService {
     @Override
     @Transactional(readOnly = true)
     public JsonResult getPriceList(PriceSearchDTO priceSearchDTO) {
-        System.out.println(priceSearchDTO);
 
         final String outInfo = priceSearchDTO.getOutInfo();
         if (outInfo != null) {
@@ -313,7 +302,16 @@ public class AdminServiceImpl implements AdminService {
     @Override
     @Transactional(readOnly = true)
     public JsonResult getInvoiceList(SearchDTO searchDTO) {
-        return createJsonResult(adminRepository.getInvoiceList(searchDTO));
+
+        List<InvoiceListDTO> invoiceDTOS = adminRepository.getInvoiceList(searchDTO);
+
+        createListWithDefaultValueIfEmpty(invoiceDTOS, () -> {
+            InvoiceListDTO invoiceListDTO = new InvoiceListDTO();
+            invoiceListDTO.set이메일(NO_INQUIRY_RESULTS); // 상수값
+            return invoiceListDTO;
+        });
+
+        return createJsonResult(invoiceDTOS);
     }
 
     // 인보이스 세부 정보
@@ -328,8 +326,6 @@ public class AdminServiceImpl implements AdminService {
     public ResponseEntity<?> invoiceEmailShipment(InvoiceDTO invoiceDTO) {
 
         InvoiceDTO invoiceDTO1 = adminRepository.getInvoiceDetails(invoiceDTO);
-
-        System.out.println(invoiceDTO1);
 
         try {
             invoiceService.sendInvoiceAsEmail("menstua@viking-lab.com", invoiceDTO1);
@@ -511,7 +507,6 @@ public class AdminServiceImpl implements AdminService {
     // ------------------------------------------------------------------------------------- 공통로직 -----------------------------------------------------------------------------------------
     // 공통 응답 생성 메서드
     private ResponseEntity<String> createResponse(int result, String successMessage, String failureMessage) {
-        System.out.println("리턴값 " + result);
         if (result > 0) {
             // 성공적으로 하나 이상의 행이 업데이트되었을 때
             return ResponseEntity.ok().body(successMessage);
@@ -523,7 +518,6 @@ public class AdminServiceImpl implements AdminService {
 
     // JsonResult 생성 & 반환
     private JsonResult createJsonResult(Object data) {
-        System.out.println("리턴값 " + data);
         JsonResult jsonResult = new JsonResult();
         if (data != null) jsonResult.success(data);
         else jsonResult.fail(LOG_FAILURE_MESSAGE);

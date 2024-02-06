@@ -218,8 +218,9 @@ public class JwtTokenProvider {
             log.info("Invalid JWT Token", e);
             throw new InvalidTokenException("Invalid JWT Token", e);
         } catch (ExpiredJwtException e) {
-            // 만료된 토큰에 대한 처리를 수행할 수 있으며, 필요한 경우 예외를 처리합니다.
             log.info("Expired JWT Token", e);
+            // 만료된 토큰에 대한 처리를 수행할 수 있으며, 필요한 경우 예외를 처리합니다.
+            throw new CustomExpiredJwtException("Expired JWT Token", e);
         } catch (UnsupportedJwtException e) {
             // 지원되지 않는 JWT 토큰인 경우 예외를 처리하고 사용자 정의 예외를 던집니다.
             log.info("Unsupported JWT Token", e);
@@ -230,8 +231,6 @@ public class JwtTokenProvider {
             throw new InvalidTokenException("JWT claims string is empty.", e);
         }
 
-        // 토큰이 유효하지 않은 경우 false를 반환합니다.
-        return false;
     }
 
     /**

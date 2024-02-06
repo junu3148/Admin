@@ -1,5 +1,4 @@
 package com.lumen.www.service;
-// 기존의 import 문은 그대로 유지합니다.
 
 import com.itextpdf.io.font.FontConstants;
 import com.itextpdf.io.font.PdfEncodings;
