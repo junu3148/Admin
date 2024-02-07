@@ -1,12 +1,12 @@
 package com.lumen.www.dao;
 
-import com.lumen.www.dto.user.JoinListDTO;
 import com.lumen.www.dto.common.SearchDTO;
 import com.lumen.www.dto.faq.FaqDTO;
 import com.lumen.www.dto.inquiry.InquiryDTO;
 import com.lumen.www.dto.inquiry.InquiryListDTO;
 import com.lumen.www.dto.invoice.InvoiceDTO;
 import com.lumen.www.dto.invoice.InvoiceListDTO;
+import com.lumen.www.dto.main.UserActivityDTO;
 import com.lumen.www.dto.notice.NoticeDTO;
 import com.lumen.www.dto.notice.NoticeListDTO;
 import com.lumen.www.dto.payment.PayListDTO;
@@ -15,7 +15,7 @@ import com.lumen.www.dto.pricing.PriceSearchDTO;
 import com.lumen.www.dto.terms.TermsDTO;
 import com.lumen.www.dto.user.AdminDTO;
 import com.lumen.www.dto.user.AdminUser;
-import com.lumen.www.dto.main.UserActivityDTO;
+import com.lumen.www.dto.user.JoinListDTO;
 import com.lumen.www.dto.user.UserDTO;
 import lombok.RequiredArgsConstructor;
 import org.apache.ibatis.session.SqlSession;
@@ -107,6 +107,12 @@ public class AdminRepositoryImpl implements AdminRepository {
     @Override
     public void deleteUsersWithStatusOlderThanOneMonth() {
         sqlSession.delete("admin.deleteUsersWithStatusOlderThanOneMonth");
+    }
+
+    // 프로모션 동의 메일 조회
+    @Override
+    public List<String> getPromotionsAccept() {
+        return sqlSession.selectList("admin.getPromotionsAccept");
     }
 
     // 미결제 회원 리스트
@@ -228,5 +234,7 @@ public class AdminRepositoryImpl implements AdminRepository {
     public int updateTerms(TermsDTO termsDTO) {
         return sqlSession.update("admin.updateTerms", termsDTO);
     }
+
+
 
 }

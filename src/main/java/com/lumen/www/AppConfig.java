@@ -62,7 +62,7 @@ public class AppConfig {
     // EmailService 빈 정의
     @Bean
     public EmailService emailService() {
-        return new EmailService(javaMailSender, new SpringTemplateEngine());
+        return new EmailService(javaMailSender, new SpringTemplateEngine(), adminRepository());
     }
 
     // JwtTokenProvider 빈 정의

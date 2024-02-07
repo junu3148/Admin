@@ -15,7 +15,7 @@ public class ImageUploader {
 
     private final FileStorageProperties fileStorageProperties;
 
-    public ModelAndView uploadImage(MultipartHttpServletRequest request) throws Exception {
+    public ModelAndView uploadImage(MultipartHttpServletRequest request) {
         ModelAndView mav = new ModelAndView("jsonView");  // ModelAndView 객체 생성, JSON 응답을 위해 "jsonView" 사용
 
         try {

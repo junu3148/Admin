@@ -86,30 +86,31 @@
 
         SELECT count(user_key)
         FROM user
+        WHERE is_deleted = 0
 
     </select>
 
     <!--메인페이지 월별가입자 그래프-->
     <select id="getMonthlySubscriber" resultType="java.util.Map">
 
-        WITH RECURSIVE date_generator AS (
-            SELECT CURDATE() - INTERVAL 1 MONTH AS date -- 시작 날짜 설정
+        WITH RECURSIVE date_generator AS (SELECT CURDATE() AS date -- 시작 날짜를 현재 달로 설정
         UNION ALL
         SELECT date - INTERVAL 1 MONTH
         FROM date_generator
-        WHERE date > CURDATE() - INTERVAL 12 MONTH
+        WHERE date
+            > CURDATE() - INTERVAL 11 MONTH
             )
             , months AS (
-        SELECT YEAR(date) AS year, MONTH(date) AS month
+        SELECT YEAR (date) AS year, MONTH (date) AS month
         FROM date_generator
             )
-        SELECT
-            CONCAT(m.year, '년 ', m.month, '월') AS month,
-            COALESCE(COUNT(u.user_key), 0) AS subscribers_count
+        SELECT CONCAT(m.year, '년 ', m.month, '월') AS month,
+    COALESCE(COUNT(u.user_key), 0) AS subscribers_count
         FROM months m
-            LEFT JOIN user u ON YEAR(u.accession_date) = m.year AND MONTH(u.accession_date) = m.month AND u.is_deleted = 0
+            LEFT JOIN user u
+        ON YEAR (u.accession_date) = m.year AND MONTH (u.accession_date) = m.month AND u.is_deleted = 0
         GROUP BY m.year, m.month
-        ORDER BY m.year , m.month
+        ORDER BY m.year, m.month
 
     </select>
 
@@ -254,6 +255,7 @@
 
     </select>
 
+
     <!--가입자 상태 변경-->
     <update id="adminJoinUserDelete" parameterType="UserDTO">
 
@@ -281,6 +283,18 @@
         ]]>
 
     </delete>
+
+
+
+
+
+    <!--                                                                                                          Promo                                                                                  -->
+    <!--프로모션 동의 메일 조회-->
+    <select id="getPromotionsAccept" resultType="String">
+
+        SELECT user_id FROM USER WHERE promo_accept = 'Y'
+
+    </select>
 
 
 
@@ -493,8 +507,7 @@
         FROM user a
         INNER JOIN plan b ON a.plan_key = b.plan_key
         INNER JOIN inquiry c ON a.user_key = c.user_key
-        INNER JOIN subscription d ON a.user_key = d.user_key) AS subquery
-
+        INNER JOIN subscription d ON a.user_key = d.user_key
 
         WHERE 1 = 1
 
@@ -508,6 +521,7 @@
             AND inquiry_date BETWEEN #{startDate} AND #{endDate}
         </if>
 
+        ) AS subquery
         ORDER BY row_num desc
 
     </select>
@@ -644,6 +658,7 @@
         WHERE 1 = 1
         <if test="keyword != null and keyword != ''">
             AND faq_title LIKE CONCAT('%', #{keyword}, '%')
+            OR faq_content LIKE CONCAT('%', #{keyword}, '%')
         </if>
         <if test="searchType != null and searchType != '' and searchType != '전체조회'">
             AND faq_type = #{searchType}
@@ -732,6 +747,7 @@
         </if>
 
     </update>
+
 
 
 </mapper>

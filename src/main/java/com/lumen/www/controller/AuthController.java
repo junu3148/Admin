@@ -1,25 +1,15 @@
 package com.lumen.www.controller;
 
-import com.lumen.www.dto.user.AdminUser;
 import com.lumen.www.dto.common.JsonResult;
-import com.lumen.www.jwt.JwtTokenProvider;
+import com.lumen.www.dto.user.AdminUser;
 import com.lumen.www.service.AdminService;
 import com.lumen.www.service.MemberService;
 import com.lumen.www.util.JwtTokenUtil;
-import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
-@Slf4j
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("admin/")
@@ -36,7 +26,7 @@ public class AuthController {
 
     // 2차 로그인 추가정보 확인
     @PostMapping("login-ck")
-    public ResponseEntity<?> adminLoginCk(@RequestBody AdminUser adminUser) {
+    public ResponseEntity<String> adminLoginCk(@RequestBody AdminUser adminUser) {
         return adminService.adminLoginCk(adminUser);
     }
 
@@ -47,19 +37,20 @@ public class AuthController {
     }
 
     // 관리자 정보 수정
-    @PostMapping("admin-user/update")
-    public ResponseEntity<?> adminUserUpdate(@RequestBody AdminUser adminUser) {
+    @PatchMapping("account")
+    public ResponseEntity<String> adminUserUpdate(@RequestBody AdminUser adminUser) {
         return adminService.updateAdminUser(adminUser);
     }
 
     // accessToken 검증
     @PostMapping("access-token") // 02.06 수정 토큰 유효성 검사에 유효시간 지난 에러 처리가 없었다.
-    public void accessTokenCK() {
+    public String accessTokenCK() {
+        return "accessTokenCk";
     }
 
     // refreshToken 검증
     @PostMapping("refresh-token")
-    public ResponseEntity<?> refreshTokenCK(HttpServletRequest request) {
+    public ResponseEntity<String> refreshTokenCK(HttpServletRequest request) {
         return memberService.refreshTokenCK(JwtTokenUtil.resolveToken(request));
     }
 

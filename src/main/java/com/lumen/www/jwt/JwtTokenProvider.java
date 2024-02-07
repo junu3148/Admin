@@ -3,6 +3,7 @@ package com.lumen.www.jwt;
 import com.lumen.www.dao.TokenRepository;
 import com.lumen.www.dto.auth.JwtToken;
 import com.lumen.www.dto.auth.RefreshToken;
+import com.lumen.www.exception.CustomExpiredJwtException;
 import com.lumen.www.exception.InvalidTokenException;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;
@@ -27,8 +28,8 @@ public class JwtTokenProvider {
 
     private final Key key;
     private final TokenRepository tokenRepository;
-    public final long ACCESS_TOKEN_EXPIRE_COUNT = 30 * 60 * 1000L; // 30분
-    public final long REFRESH_TOKEN_EXPIRE_COUNT = 8 * 60 * 60 * 1000L; // 8시간
+    private final long ACCESS_TOKEN_EXPIRE_COUNT = 30 * 60 * 1000L; // 30분
+    private final long REFRESH_TOKEN_EXPIRE_COUNT = 8 * 60 * 60 * 1000L; // 8시간
     private static final String TOKEN_TYPE = "JWT";
     private static final SignatureAlgorithm SIGNATURE_ALGORITHM = SignatureAlgorithm.HS256;
     private static final String CLAIM_ADMIN_USER_ID = "sub";
@@ -111,17 +112,23 @@ public class JwtTokenProvider {
      * @return 생성된 JWT 액세스 토큰 문자열.
      */
     public String generateAccessToken(Optional<RefreshToken> tokenData) {
+        if (tokenData.isEmpty()) {
+            throw new IllegalArgumentException("Token data must be present");
+        }
 
         // 관리자에 대한 역할은 사전에 정의되어 있거나 어딘가에서 가져오는 것으로 가정합니다.
         String roles = "ROLE_" + tokenData.get().getRole(); // 실제 역할 가져오는 로직으로 필요에 따라 교체하세요.
 
         long now = (new Date()).getTime();
+        Date accessTokenExpiresIn = new Date(now + ACCESS_TOKEN_EXPIRE_COUNT); // 액세스 토큰 유효 시간: 30분
 
-        // 액세스 토큰 유효 시간: 30분 (30 * 60 * 1000)
-        Date accessTokenExpiresIn = new Date(now + ACCESS_TOKEN_EXPIRE_COUNT);
-
-        return Jwts.builder().setHeaderParam("typ", TOKEN_TYPE).setSubject(tokenData.get().getUsername()) // adminId를 주제로 설정
-                .claim("roles", roles).setExpiration(accessTokenExpiresIn).signWith(key, SIGNATURE_ALGORITHM).compact();
+        return Jwts.builder()
+                .setHeaderParam("typ", TOKEN_TYPE)
+                .setSubject(tokenData.get().getUsername()) // tokenData가 존재한다는 것이 검증되었으므로 get() 호출이 안전
+                .claim(CLAIM_IS_ADMIN, roles)
+                .setExpiration(accessTokenExpiresIn)
+                .signWith(key, SIGNATURE_ALGORITHM)
+                .compact();
     }
 
     /**
@@ -173,12 +180,12 @@ public class JwtTokenProvider {
         Claims claims = parseClaims(accessToken);
 
         // 권한 정보가 없는 경우 예외를 발생시킵니다.
-        if (claims.get("roles") == null) {
+        if (claims.get(CLAIM_IS_ADMIN) == null) {
             throw new InvalidTokenException("권한 정보가 없는 토큰입니다.");
         }
 
         // 권한 정보를 문자열로 변환합니다.
-        String rolesStr = claims.get("roles").toString();
+        String rolesStr = claims.get(CLAIM_IS_ADMIN).toString();
         Collection<? extends GrantedAuthority> authorities;
 
         if (rolesStr.isEmpty()) {
@@ -186,7 +193,12 @@ public class JwtTokenProvider {
             authorities = Collections.singletonList(new SimpleGrantedAuthority("ROLE_DEFAULT"));
         } else {
             // 권한 정보를 쉼표(,)로 분리하고 Spring Security의 GrantedAuthority로 변환합니다.
-            authorities = Arrays.stream(rolesStr.split(",")).map(SimpleGrantedAuthority::new).collect(Collectors.toList());
+            List<SimpleGrantedAuthority> list = new ArrayList<>();
+            for (String s : rolesStr.split(",")) {
+                SimpleGrantedAuthority simpleGrantedAuthority = new SimpleGrantedAuthority(s);
+                list.add(simpleGrantedAuthority);
+            }
+            authorities = list;
         }
 
         // UserDetails 객체를 생성하여 Authentication 객체를 반환합니다.

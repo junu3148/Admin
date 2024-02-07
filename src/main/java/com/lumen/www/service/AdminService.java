@@ -7,7 +7,6 @@ import com.lumen.www.dto.inquiry.InquiryDTO;
 import com.lumen.www.dto.invoice.InvoiceDTO;
 import com.lumen.www.dto.notice.NoticeDTO;
 import com.lumen.www.dto.pricing.PriceSearchDTO;
-import com.lumen.www.dto.promotion.PromotionsDTO;
 import com.lumen.www.dto.terms.TermsDTO;
 import com.lumen.www.dto.user.AdminUser;
 import com.lumen.www.dto.user.UserDTO;
@@ -22,7 +21,7 @@ public interface AdminService {
      * @param adminUser 로그인을 시도하는 관리자의 사용자 정보.
      * @return 로그인 성공 시, 상태 코드와 관련 정보를 포함하는 ResponseEntity 객체를 반환합니다.
      */
-    ResponseEntity<?> adminLoginCk(AdminUser adminUser);
+    ResponseEntity<String> adminLoginCk(AdminUser adminUser);
 
     /**
      * 관리자의 사용자 정보를 가져옵니다.
@@ -41,7 +40,7 @@ public interface AdminService {
      * @param adminUser 업데이트할 관리자 사용자 정보를 포함하는 AdminUser 객체
      * @return 업데이트가 성공하면 HTTP 상태 코드 200을 반환하고, 실패하면 오류 코드와 함께 적절한 응답을 반환합니다.
      */
-    ResponseEntity<?> updateAdminUser(AdminUser adminUser);
+    ResponseEntity<String> updateAdminUser(AdminUser adminUser);
 
     /**
      * 사용자를 로그아웃하는 메서드입니다.
@@ -97,13 +96,6 @@ public interface AdminService {
     JsonResult getUserDetails(UserDTO userDTO);
 
     /**
-     * 새로운 프로모션을 등록합니다.
-     * @param promotionsDTO 등록할 프로모션의 데이터 전송 객체.
-     * @return 프로모션 등록 결과를 포함하는 JsonResult 객체.
-     */
-    JsonResult sendPromotionEmail(PromotionsDTO promotionsDTO);
-
-    /**
      * 가입자의 강제 탈퇴 처리를 수행합니다.
      * 이 메서드는 UserDTO 객체를 받아 해당 사용자를 강제로 탈퇴시킵니다.
      * 탈퇴 처리는 데이터베이스에서 해당 사용자의 정보를 업데이트하거나 삭제하는 과정을 포함할 수 있습니다.
@@ -112,18 +104,7 @@ public interface AdminService {
      * @param userDTO 강제 탈퇴시킬 사용자의 데이터 전송 객체.
      * @return 탈퇴 처리 결과를 나타내는 ResponseEntity 객체. 성공 시 HTTP 상태 코드 200과 함께 1을, 실패 시 적절한 오류 코드와 함께 0 또는 오류 메시지를 반환합니다.
      */
-    ResponseEntity<?> adminJoinUserDelete(UserDTO userDTO);
-
-    /**
-     * 가입자의 비밀번호를 초기화합니다.
-     * 이 메서드는 UserDTO 객체를 받아 해당 사용자의 비밀번호를 초기화합니다.
-     * 초기화된 비밀번호는 사용자에게 이메일로 전송됩니다. 이 과정에서
-     * 사용자의 식별 정보(예: 사용자 ID 또는 이메일)는 UserDTO 객체에서 추출됩니다.
-     *
-     * @param userDTO 비밀번호를 초기화할 사용자의 데이터 전송 객체.
-     * @return 비밀번호 초기화 결과를 포함하는 JsonResult 객체.
-     */
-    JsonResult adminJoinPWReset(UserDTO userDTO);
+    ResponseEntity<String> adminJoinUserDelete(UserDTO userDTO);
 
     /**
      * 가격 목록을 조회합니다.
@@ -141,7 +122,7 @@ public interface AdminService {
      * @param userDTO 상태를 업데이트할 사용자의 데이터 전송 객체.
      * @return 업데이트 결과를 나타내는 ResponseEntity 객체.
      */
-    ResponseEntity<?> updateUserStatus(UserDTO userDTO);
+    ResponseEntity<String> updateUserStatus(UserDTO userDTO);
 
     /**
      * 구독 종료 목록을 조회합니다.
@@ -177,7 +158,7 @@ public interface AdminService {
      * @param invoiceDTO 이메일 발송에 필요한 청구서 데이터를 포함하는 데이터 전송 객체.
      * @return 처리 결과를 나타내는 ResponseEntity 객체.
      */
-    ResponseEntity<?> invoiceEmailShipment(InvoiceDTO invoiceDTO);
+    ResponseEntity<String> invoiceEmailShipment(InvoiceDTO invoiceDTO);
 
     /**
      * 1:1 문의 목록을 조회합니다.
@@ -204,7 +185,7 @@ public interface AdminService {
      * @param inquiryDTO 1:1 문의 답변 등록에 필요한 데이터를 포함하는 데이터 전송 객체.
      * @return 처리 결과를 나타내는 ResponseEntity 객체.
      */
-    ResponseEntity<?> insertInquiryAnswer(InquiryDTO inquiryDTO);
+    ResponseEntity<String> insertInquiryAnswer(InquiryDTO inquiryDTO);
 
     /**
      * 공지사항 목록을 조회합니다.
@@ -232,7 +213,7 @@ public interface AdminService {
      * @param noticeDTO 공지사항 등록에 필요한 데이터를 포함하는 데이터 전송 객체.
      * @return 처리 결과를 나타내는 ResponseEntity 객체.
      */
-    ResponseEntity<?> insertNotice(HttpServletRequest request, NoticeDTO noticeDTO);
+    ResponseEntity<String> insertNotice(HttpServletRequest request, NoticeDTO noticeDTO);
 
     /**
      * 공지사항을 업데이트합니다.
@@ -241,7 +222,7 @@ public interface AdminService {
      * @param noticeDTO 공지사항 업데이트에 필요한 정보를 포함하는 데이터 전송 객체.
      * @return 처리 결과를 나타내는 ResponseEntity 객체.
      */
-    ResponseEntity<?> updateNotice(NoticeDTO noticeDTO);
+    ResponseEntity<String> updateNotice(NoticeDTO noticeDTO);
 
     /**
      * 공지사항을 삭제합니다.
@@ -250,7 +231,7 @@ public interface AdminService {
      * @param noticeDTO 삭제할 공지사항의 정보를 포함하는 데이터 전송 객체.
      * @return 처리 결과를 나타내는 ResponseEntity 객체.
      */
-    ResponseEntity<?> deleteNotice(NoticeDTO noticeDTO);
+    ResponseEntity<String> deleteNotice(NoticeDTO noticeDTO);
 
     /**
      * 자주 묻는 질문(FAQ) 목록을 조회합니다.
@@ -278,7 +259,7 @@ public interface AdminService {
      * @param faqDTO  추가할 FAQ의 정보를 포함하는 데이터 전송 객체.
      * @return 처리 결과를 나타내는 ResponseEntity 객체.
      */
-    ResponseEntity<?> insertFaq(HttpServletRequest request, FaqDTO faqDTO);
+    ResponseEntity<String> insertFaq(HttpServletRequest request, FaqDTO faqDTO);
 
     /**
      * FAQ를 업데이트합니다.
@@ -287,7 +268,7 @@ public interface AdminService {
      * @param faqDTO 업데이트할 FAQ의 정보를 포함하는 데이터 전송 객체.
      * @return 처리 결과를 나타내는 ResponseEntity 객체.
      */
-    ResponseEntity<?> updateFaq(FaqDTO faqDTO);
+    ResponseEntity<String> updateFaq(FaqDTO faqDTO);
 
     /**
      * FAQ를 삭제합니다.
@@ -296,7 +277,7 @@ public interface AdminService {
      * @param faqDTO 삭제할 FAQ의 정보를 포함하는 데이터 전송 객체.
      * @return 처리 결과를 나타내는 ResponseEntity 객체.
      */
-    ResponseEntity<?> deleteFaq(FaqDTO faqDTO);
+    ResponseEntity<String> deleteFaq(FaqDTO faqDTO);
 
     /**
      * 서비스 이용 약관을 조회합니다.
@@ -313,7 +294,7 @@ public interface AdminService {
      * @param termsDTO 업데이트할 이용 약관의 정보를 포함하는 데이터 전송 객체.
      * @return 처리 결과를 나타내는 ResponseEntity 객체.
      */
-    ResponseEntity<?> updateTerms(TermsDTO termsDTO);
+    ResponseEntity<String> updateTerms(TermsDTO termsDTO);
 
 
 }

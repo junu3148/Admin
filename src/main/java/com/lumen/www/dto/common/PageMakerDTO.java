@@ -9,8 +9,11 @@ import com.lumen.www.vo.Criteria;
 @Setter
 @ToString
 public class PageMakerDTO {
-    private int startPage, endPage, total;    //시작, 끝 페이지, 전체 게시물
-    private boolean prev, next;        //이전, 다음 페이지 유무
+    private int startPage;
+    private int endPage;
+    private int total;    //시작, 끝 페이지, 전체 게시물
+    private boolean prev;
+    private boolean next;        //이전, 다음 페이지 유무
     private Criteria cri;            //현재 페이지, 페이지당 게시물 표시수 정보
 
     public PageMakerDTO(int total, Criteria cri) {

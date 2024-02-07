@@ -1,20 +1,29 @@
 package com.lumen.www.service;
 
+import com.lumen.www.dao.AdminRepository;
 import com.lumen.www.dto.email.EmailMessage;
+import com.lumen.www.dto.promotion.PromotionsDTO;
+import com.lumen.www.dto.user.UserDTO;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.FileSystemResource;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.thymeleaf.context.Context;
 import org.thymeleaf.spring6.SpringTemplateEngine;
 
 import java.io.File;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
+import java.util.concurrent.CompletableFuture;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -26,6 +35,7 @@ public class EmailService {
 
     private final JavaMailSender javaMailSender;
     private final SpringTemplateEngine templateEngine;
+    private final AdminRepository adminRepository;
 
     @Value("${spring.mail.username}")
     private String email;
@@ -38,26 +48,46 @@ public class EmailService {
      * 이메일 전송이 성공하면 콘솔에 서비스 시간을 출력하고, 실패하면 로그에 오류를 기록하고 RuntimeException을 발생시킵니다.
      * 모든 이메일 전송 시도 후에는 "ok" 문자열을 반환하여 전송이 시작되었음을 나타냅니다.
      *
-     * @param emailMessage 발송할 이메일 메시지 객체.
+     * @param promotionsDTO 이메일 발송에 사용할 프로모션 데이터 객체
      * @return 이메일 전송이 시작되었음을 나타내는 "ok" 문자열.
      * @throws RuntimeException 이메일 전송 중 예외가 발생한 경우.
      */
-    public String sendMail(EmailMessage emailMessage) {
-        // 정의된 수신자 목록
-        String[] recipients = new String[]{"junu3148@gmail.com", "junu3148@naver.com"};
+
+    @Transactional
+    public ResponseEntity<String> sendMailPromo(PromotionsDTO promotionsDTO) {
+        // 프로모션 정보를 바탕으로 이메일 메시지 객체 생성
+        EmailMessage emailMessage = EmailMessage.builder()
+                .subject(promotionsDTO.getPromotionsTitle())
+                .message(promotionsDTO.getPromotionsContent())
+                .build();
+
+        // 프로모션 수신을 동의한 관리자의 이메일 목록을 불러옴
+        List<String> recipients = adminRepository.getPromotionsAccept();
 
         try {
-            // 모든 수신자에 대해 이메일을 비동기적으로 발송
-            Arrays.stream(recipients).forEach(recipient -> {
-                try {
-                    sendMailAsync(emailMessage, recipient);
-                } catch (MessagingException e) {
-                    throw new RuntimeException("Failed to send email", e);
-                }
-            });
-            return "ok";
-        } catch (Exception e) {
-            throw new RuntimeException("Failed to send email", e);
+            // 수신자 목록에 대해 비동기 이메일 발송 작업을 생성하고 실행
+            CompletableFuture<?>[] futuresArray = recipients.stream()
+                    .map(recipient -> CompletableFuture.runAsync(() -> {
+                        try {
+                            // 각 수신자에게 비동기적으로 이메일 발송
+                            sendMailAsync(emailMessage, recipient);
+                        } catch (MessagingException e) {
+                            // 이메일 발송 중 예외 발생 시 RuntimeException으로 포장하여 던짐
+                            throw new RuntimeException("Failed to send email to " + recipient, e);
+                        }
+                    }))
+                    .toArray(CompletableFuture[]::new);
+
+            // 생성된 모든 비동기 작업이 완료될 때까지 대기
+            CompletableFuture<Void> allFutures = CompletableFuture.allOf(futuresArray);
+            allFutures.join();
+            // 모든 이메일이 성공적으로 발송되면, 클라이언트에게 성공 메시지 전송
+            return ResponseEntity.ok("Emails successfully sent to all recipients.");
+
+        } catch (RuntimeException e) {
+            // 비동기 작업 중 예외 발생 시, 500 Internal Server Error와 함께 오류 메시지 반환
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Failed to send emails to all recipients. Error: " + e.getCause().getMessage());
         }
     }
 
@@ -69,23 +99,20 @@ public class EmailService {
      * 이메일 전송이 성공하면 콘솔에 서비스 시간을 출력하고, 실패하면 로그에 오류를 기록하고 RuntimeException을 발생시킵니다.
      * 메서드 호출 후에는 "ok" 문자열을 반환하여 전송이 시작되었음을 나타냅니다.
      *
-     * @param emailMessage 발송할 이메일 메시지 객체.
-     * @param email        수신자의 이메일 주소.
+     * @param userDTO 발송할 이메일 메시지 객체.
      * @return 이메일 전송이 시작되었음을 나타내는 "ok" 문자열.
      * @throws RuntimeException 이메일 전송 중 예외가 발생한 경우.
      */
-    public String sendMailPWReset(EmailMessage emailMessage, String email) {
+    public String sendMailPWReset(UserDTO userDTO) {
 
-        // 정의된 수신자 목록
+        EmailMessage emailMessage = EmailMessage.builder().subject("비밀번호 초기화 메일알림").message("비밀번호 초기화 해주세요").build();
+
         try {
             // 모든 수신자에 대해 이메일을 비동기적으로 발송
-            try {
-                sendMailAsync(emailMessage, email);
-            } catch (MessagingException e) {
-                throw new RuntimeException("Failed to send email", e);
-            }
+            sendMailAsync(emailMessage, userDTO.getUserId());
             return "ok";
-        } catch (Exception e) {
+        } catch (MessagingException e) {
+            // MessagingException 포함 모든 예외를 여기서 처리
             throw new RuntimeException("Failed to send email", e);
         }
     }
@@ -102,23 +129,19 @@ public class EmailService {
      * @param recipient    이메일의 수신자 주소.
      * @throws MessagingException 메일 발송 중 발생하는 예외.
      */
-    @Async
     public void sendMailAsync(EmailMessage emailMessage, String recipient) throws MessagingException {
-        try {
-            // JavaMailSender를 사용하여 MIME 메시지를 생성합니다.
-            MimeMessage mimeMessage = javaMailSender.createMimeMessage();
-            MimeMessageHelper mimeMessageHelper = new MimeMessageHelper(mimeMessage, true);
+        // JavaMailSender를 사용하여 MIME 메시지를 생성합니다.
+        MimeMessage mimeMessage = javaMailSender.createMimeMessage();
+        MimeMessageHelper mimeMessageHelper = new MimeMessageHelper(mimeMessage, true);
 
-            mimeMessageHelper.setFrom(email); // 발신자 설정
-            mimeMessageHelper.setTo(recipient); // 개별 수신자 설정
-            mimeMessageHelper.setSubject(emailMessage.getSubject()); // 제목 설정
+        mimeMessageHelper.setFrom(email); // 발신자 설정
+        mimeMessageHelper.setTo(recipient); // 개별 수신자 설정
+        mimeMessageHelper.setSubject(emailMessage.getSubject()); // 제목 설정
 
-            processImage(emailMessage, mimeMessageHelper); // 이미지 첨부 처리 (해당 메서드는 별도로 정의되어야 함)
+        processImage(emailMessage, mimeMessageHelper); // 이미지 첨부 처리 (해당 메서드는 별도로 정의되어야 함)
 
-            javaMailSender.send(mimeMessage); // 메일 발송
-        } catch (MessagingException e) {
-            throw e; // MessagingException을 다시 던집니다.
-        }
+        javaMailSender.send(mimeMessage); // 메일 발송
+
     }
 
 
@@ -138,8 +161,7 @@ public class EmailService {
         String modifiedHtmlMessage = emailMessage.getMessage();
 
         // 이미지 CID 매핑을 저장하기 위한 Map 생성
-        Map<String, String> cidMap = IntStream.range(0, imagePaths.size()).boxed()
-                .collect(Collectors.toMap(imagePaths::get, i -> "image" + i));
+        Map<String, String> cidMap = IntStream.range(0, imagePaths.size()).boxed().collect(Collectors.toMap(imagePaths::get, i -> "image" + i));
 
         // 모든 이미지 경로를 CID로 대체
         for (Map.Entry<String, String> entry : cidMap.entrySet()) {
@@ -186,7 +208,7 @@ public class EmailService {
 
     // 인증번호 및 임시 비밀번호 생성 메서드
     public String createCode() {
-        Random random = new Random();
+        Random random = new Random(8);
         StringBuilder key = new StringBuilder();
 
         for (int i = 0; i < 8; i++) {
@@ -215,3 +237,81 @@ public class EmailService {
 
 
 }
+/*
+
+@Service
+@RequiredArgsConstructor
+public class EmailService {
+
+    private final JavaMailSender javaMailSender;
+    private final SpringTemplateEngine templateEngine;
+    private final AdminRepository adminRepository;
+
+    @Value("${spring.mail.username}")
+    private String email;
+
+    @Transactional
+    public ResponseEntity<String> sendMailPromo(PromotionsDTO promotionsDTO) {
+        EmailMessage emailMessage = createEmailMessageFromPromotionsDTO(promotionsDTO);
+        List<String> recipients = adminRepository.getPromotionsAccept();
+        CompletableFuture<Void> allFutures = sendEmailsToRecipientsAsync(emailMessage, recipients);
+
+        try {
+            allFutures.join();
+            return ResponseEntity.ok("Emails successfully sent to all recipients.");
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Failed to send emails to all recipients. Error: " + getRootCause(e).getMessage());
+        }
+    }
+
+    public String sendMailPWReset(UserDTO userDTO) {
+        EmailMessage emailMessage = EmailMessage.builder().subject("비밀번호 초기화 메일알림")
+                .message("비밀번호 초기화 해주세요").build();
+
+        try {
+            sendMailAsync(emailMessage, userDTO.getUserId());
+            return "ok";
+        } catch (MessagingException e) {
+            throw new EmailSendingException("Failed to send email", e);
+        }
+    }
+
+    private void sendMailAsync(EmailMessage emailMessage, String recipient) throws MessagingException {
+        MimeMessage mimeMessage = javaMailSender.createMimeMessage();
+        MimeMessageHelper mimeMessageHelper = new MimeMessageHelper(mimeMessage, true);
+
+        mimeMessageHelper.setFrom(email);
+        mimeMessageHelper.setTo(recipient);
+        mimeMessageHelper.setSubject(emailMessage.getSubject());
+
+        processImage(emailMessage, mimeMessageHelper);
+
+        javaMailSender.send(mimeMessage);
+    }
+
+    private void processImage(EmailMessage emailMessage, MimeMessageHelper mimeMessageHelper) throws MessagingException {
+        List<String> imagePaths = extractImageUrls(emailMessage.getMessage());
+        Map<String, String> cidMap = generateCidMapForImages(imagePaths);
+        String modifiedHtmlMessage = replaceImageUrlsWithCids(emailMessage.getMessage(), cidMap);
+
+        mimeMessageHelper.setText(modifiedHtmlMessage, true);
+        attachImagesToEmail(imagePaths, cidMap, mimeMessageHelper);
+    }
+
+    private CompletableFuture<Void> sendEmailsToRecipientsAsync(EmailMessage emailMessage, List<String> recipients) {
+        CompletableFuture<?>[] futuresArray = recipients.stream()
+                .map(recipient -> CompletableFuture.runAsync(() -> {
+                    try {
+                        sendMailAsync(emailMessage, recipient);
+                    } catch (MessagingException e) {
+                        throw new EmailSendingException("Failed to send email to " + recipient, e);
+                    }
+                })).toArray(CompletableFuture[]::new);
+
+        return CompletableFuture.allOf(futuresArray);
+    }
+
+    // Additional methods like extractImageUrls, generateCidMapForImages, replaceImageUrlsWithCids, attachImagesToEmail
+    // are refactored similarly to improve readability, reduce duplication, and improve error handling.
+}*/

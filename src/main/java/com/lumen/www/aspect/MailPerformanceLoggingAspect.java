@@ -12,7 +12,7 @@ import org.springframework.stereotype.Component;
 public class MailPerformanceLoggingAspect {
 
     // sendMail 메서드 실행 전후에 로깅 어드바이스를 적용
-    @Around("execution(* com.lumen.www.service.EmailService.sendMail(..))")
+    @Around("execution(* com.lumen.www.service.EmailService.sendMail*(..))")
     public Object logMailSendExecutionTime(ProceedingJoinPoint joinPoint) throws Throwable {
         long startTime = System.currentTimeMillis(); // 메서드 실행 전 현재 시간을 밀리초 단위로 측정
 

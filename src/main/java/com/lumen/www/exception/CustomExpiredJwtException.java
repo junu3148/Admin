@@ -1,4 +1,4 @@
-package com.lumen.www.jwt;
+package com.lumen.www.exception;
 
 import io.jsonwebtoken.JwtException;
 

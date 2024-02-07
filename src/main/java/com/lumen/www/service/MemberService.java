@@ -96,7 +96,7 @@ public class MemberService {
      * @param jwtToken JWT 토큰 객체입니다.
      * @return JWT 토큰을 포함한 ResponseEntity입니다.
      */
-    private ResponseEntity<?> buildResponseWithToken(JwtToken jwtToken) {
+    private ResponseEntity<JwtToken> buildResponseWithToken(JwtToken jwtToken) {
         HttpHeaders httpHeaders = new HttpHeaders();
         httpHeaders.add(AUTHORIZATION_HEADER, BEARER_PREFIX + jwtToken.getAccessToken());
         return new ResponseEntity<>(jwtToken, httpHeaders, HttpStatus.OK);
@@ -108,7 +108,7 @@ public class MemberService {
      * @param token JWT 액세스 토큰입니다.
      * @return JWT 토큰을 포함한 ResponseEntity입니다.
      */
-    private ResponseEntity<?> buildResponseWithToken(String token) {
+/*    private ResponseEntity<JwtToken> buildResponseWithToken(String token) {
         HttpHeaders headers = new HttpHeaders();
         headers.add(AUTHORIZATION_HEADER, BEARER_PREFIX + token);
 
@@ -116,6 +116,16 @@ public class MemberService {
         jwtToken.setAccessToken(token);
 
         return new ResponseEntity<>(jwtToken, headers, HttpStatus.OK);
+    }*/
+    private ResponseEntity<String> buildResponseWithToken(String token) {
+        HttpHeaders headers = new HttpHeaders();
+        headers.add(AUTHORIZATION_HEADER, BEARER_PREFIX + token);
+
+        // 토큰 정보를 JSON 문자열 형태로 만들기
+        // 실제 환경에서는 객체를 JSON으로 변환할 라이브러리를 사용하겠지만 여기서는 수동으로 구성
+        String responseBody = "{\"accessToken\":\"" + token + "\"}";
+
+        return new ResponseEntity<>(responseBody, headers, HttpStatus.OK);
     }
 
     /**
@@ -136,7 +146,7 @@ public class MemberService {
      * 유효하지 않은 리프레시 토큰인 경우, UNAUTHORIZED 상태와 메시지를 포함하는 ResponseEntity를 반환합니다.
      * 예외가 발생한 경우, INTERNAL_SERVER_ERROR 상태와 메시지를 포함하는 ResponseEntity를 반환합니다.
      */
-    public ResponseEntity<?> refreshTokenCK(String refreshToken) {
+    public ResponseEntity<String> refreshTokenCK(String refreshToken) {
 
         try {
             if (!isValidRefreshToken(refreshToken)) {

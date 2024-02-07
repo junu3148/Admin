@@ -1,7 +1,6 @@
 package com.lumen.www.dto.user;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-import lombok.*;
+import lombok.Data;
 
 @Data
 public class UserDTO {

@@ -138,6 +138,14 @@ public interface AdminRepository {
     void deleteUsersWithStatusOlderThanOneMonth();
 
     /**
+     * 프로모션 수락 목록을 가져옵니다.
+     * 이 메서드는 프로모션 수락 목록을 가져와 List<String> 형태로 반환합니다.
+     *
+     * @return 프로모션 수락 목록
+     */
+    List<String> getPromotionsAccept();
+
+    /**
      * 가격 목록을 조회합니다.
      * 이 메서드는 PriceSearchDTO 객체를 인자로 받아 해당 조건에 맞는 가격 목록을 조회합니다.
      *
@@ -315,7 +323,6 @@ public interface AdminRepository {
      * @return 처리 결과를 나타내는 정수 (성공적으로 업데이트된 경우 1).
      */
     int updateTerms(TermsDTO termsDTO);
-
 
 
 }

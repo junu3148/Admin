@@ -1,5 +1,6 @@
 package com.lumen.www.jwt;
 
+import com.lumen.www.exception.CustomExpiredJwtException;
 import com.lumen.www.util.JwtTokenUtil;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
