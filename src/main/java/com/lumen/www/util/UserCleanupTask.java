@@ -1,4 +1,4 @@
-package com.lumen.www.service;
+package com.lumen.www.util;
 
 import com.lumen.www.dao.AdminRepository;
 import lombok.RequiredArgsConstructor;

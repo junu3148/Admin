@@ -7,12 +7,10 @@ import com.lumen.www.dto.inquiry.InquiryDTO;
 import com.lumen.www.dto.invoice.InvoiceDTO;
 import com.lumen.www.dto.notice.NoticeDTO;
 import com.lumen.www.dto.pricing.PriceSearchDTO;
-import com.lumen.www.dto.promotion.PromotionsDTO;
 import com.lumen.www.dto.terms.TermsDTO;
 import com.lumen.www.dto.user.UserDTO;
 import com.lumen.www.files.ImageUploader;
 import com.lumen.www.service.AdminService;
-import com.lumen.www.service.EmailService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -23,12 +21,10 @@ import org.springframework.web.servlet.ModelAndView;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("admin/")
-@ControllerAdvice
 public class AdminController {
 
     private final AdminService adminService;
     private final ImageUploader imageUploader;
-    private final EmailService emailService;
 
     // 가입자 관리
     @GetMapping("join")
@@ -42,28 +38,10 @@ public class AdminController {
         return adminService.getUserDetails(userDTO);
     }
 
-    // 가입자 비밀번호 초기화
-    @PostMapping("user")
-    public String adminJoinPWReset(@RequestBody UserDTO userDTO) {
-        return emailService.sendMailPWReset(userDTO);
-    }
-
     // 가입자 강제 탈퇴
     @PatchMapping("user")
     public ResponseEntity<String> adminUserDelete(@RequestBody UserDTO userDTO) {
         return adminService.adminJoinUserDelete(userDTO);
-    }
-
-    // 에디터 이미지 저장
-    @PostMapping("image/upload")
-    public ModelAndView uploadImage(MultipartHttpServletRequest request) {
-        return imageUploader.uploadImage(request);
-    }
-
-    // 프로모션 메일 발송
-    @PostMapping("send/promotions")
-    public ResponseEntity<String> addPromotions(@RequestBody PromotionsDTO promotionsDTO) {
-        return emailService.sendMailPromo(promotionsDTO);
     }
 
     // 미결제 관리
@@ -100,12 +78,6 @@ public class AdminController {
     @PostMapping("invoice/details")
     public JsonResult adminInvoiceDetails(@RequestBody InvoiceDTO invoiceDTO) {
         return adminService.getInvoiceDetails(invoiceDTO);
-    }
-
-    // 인보이스 메일 발송
-    @PostMapping("invoice/email")
-    public ResponseEntity<String> invoiceEmailShipment(@RequestBody InvoiceDTO invoiceDTO) {
-        return adminService.invoiceEmailShipment(invoiceDTO);
     }
 
     // 1:1 문의 현황
@@ -196,6 +168,12 @@ public class AdminController {
     @PatchMapping("terms")
     public ResponseEntity<String> adminTerms(@RequestBody TermsDTO termsDTO) {
         return adminService.updateTerms(termsDTO);
+    }
+
+    // 에디터 이미지 저장
+    @PostMapping("image/upload")
+    public ModelAndView uploadImage(MultipartHttpServletRequest request) {
+        return imageUploader.uploadImage(request);
     }
 
 

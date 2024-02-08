@@ -3,12 +3,10 @@ package com.lumen.www.controller;
 import com.lumen.www.dto.common.JsonResult;
 import com.lumen.www.service.AdminService;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-@Slf4j
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("admin/main/")

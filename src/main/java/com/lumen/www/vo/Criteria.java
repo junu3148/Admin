@@ -8,7 +8,8 @@ import lombok.ToString;
 @Setter
 @ToString
 public class Criteria {
-    private int pageNum, amount; // 현재 페이지, 페이지 당 보여질 게시물 갯수
+    private int pageNum;
+    private int amount; // 현재 페이지, 페이지 당 보여질 게시물 갯수
     private int showStat;
     private int keyword;
     private String keyword2;

@@ -87,6 +87,7 @@
         SELECT count(user_key)
         FROM user
         WHERE is_deleted = 0
+          AND accession_date > DATE_SUB(NOW(), INTERVAL 1 DAY)
 
     </select>
 
@@ -142,7 +143,9 @@
         FROM inquiry a
                  INNER JOIN user b ON a.user_key = b.user_key
                  INNER JOIN plan c ON b.plan_key = c.plan_key
+        WHERE inquiry_status = 'N'
         ORDER BY inquiry_date DESC
+        LIMIT 6
 
     </select>
 
@@ -292,7 +295,7 @@
     <!--프로모션 동의 메일 조회-->
     <select id="getPromotionsAccept" resultType="String">
 
-        SELECT user_id FROM USER WHERE promo_accept = 'Y'
+        SELECT user_id FROM USER WHERE promo_accept = 'Y' AND is_deleted = 0
 
     </select>
 

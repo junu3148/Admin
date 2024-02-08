@@ -1,4 +1,4 @@
-package com.lumen.www;
+package com.lumen.www.config;
 
 import com.lumen.www.files.FileStorageProperties;
 import lombok.RequiredArgsConstructor;

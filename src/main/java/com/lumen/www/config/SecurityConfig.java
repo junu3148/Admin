@@ -1,4 +1,4 @@
-package com.lumen.www;
+package com.lumen.www.config;
 
 import com.lumen.www.exception.JwtAccessDeniedHandler;
 import com.lumen.www.exception.JwtAuthenticationEntryPoint;
@@ -40,7 +40,7 @@ public class SecurityConfig {
             "form-action 'self'; " +
             "frame-ancestors 'none';";
 
-    public final String URI = "http://192.168.0.16:3000"; // http://www.lumen.com
+    public final String URL = "http://192.168.0.16:3000"; // http://www.lumen.com
 
     // Spring Security의 필터 체인을 구성합니다.
     @Bean
@@ -92,7 +92,7 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(List.of(URI));
+        configuration.setAllowedOrigins(List.of(URL));
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PATCH", "DELETE"));
         configuration.setAllowCredentials(true); // 크리덴셜 허용
         configuration.setAllowedHeaders(Arrays.asList("Authorization", "Cache-Control", "Content-Type"));

@@ -44,10 +44,9 @@ public class AdminServiceImpl implements AdminService {
 
     private static final String LOG_FAILURE_MESSAGE = "실패";
     private static final String NO_INQUIRY_RESULTS = "조회 결과가 없습니다.";
+    private static final String NO_UNANSWERED_INQUIRIES = "미답변 문의가 없습니다.";
     private final AdminRepository adminRepository;
-    private final EmailService emailService;
     private final JwtTokenProvider jwtTokenProvider;
-    private final InvoiceService invoiceService;
     private final TokenRepository tokenRepository;
 
     // 2차 로그인
@@ -118,10 +117,7 @@ public class AdminServiceImpl implements AdminService {
     }
 
 
-
-
-
-    // ------------------------------------------------------------------------------------- Main -----------------------------------------------------------------------------------------
+    //                                                                                                                      Main
     // 가입자 현황
     @Override
     @Transactional(readOnly = true)
@@ -164,14 +160,21 @@ public class AdminServiceImpl implements AdminService {
     @Override
     @Transactional(readOnly = true)
     public JsonResult getMainInquiryList() {
-        return createJsonResult(adminRepository.getInquiryList());
+
+        List<InquiryDTO> inquiryDTOList = adminRepository.getInquiryList();
+
+        createListWithDefaultValueIfEmpty(inquiryDTOList, () -> {
+            InquiryDTO inquiryDTO = new InquiryDTO();
+            inquiryDTO.setInquiryContent(NO_UNANSWERED_INQUIRIES); // 상수값
+            return inquiryDTO;
+        });
+
+        return createJsonResult(inquiryDTOList);
     }
 
 
+//                                                                                                                      Join
 
-
-
-    // ------------------------------------------------------------------------------------- Join -----------------------------------------------------------------------------------------
     // 가입자 리스트
     @Override
     @Transactional(readOnly = true)
@@ -215,11 +218,8 @@ public class AdminServiceImpl implements AdminService {
     }
 
 
-
-
-
-    // ------------------------------------------------------------------------------------- Price -----------------------------------------------------------------------------------------
-    // 미결제 회원 현황
+    //                                                                                                                      Price
+// 미결제 회원 현황
     @Override
     @Transactional(readOnly = true)
     public JsonResult getPriceList(PriceSearchDTO priceSearchDTO) {
@@ -262,11 +262,8 @@ public class AdminServiceImpl implements AdminService {
     }
 
 
-
-
-
-    // ------------------------------------------------------------------------------------- Pay -----------------------------------------------------------------------------------------
-    // 청약철회 현황
+    //                                                                                                                      Pay
+// 청약철회 현황
     @Override
     @Transactional(readOnly = true)
     public JsonResult getSubscriptionEndList(SearchDTO searchDTO) {
@@ -284,11 +281,8 @@ public class AdminServiceImpl implements AdminService {
     }
 
 
-
-
-
-    // ------------------------------------------------------------------------------------- Invoice -----------------------------------------------------------------------------------------
-    // 인보이스 리스트
+    //                                                                                                                      Invoice
+// 인보이스 리스트
     @Override
     @Transactional(readOnly = true)
     public JsonResult getInvoiceList(SearchDTO searchDTO) {
@@ -311,28 +305,9 @@ public class AdminServiceImpl implements AdminService {
         return createJsonResult(adminRepository.getInvoiceDetails(invoiceDTO));
     }
 
-    // 인보이스 메일 발송
-    @Override
-    public ResponseEntity<String> invoiceEmailShipment(InvoiceDTO invoiceDTO) {
 
-        InvoiceDTO invoice = adminRepository.getInvoiceDetails(invoiceDTO);
-
-        try {
-            invoiceService.sendInvoiceAsEmail(invoice.getUserId(), invoice);
-        } catch (Exception e) {
-
-            return new ResponseEntity<>("Failed to send invoice email.", HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-
-        return null;
-    }
-
-
-
-
-
-    // ------------------------------------------------------------------------------------- 1:1 -----------------------------------------------------------------------------------------
-    // 1:1 문의 현황
+    //                                                                                                                      1:1
+// 1:1 문의 현황
     @Override
     @Transactional(readOnly = true)
     public JsonResult getInquiryList(SearchDTO searchDTO) {
@@ -366,24 +341,21 @@ public class AdminServiceImpl implements AdminService {
     }
 
 
-
-
-
-    // ------------------------------------------------------------------------------------- Notice -----------------------------------------------------------------------------------------
-    // 공지사항 현황
+    //                                                                                                                      Notice
+// 공지사항 현황
     @Override
     @Transactional(readOnly = true)
     public JsonResult getNoticeList(SearchDTO searchDTO) {
 
-        List<NoticeListDTO> noticeListDTOS = adminRepository.getNoticeList(searchDTO);
+        List<NoticeListDTO> noticeListDTOList = adminRepository.getNoticeList(searchDTO);
 
-        createListWithDefaultValueIfEmpty(noticeListDTOS, () -> {
+        createListWithDefaultValueIfEmpty(noticeListDTOList, () -> {
             NoticeListDTO noticeListDTO = new NoticeListDTO();
             noticeListDTO.set제목(NO_INQUIRY_RESULTS); // 상수값
             return noticeListDTO;
         });
 
-        return createJsonResult(noticeListDTOS);
+        return createJsonResult(noticeListDTOList);
     }
 
     // 공지사항 세부 정보
@@ -426,20 +398,21 @@ public class AdminServiceImpl implements AdminService {
     }
 
 
-
-
-
-    // ------------------------------------------------------------------------------------- FAQ -----------------------------------------------------------------------------------------
-    // FAQ 현황
+    //                                                                                                                      FAQ
+// FAQ 현황
     @Override
     @Transactional(readOnly = true)
     public JsonResult getFaqList(SearchDTO searchDTO) {
 
-        List<FaqDTO> faqDTOS = adminRepository.getFaqList(searchDTO);
+        List<FaqDTO> faqDTOList = adminRepository.getFaqList(searchDTO);
 
-        createListWithDefaultValueIfEmpty(faqDTOS, FaqDTO::new);
+        createListWithDefaultValueIfEmpty(faqDTOList, () -> {
+            FaqDTO faqDTO = new FaqDTO();
+            faqDTO.setFaqTitle(NO_INQUIRY_RESULTS); // 상수값
+            return faqDTO;
+        });
 
-        return createJsonResult(adminRepository.getFaqList(searchDTO));
+        return createJsonResult(faqDTOList);
     }
 
     // FAQ 세부 정보
@@ -487,11 +460,8 @@ public class AdminServiceImpl implements AdminService {
     }
 
 
-
-
-
-    // ------------------------------------------------------------------------------------- Terms -----------------------------------------------------------------------------------------
-    // Terms 정보
+    //                                                                                                                      Terms
+// Terms 정보
     @Override
     @Transactional(readOnly = true)
     public JsonResult getTerms() {
@@ -509,11 +479,8 @@ public class AdminServiceImpl implements AdminService {
     }
 
 
-
-
-
-    // ------------------------------------------------------------------------------------- 공통로직 -----------------------------------------------------------------------------------------
-    // 공통 응답 생성 메서드
+    //                                                                                                                      공통로직
+// 공통 응답 생성 메서드
     private ResponseEntity<String> createResponse(int result, String successMessage, String failureMessage) {
         if (result > 0) {
             // 성공적으로 하나 이상의 행이 업데이트되었을 때

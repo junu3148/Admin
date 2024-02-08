@@ -1,4 +1,4 @@
-package com.lumen.www;
+package com.lumen.www.config;
 
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;

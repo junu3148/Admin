@@ -152,15 +152,6 @@ public interface AdminService {
     JsonResult getInvoiceDetails(InvoiceDTO invoiceDTO);
 
     /**
-     * 청구서 이메일 발송을 처리합니다.
-     * 이 메서드는 InvoiceDTO 객체를 인자로 받아 청구서 이메일 발송을 수행합니다.
-     *
-     * @param invoiceDTO 이메일 발송에 필요한 청구서 데이터를 포함하는 데이터 전송 객체.
-     * @return 처리 결과를 나타내는 ResponseEntity 객체.
-     */
-    ResponseEntity<String> invoiceEmailShipment(InvoiceDTO invoiceDTO);
-
-    /**
      * 1:1 문의 목록을 조회합니다.
      * 이 메서드는 SearchDTO 객체를 인자로 받아 1:1 문의 목록을 조회합니다.
      *

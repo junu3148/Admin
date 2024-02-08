@@ -1,4 +1,4 @@
-package com.lumen.www;
+package com.lumen.www.config;
 
 import com.lumen.www.dao.AdminRepository;
 import com.lumen.www.dao.AdminRepositoryImpl;
@@ -9,6 +9,7 @@ import com.lumen.www.files.ImageUploader;
 import com.lumen.www.jwt.JwtTokenProvider;
 import com.lumen.www.service.*;
 import com.lumen.www.service.EmailService;
+import com.lumen.www.util.UserCleanupTask;
 import org.apache.ibatis.session.SqlSession;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.ConfigurationProperties;
@@ -17,7 +18,6 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
-import org.thymeleaf.spring6.SpringTemplateEngine;
 
 @Configuration
 @ComponentScan(basePackages = "com.lumen.www")
@@ -37,7 +37,7 @@ public class AppConfig {
     // AdminService 빈 정의
     @Bean
     public AdminService adminService() {
-        return new AdminServiceImpl(adminRepository(), emailService(), jwtTokenProvider(), invoiceService(), tokenRepository());
+        return new AdminServiceImpl(adminRepository(), jwtTokenProvider(), tokenRepository());
     }
 
     // AdminRepository 빈 정의
@@ -62,7 +62,7 @@ public class AppConfig {
     // EmailService 빈 정의
     @Bean
     public EmailService emailService() {
-        return new EmailService(javaMailSender, new SpringTemplateEngine(), adminRepository());
+        return new EmailServiceImpl(javaMailSender, adminRepository());
     }
 
     // JwtTokenProvider 빈 정의
@@ -80,7 +80,7 @@ public class AppConfig {
     // AuthenticationManagerBuilder를 주입받아 사용
     @Bean
     public MemberService memberService(AdminRepository adminRepository, AuthenticationManagerBuilder authManagerBuilder, JwtTokenProvider jwtTokenProvider, TokenRepository tokenRepository) {
-        return new MemberService(adminRepository, authManagerBuilder, jwtTokenProvider, tokenRepository);
+        return new MemberServiceImpl(adminRepository, authManagerBuilder, jwtTokenProvider, tokenRepository);
     }
 
     // 0시 주기적인 메서드 실행 클래스
@@ -92,7 +92,7 @@ public class AppConfig {
     // InvoiceService 빈 정의
     @Bean
     public InvoiceService invoiceService() {
-        return new InvoiceService(javaMailSender);
+        return new InvoiceServiceImpl(javaMailSender, adminRepository());
     }
 
 }
