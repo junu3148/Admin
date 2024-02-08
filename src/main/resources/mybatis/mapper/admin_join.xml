@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="admin_join">
+
+    <!--                                                                                                          Join                                                                                  -->
+    <!--가입자 리스트-->
+    <select id="getJoinList" parameterType="SearchDTO" resultType="JoinListDTO">
+
+        SELECT user_key,
+        user_name AS 고객명,
+        user_id AS 이메일,
+        phone_number AS 연락처,
+        plan_name AS 플랜,
+        accession_date AS 가입일,
+        withdrawal_date AS 회원탈퇴일,
+        occupation AS 직업,
+        CASE
+        WHEN YEAR(CURDATE()) - birth_year BETWEEN 10 AND 19 THEN '10대'
+        WHEN YEAR(CURDATE()) - birth_year BETWEEN 20 AND 29 THEN '20대'
+        WHEN YEAR(CURDATE()) - birth_year BETWEEN 30 AND 39 THEN '30대'
+        WHEN YEAR(CURDATE()) - birth_year BETWEEN 40 AND 49 THEN '40대'
+        WHEN YEAR(CURDATE()) - birth_year BETWEEN 50 AND 59 THEN '50대'
+        WHEN YEAR(CURDATE()) - birth_year BETWEEN 60 AND 69 THEN '60대'
+        WHEN YEAR(CURDATE()) - birth_year BETWEEN 70 AND 79 THEN '70대'
+        WHEN YEAR(CURDATE()) - birth_year BETWEEN 80 AND 89 THEN '80대'
+        ELSE NULL
+        END AS 연령,
+        CASE gender
+        WHEN 'M' THEN '남자'
+        WHEN 'F' THEN '여자'
+        END
+        AS 성별,
+        country AS 국가
+        FROM USER A
+        INNER JOIN PLAN B ON A.plan_key = B.plan_key
+        WHERE is_deleted = 0
+        <if test="userName != null and userName != ''">
+            AND user_name = #{userName}
+        </if>
+        <if test="planName != null and planName != '' and planName != 'All'">
+            AND plan_name = #{planName}
+        </if>
+        <if test="startDate != null and startDate != ''">
+            AND accession_date BETWEEN #{startDate} AND #{endDate}
+        </if>
+        ORDER BY accession_date DESC
+
+    </select>
+
+    <!--가입자 세부정보-->
+    <select id="getUserDetails" parameterType="UserDTO" resultType="UserDTO">
+
+        SELECT
+        a.user_key,
+        user_id,
+        user_name,
+        phone_number,
+        DATE_FORMAT(accession_date, '%Y년 %m월 %d일') AS accessionDate,
+        plan_name,
+        CASE plan_type
+        WHEN 'M' THEN '월간'
+        WHEN 'Y' THEN '연간'
+        ELSE b.plan_type
+        END AS planType,
+        plan_price,
+
+        COALESCE(withdrawal_date, '-') AS withdrawalDate,
+        sub_round AS subRound,
+        out_info AS outInfo,
+        COALESCE(withdrawal_date, '-') AS outAmount,
+
+        occupation,
+        CASE
+        WHEN YEAR (CURDATE()) - birth_year BETWEEN 10 AND 19 THEN '10대'
+        WHEN YEAR(CURDATE()) - birth_year BETWEEN 20 AND 29 THEN '20대'
+        WHEN YEAR(CURDATE()) - birth_year BETWEEN 30 AND 39 THEN '30대'
+        WHEN YEAR(CURDATE()) - birth_year BETWEEN 40 AND 49 THEN '40대'
+        WHEN YEAR(CURDATE()) - birth_year BETWEEN 50 AND 59 THEN '50대'
+        WHEN YEAR(CURDATE()) - birth_year BETWEEN 60 AND 69 THEN '60대'
+        WHEN YEAR(CURDATE()) - birth_year BETWEEN 70 AND 79 THEN '70대'
+        WHEN YEAR(CURDATE()) - birth_year BETWEEN 80 AND 89 THEN '80대'
+        ELSE NULL
+        END
+        AS age,
+        CASE gender
+        WHEN 'M' THEN '남자'
+        WHEN 'F' THEN '여자'
+        END
+        AS gender,
+        country,
+        email_accept,
+        promo_accept,
+        user_status
+        FROM user a INNER JOIN plan b ON a.plan_key = b.plan_key
+
+        <choose>
+            <when test="subKey != null">
+                INNER JOIN subscription c ON a.user_key = c.user_key
+                WHERE c.sub_key = #{subKey}
+            </when>
+            <otherwise>
+                <if test="userKey != null">
+                    WHERE a.user_key = #{userKey}
+                </if>
+            </otherwise>
+        </choose>
+
+    </select>
+
+
+    <!--가입자 상태 변경-->
+    <update id="adminJoinUserDelete" parameterType="UserDTO">
+
+        UPDATE user
+        SET is_deleted      = 1,
+            withdrawal_date = NOW()
+        WHERE user_key = #{userKey}
+          AND is_deleted != 1
+          AND NOT EXISTS (
+            SELECT 1
+            FROM subscription
+            WHERE subscription.user_key = #{userKey}
+            )
+
+    </update>
+
+    <!--30일 지난 탈타회원 정보삭제-->
+    <delete id="deleteUsersWithStatusOlderThanOneMonth">
+
+        <![CDATA[
+        DELETE
+        FROM user
+        WHERE is_deleted = 1
+          AND withdrawal_date <= NOW() - INTERVAL 1 MONTH
+        ]]>
+
+    </delete>
+
+
+</mapper>

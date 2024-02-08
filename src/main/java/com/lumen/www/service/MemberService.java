@@ -1,5 +1,6 @@
 package com.lumen.www.service;
 
+import com.lumen.www.dto.auth.JwtToken;
 import com.lumen.www.dto.user.AdminUser;
 import org.springframework.http.ResponseEntity;
 
@@ -15,7 +16,7 @@ public interface MemberService {
      * 인증이 실패한 경우, UNAUTHORIZED 상태와 메시지를 포함하는 ResponseEntity를 반환합니다.
      */
 
-    ResponseEntity<?> signInAndGenerateJwtToken(AdminUser adminUser);
+    ResponseEntity<JwtToken> signInAndGenerateJwtToken(AdminUser adminUser);
     /**
      * 리프레시 토큰의 유효성을 검사한 후, 새로운 액세스 토큰을 발행하여 반환하는 메서드입니다.
      *

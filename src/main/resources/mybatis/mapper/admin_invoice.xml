@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="admin_invoice">
+
+    <!--                                                                                                          Invoice                                                                                  -->
+    <!--인보이스 리스트-->
+    <select id="getInvoiceList" parameterType="SearchDTO" resultType="InvoiceListDTO">
+
+        SELECT
+        invoice_key,
+        user_name AS 고객명,
+        user_id AS 이메일,
+        phone_number AS 연락처,
+        plan_name AS 플랜,
+        CASE plan_type
+        WHEN 'M' THEN '월간'
+        WHEN 'Y' THEN '연간'
+        ELSE plan_type
+        END AS 플랜구분,
+        DATE_FORMAT(issue_date, '%Y.%m.%d') AS 결제일,
+        invoice_code AS 인보이스,
+        plan_price AS 결제금액
+        FROM user a
+        INNER JOIN plan b ON a.plan_key = b.plan_key
+        INNER JOIN subscription c ON a.user_key = c.user_key
+        INNER JOIN invoice d ON c.sub_key = d.sub_key
+
+        WHERE 1 = 1
+        <if test="userName != null and userName != ''">
+            AND user_name = #{userName}
+        </if>
+        <if test="planName != null and planName != '' and planName !='All'">
+            AND plan_name = #{planName}
+        </if>
+        <if test="startDate != null and startDate != ''">
+            AND issue_date BETWEEN #{startDate} AND #{endDate}
+        </if>
+
+        ORDER BY issue_date DESC
+
+    </select>
+
+    <!--인보이스 디테일-->
+    <select id="getInvoiceDetails" parameterType="String" resultType="InvoiceDTO">
+
+        SELECT a.user_key,
+               user_id,
+               user_name,
+               phone_number,
+               DATE_FORMAT(accession_date, '%Y년 %m월 %d일') AS accessionDate,
+               plan_name,
+               CASE b.plan_type
+                   WHEN 'M' THEN '월간'
+                   WHEN 'Y' THEN '연간'
+                   ELSE b.plan_type
+                   END                                    AS planType,
+               plan_price,
+               CONCAT(
+                   LEFT(cade_number, LENGTH(cade_number) - 9), '**** ****'
+               )                                          AS cadeNumber,
+               '-'                                        AS outAmount,
+               sub_round,
+               city_province,
+               basic_address,
+               detailed_address,
+               vat_id,
+               invoice_code,
+               DATE_FORMAT(issue_date, '%Y.%m.%d')        AS issueDate,
+               statement_email
+        FROM user a
+                 INNER JOIN plan b ON a.plan_key = b.plan_key
+                 INNER JOIN cade c ON a.user_key = c.user_key
+                 INNER JOIN subscription d ON a.user_key = d.user_key
+                 INNER JOIN invoice e ON d.sub_key = e.sub_key
+        WHERE invoice_code = #{invoiceCode}
+
+    </select>
+
+
+</mapper>

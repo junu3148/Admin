@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="admin_terms">
+
+    <!--                                                                                                          Terms                                                                                  -->
+    <!--Terms 세부정보-->
+    <select id="getTerms" resultType="TermsDTO">
+
+        SELECT
+            terms_key,
+            terms_use,
+            info_policy
+        FROM
+            terms
+
+    </select>
+
+    <!--Terms 수정-->
+    <update id="updateTerms" parameterType="TermsDTO">
+
+        UPDATE terms
+        SET
+
+        <if test="termsUse != null and termsUse != ''">
+            terms_use = #{termsUse}
+        </if>
+
+        <if test="infoPolicy != null and infoPolicy != ''">
+            info_policy =#{infoPolicy}
+        </if>
+
+    </update>
+
+
+</mapper>

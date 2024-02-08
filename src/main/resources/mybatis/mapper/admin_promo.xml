@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="admin_promo">
+
+    <!--                                                                                                          Promo                                                                                  -->
+    <!--프로모션 동의 메일 조회-->
+    <select id="getPromotionsAccept" resultType="String">
+
+        SELECT user_id
+        FROM USER
+        WHERE promo_accept = 'Y'
+          AND is_deleted = 0
+
+    </select>
+
+</mapper>

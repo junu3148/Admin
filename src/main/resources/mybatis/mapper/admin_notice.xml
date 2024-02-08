@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="admin_notice">
+
+    <!--                                                                                                          Notice                                                                                  -->
+    <!--공지사항 현황-->
+    <select id="getNoticeList" parameterType="SearchDTO" resultType="NoticeListDTO">
+
+        SELECT
+        notice_key,
+        row_num AS 번호,
+        notice_title AS 제목,
+        date_format(notice_date, '%Y.%m.%d') AS 등록일자,
+        notice_hits AS 조회수
+        FROM
+        (SELECT
+        ROW_NUMBER() OVER (ORDER BY notice_date) AS row_num,
+        notice_key ,
+        notice_title,
+        notice_date, '%Y.%m.%d',
+        notice_hits
+        FROM notice
+
+        <if test="startDate != null and startDate != ''">
+            WHERE notice_date BETWEEN #{startDate} AND #{endDate}
+        </if>
+
+        ) AS se
+
+        ORDER BY row_num DESC
+
+    </select>
+
+    <!--공지사항 세부 정보-->
+    <select id="getNoticeDetails" parameterType="NoticeDTO" resultType="NoticeDTO">
+
+        SELECT notice_key,
+               notice_title,
+               notice_content,
+               date_format(notice_date, '%Y.%m.%d') AS noticeDate,
+               notice_hits
+        FROM notice
+        WHERE notice_key = #{noticeKey}
+
+    </select>
+
+    <!--공지사항 등록-->
+    <insert id="insertNotice" parameterType="NoticeDTO">
+
+        INSERT INTO notice (notice_title,
+                            notice_content,
+                            notice_date,
+                            admin_key)
+        SELECT #{noticeTitle},
+               #{noticeContent},
+               NOW(),
+               (SELECT admin_key FROM admin WHERE admin_id = #{adminId})
+
+
+    </insert>
+
+    <!--공지사항 수정-->
+    <update id="updateNotice" parameterType="NoticeDTO">
+
+        UPDATE notice
+        SET notice_title  = #{noticeTitle},
+            notice_content= #{noticeContent}
+        WHERE notice_key = #{noticeKey}
+
+    </update>
+
+    <!--공지사항 삭제-->
+    <delete id="deleteNotice" parameterType="NoticeDTO">
+
+        DELETE
+        FROM notice
+        WHERE notice_key = #{noticeKey}
+
+    </delete>
+
+
+</mapper>

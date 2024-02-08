@@ -1,5 +1,6 @@
 package com.lumen.www.controller;
 
+import com.lumen.www.dto.auth.JwtToken;
 import com.lumen.www.dto.common.JsonResult;
 import com.lumen.www.dto.user.AdminUser;
 import com.lumen.www.service.AdminService;
@@ -20,7 +21,7 @@ public class AuthController {
 
     // 1차 로그인 토큰발행
     @PostMapping("login")
-    public ResponseEntity<?> signIn(@RequestBody AdminUser adminUser) {
+    public ResponseEntity<JwtToken> signIn(@RequestBody AdminUser adminUser) {
         return memberService.signInAndGenerateJwtToken(adminUser);
     }
 

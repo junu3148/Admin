@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="admin_price">
+
+    <!--                                                                                                          Price                                                                                  -->
+    <!--미결제 회원 리스트-->
+    <select id="getPriceList" parameterType="PriceSearchDTO" resultType="PriceListDTO">
+
+        SELECT user_key,
+        user_name AS 고객명,
+        user_id AS 이메일,
+        phone_number AS 연락처,
+        plan_name AS 플랜,
+        CASE b.plan_type
+        WHEN 'M' THEN '월간'
+        WHEN 'Y' THEN '연간'
+        ELSE b.plan_type
+        END AS 플랜구분,
+        plan_price AS 미결제금액,
+        sub_round AS 회차,
+        out_info AS 미결제안내,
+        user_status AS 활동정지
+        FROM user a
+        INNER JOIN plan b ON a.plan_key = b.plan_key
+        WHERE is_deleted = 0
+        AND out_info > 0
+        <if test="userName != 'pass'">
+            AND user_name = #{userName}
+        </if>
+        <if test="planName != 'pass' and planName != 'All' ">
+            AND plan_name = #{planName}
+        </if>
+        <if test="outInfo != 'pass'">
+            AND out_info BETWEEN #{minNum} AND #{maxNum}
+        </if>
+
+        ORDER BY accession_date DESC
+
+    </select>
+
+    <!-- 회원 상태 변경-->
+    <update id="updateUserStatus" parameterType="UserDTO">
+
+        UPDATE user
+        SET user_status = CASE
+                              WHEN user_status = 'N' THEN 'Y'
+                              ELSE 'N'
+            END
+        WHERE user_key = #{userKey}
+
+    </update>
+
+
+</mapper>

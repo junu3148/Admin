@@ -3,7 +3,57 @@
 
 <mapper namespace="admin">
 
-    <!--로그인 인증-->
+    <!--1차 로그인-->
+    <select id="findByUsername" parameterType="String" resultType="AdminUser">
+
+        SELECT admin_id,
+               admin_password
+        FROM ADMIN
+        WHERE admin_id = #{adminId}
+
+    </select>
+
+    <!--권한 조회-->
+    <select id="getRole" parameterType="String" resultType="int">
+
+        SELECT role
+        FROM ADMIN
+        WHERE admin_id = #{adminId}
+
+    </select>
+
+    <!--2차 로그인-->
+    <select id="adminLoginCk" parameterType="AdminUser" resultType="AdminUser">
+
+        SELECT admin_key
+        FROM ADMIN
+        WHERE admin_name = #{adminName}
+
+        <if test="bankName != null and depositor != null and accountNumber != null">
+
+            AND bank_name = #{bankName}
+            AND depositor = #{depositor}
+            AND account_number = #{accountNumber}
+
+        </if>
+
+    </select>
+
+    <!--관리자 세부 정보-->
+    <select id="getAdminUser" parameterType="String" resultType="AdminDTO">
+
+        SELECT admin_key,
+               admin_name,
+               depositor,
+               bank_name,
+               account_number,
+               role
+        FROM admin
+        WHERE admin_id = #{adminId}
+
+    </select>
+
+    <!--관리자 정보 수정-->
     <update id="updateAdminUser" parameterType="AdminUser">
 
         UPDATE
@@ -26,730 +76,56 @@
 
     </update>
 
-    <!--권한정보 조회-->
-    <select id="findByUsername" parameterType="String" resultType="AdminUser">
 
-        SELECT admin_id,
-               admin_password
-        FROM ADMIN
-        WHERE admin_id = #{adminId}
 
-    </select>
 
-    <!--2차 로그인 관리자 정보-->
-    <select id="getRole" parameterType="String" resultType="int">
 
-        SELECT role
-        FROM ADMIN
-        WHERE admin_id = #{adminId}
 
-    </select>
-
-    <!--관리자 세부 정보-->
-    <select id="adminLoginCk" parameterType="AdminUser" resultType="AdminUser">
-
-        SELECT admin_key
-        FROM ADMIN
-        WHERE admin_name = #{adminName}
 
-        <if test="bankName != null and depositor != null and accountNumber != null">
 
-            AND bank_name = #{bankName}
-            AND depositor = #{depositor}
-            AND account_number = #{accountNumber}
 
-        </if>
 
-    </select>
 
-    <!--관리자 정보 수정-->
-    <select id="getAdminUser" parameterType="String" resultType="AdminDTO">
 
-        SELECT admin_key,
-               admin_name,
-               depositor,
-               bank_name,
-               account_number,
-               role
-        FROM admin
-        WHERE admin_id = #{adminId}
-
-    </select>
-
-
-
-
-
-    <!--                                                                                                          Main                                                                                  -->
-    <!--가입자 현황-->
-    <select id="subscriberCount" resultType="int">
-
-        SELECT count(user_key)
-        FROM user
-        WHERE is_deleted = 0
-          AND accession_date > DATE_SUB(NOW(), INTERVAL 1 DAY)
-
-    </select>
-
-    <!--메인페이지 월별가입자 그래프-->
-    <select id="getMonthlySubscriber" resultType="java.util.Map">
-
-        WITH RECURSIVE date_generator AS (SELECT CURDATE() AS date -- 시작 날짜를 현재 달로 설정
-        UNION ALL
-        SELECT date - INTERVAL 1 MONTH
-        FROM date_generator
-        WHERE date
-            > CURDATE() - INTERVAL 11 MONTH
-            )
-            , months AS (
-        SELECT YEAR (date) AS year, MONTH (date) AS month
-        FROM date_generator
-            )
-        SELECT CONCAT(m.year, '년 ', m.month, '월') AS month,
-    COALESCE(COUNT(u.user_key), 0) AS subscribers_count
-        FROM months m
-            LEFT JOIN user u
-        ON YEAR (u.accession_date) = m.year AND MONTH (u.accession_date) = m.month AND u.is_deleted = 0
-        GROUP BY m.year, m.month
-        ORDER BY m.year, m.month
-
-    </select>
-
-    <!--메인페이지 현황지표-->
-    <select id="getUserActivity" resultType="UserActivityDTO">
-
-        SELECT userCount,
-               upDown,
-               percentage
-        FROM view_user_activity
-
-    </select>
-
-    <!--메인페이지 문의현황-->
-    <select id="getInquiryList" resultType="InquiryDTO">
-
-        SELECT inquiry_key,
-               date_format(inquiry_date, '%Y-%m-%d') AS inquiryDate,
-               inquiry_content,
-               CASE inquiry_status
-                   WHEN 'N' THEN
-                       '답변대기'
-                   WHEN 'Y' THEN
-                       '답변완료'
-                   ELSE
-                       inquiry_status
-                   END                               AS inquiryStatus,
-               plan_name
-        FROM inquiry a
-                 INNER JOIN user b ON a.user_key = b.user_key
-                 INNER JOIN plan c ON b.plan_key = c.plan_key
-        WHERE inquiry_status = 'N'
-        ORDER BY inquiry_date DESC
-        LIMIT 6
-
-    </select>
-
-
-
-
-
-    <!--                                                                                                          Join                                                                                  -->
-    <!--가입자 리스트-->
-    <select id="getJoinList" parameterType="SearchDTO" resultType="JoinListDTO">
-
-        SELECT user_key,
-        user_name AS 고객명,
-        user_id AS 이메일,
-        phone_number AS 연락처,
-        plan_name AS 플랜,
-        accession_date AS 가입일,
-        withdrawal_date AS 회원탈퇴일,
-        occupation AS 직업,
-        CASE
-        WHEN YEAR(CURDATE()) - birth_year BETWEEN 10 AND 19 THEN '10대'
-        WHEN YEAR(CURDATE()) - birth_year BETWEEN 20 AND 29 THEN '20대'
-        WHEN YEAR(CURDATE()) - birth_year BETWEEN 30 AND 39 THEN '30대'
-        WHEN YEAR(CURDATE()) - birth_year BETWEEN 40 AND 49 THEN '40대'
-        WHEN YEAR(CURDATE()) - birth_year BETWEEN 50 AND 59 THEN '50대'
-        WHEN YEAR(CURDATE()) - birth_year BETWEEN 60 AND 69 THEN '60대'
-        WHEN YEAR(CURDATE()) - birth_year BETWEEN 70 AND 79 THEN '70대'
-        WHEN YEAR(CURDATE()) - birth_year BETWEEN 80 AND 89 THEN '80대'
-        ELSE NULL
-        END AS 연령,
-        CASE gender
-        WHEN 'M' THEN '남자'
-        WHEN 'F' THEN '여자'
-        END
-        AS 성별,
-        country AS 국가
-        FROM USER A
-        INNER JOIN PLAN B ON A.plan_key = B.plan_key
-        WHERE is_deleted = 0
-        <if test="userName != null and userName != ''">
-            AND user_name = #{userName}
-        </if>
-        <if test="planName != null and planName != '' and planName != 'All'">
-            AND plan_name = #{planName}
-        </if>
-        <if test="startDate != null and startDate != ''">
-            AND accession_date BETWEEN #{startDate} AND #{endDate}
-        </if>
-        ORDER BY accession_date DESC
-
-    </select>
-
-    <!--가입자 세부정보-->
-    <select id="getUserDetails" parameterType="UserDTO" resultType="UserDTO">
-
-        SELECT
-        a.user_key,
-        user_id,
-        user_name,
-        phone_number,
-        DATE_FORMAT(accession_date, '%Y년 %m월 %d일') AS accessionDate,
-        plan_name,
-        CASE plan_type
-        WHEN 'M' THEN '월간'
-        WHEN 'Y' THEN '연간'
-        ELSE b.plan_type
-        END AS planType,
-        plan_price,
-
-        COALESCE(withdrawal_date, '-') AS withdrawalDate,
-        sub_round AS subRound,
-        out_info AS outInfo,
-        COALESCE(withdrawal_date, '-') AS outAmount,
-
-        occupation,
-        CASE
-        WHEN YEAR (CURDATE()) - birth_year BETWEEN 10 AND 19 THEN '10대'
-        WHEN YEAR(CURDATE()) - birth_year BETWEEN 20 AND 29 THEN '20대'
-        WHEN YEAR(CURDATE()) - birth_year BETWEEN 30 AND 39 THEN '30대'
-        WHEN YEAR(CURDATE()) - birth_year BETWEEN 40 AND 49 THEN '40대'
-        WHEN YEAR(CURDATE()) - birth_year BETWEEN 50 AND 59 THEN '50대'
-        WHEN YEAR(CURDATE()) - birth_year BETWEEN 60 AND 69 THEN '60대'
-        WHEN YEAR(CURDATE()) - birth_year BETWEEN 70 AND 79 THEN '70대'
-        WHEN YEAR(CURDATE()) - birth_year BETWEEN 80 AND 89 THEN '80대'
-        ELSE NULL
-        END
-        AS age,
-        CASE gender
-        WHEN 'M' THEN '남자'
-        WHEN 'F' THEN '여자'
-        END
-        AS gender,
-        country,
-        email_accept,
-        promo_accept,
-        user_status
-        FROM user a INNER JOIN plan b ON a.plan_key = b.plan_key
-
-        <choose>
-            <when test="subKey != null">
-                INNER JOIN subscription c ON a.user_key = c.user_key
-                WHERE c.sub_key = #{subKey}
-            </when>
-            <otherwise>
-                <if test="userKey != null">
-                    WHERE a.user_key = #{userKey}
-                </if>
-            </otherwise>
-        </choose>
-
-    </select>
-
-
-    <!--가입자 상태 변경-->
-    <update id="adminJoinUserDelete" parameterType="UserDTO">
-
-        UPDATE user
-        SET is_deleted      = 1,
-            withdrawal_date = NOW()
-        WHERE user_key = #{userKey}
-          AND is_deleted != 1
-          AND NOT EXISTS (
-            SELECT 1
-            FROM subscription
-            WHERE subscription.user_key = #{userKey}
-            )
-
-    </update>
-
-    <!--30일 지난 탈타회원 정보삭제-->
-    <delete id="deleteUsersWithStatusOlderThanOneMonth">
-
-        <![CDATA[
-        DELETE
-        FROM user
-        WHERE is_deleted = 1
-          AND withdrawal_date <= NOW() - INTERVAL 1 MONTH
-        ]]>
-
-    </delete>
-
-
-
-
-
-    <!--                                                                                                          Promo                                                                                  -->
-    <!--프로모션 동의 메일 조회-->
-    <select id="getPromotionsAccept" resultType="String">
-
-        SELECT user_id FROM USER WHERE promo_accept = 'Y' AND is_deleted = 0
-
-    </select>
-
-
-
-
-
-    <!--                                                                                                          Price                                                                                  -->
-    <!--미결제 회원 리스트-->
-    <select id="getPriceList" parameterType="PriceSearchDTO" resultType="PriceListDTO">
-
-        SELECT user_key,
-        user_name AS 고객명,
-        user_id AS 이메일,
-        phone_number AS 연락처,
-        plan_name AS 플랜,
-        CASE b.plan_type
-        WHEN 'M' THEN '월간'
-        WHEN 'Y' THEN '연간'
-        ELSE b.plan_type
-        END AS 플랜구분,
-        plan_price AS 미결제금액,
-        sub_round AS 회차,
-        out_info AS 미결제안내,
-        user_status AS 활동정지
-        FROM user a
-        INNER JOIN plan b ON a.plan_key = b.plan_key
-        WHERE is_deleted = 0
-            AND out_info > 0
-        <if test="userName != 'pass'">
-            AND user_name = #{userName}
-        </if>
-        <if test="planName != 'pass' and planName != 'All' ">
-            AND plan_name = #{planName}
-        </if>
-        <if test="outInfo != 'pass'">
-            AND out_info BETWEEN #{minNum} AND #{maxNum}
-        </if>
-
-        ORDER BY accession_date DESC
-
-    </select>
-
-    <!-- 회원 상태 변경-->
-    <update id="updateUserStatus" parameterType="UserDTO">
-
-        UPDATE user
-        SET user_status = CASE
-                              WHEN user_status = 'N' THEN 'Y'
-                              ELSE 'N'
-            END
-        WHERE user_key = #{userKey}
-
-    </update>
-
-
-
-
-
-    <!--                                                                                                          Pay                                                                                  -->
-    <!--청약철회 현황-->
-    <select id="getSubscriptionEndList" parameterType="SearchDTO" resultType="PayListDTO">
-
-        SELECT
-        a.user_key,
-        sub_key,
-        user_name AS 고객명,
-        user_id AS 이메일,
-        phone_number AS 연락처,
-        plan_name AS 플랜,
-        CASE plan_type
-        WHEN 'M' THEN '월간'
-        WHEN 'Y' THEN '연간'
-        ELSE plan_type
-        END AS 플랜구분,
-        CASE sub_status
-        WHEN 'N' THEN '청약철회완료'
-        ELSE sub_status
-        END AS 청약철회,
-        DATE_FORMAT(c.sub_end_date, '%Y.%m.%d') AS 철회일
-        FROM user a INNER JOIN plan b ON a.plan_key = b.plan_key
-        INNER JOIN subscription c ON a.user_key = c.user_key
-        WHERE sub_end_date IS NOT NULL
-
-        <if test="userName != null and userName != ''">
-            AND user_name = #{userName}
-        </if>
-        <if test="planName != null and planName != '' and planName != 'All'">
-            AND plan_name = #{planName}
-        </if>
-        <if test="startDate != null and startDate != ''">
-            AND sub_end_date BETWEEN #{startDate} AND #{endDate}
-        </if>
-
-        ORDER BY accession_date DESC
-
-    </select>
-
-
-
-
-
-    <!--                                                                                                          Invoice                                                                                  -->
-    <!--인보이스 리스트-->
-    <select id="getInvoiceList" parameterType="SearchDTO" resultType="InvoiceListDTO">
-
-        SELECT
-        invoice_key,
-        user_name AS 고객명,
-        user_id AS 이메일,
-        phone_number AS 연락처,
-        plan_name AS 플랜,
-        CASE plan_type
-        WHEN 'M' THEN '월간'
-        WHEN 'Y' THEN '연간'
-        ELSE plan_type
-        END AS 플랜구분,
-        DATE_FORMAT(issue_date, '%Y.%m.%d') AS 결제일,
-        invoice_code AS 인보이스,
-        plan_price AS 결제금액
-        FROM user a
-        INNER JOIN plan b ON a.plan_key = b.plan_key
-        INNER JOIN subscription c ON a.user_key = c.user_key
-        INNER JOIN invoice d ON c.sub_key = d.sub_key
-
-        WHERE 1 = 1
-        <if test="userName != null and userName != ''">
-            AND user_name = #{userName}
-        </if>
-        <if test="planName != null and planName != '' and planName !='All'">
-            AND plan_name = #{planName}
-        </if>
-        <if test="startDate != null and startDate != ''">
-            AND issue_date BETWEEN #{startDate} AND #{endDate}
-        </if>
-
-        ORDER BY issue_date DESC
-
-    </select>
-
-    <!--인보이스 디테일-->
-    <select id="getInvoiceDetails" parameterType="String" resultType="InvoiceDTO">
-
-        SELECT a.user_key,
-               user_id,
-               user_name,
-               phone_number,
-               DATE_FORMAT(accession_date, '%Y년 %m월 %d일') AS accessionDate,
-               plan_name,
-               CASE b.plan_type
-                   WHEN 'M' THEN '월간'
-                   WHEN 'Y' THEN '연간'
-                   ELSE b.plan_type
-                   END                                    AS planType,
-               plan_price,
-               CONCAT(
-                   LEFT(cade_number, LENGTH(cade_number) - 9), '**** ****'
-               )                                          AS cadeNumber,
-               '-'                                        AS outAmount,
-               sub_round,
-               city_province,
-               basic_address,
-               detailed_address,
-               vat_id,
-               invoice_code,
-               DATE_FORMAT(issue_date, '%Y.%m.%d')        AS issueDate,
-               statement_email
-        FROM user a
-                 INNER JOIN plan b ON a.plan_key = b.plan_key
-                 INNER JOIN cade c ON a.user_key = c.user_key
-                 INNER JOIN subscription d ON a.user_key = d.user_key
-                 INNER JOIN invoice e ON d.sub_key = e.sub_key
-        WHERE invoice_code = #{invoiceCode}
-
-    </select>
-
-
-
-
-
-    <!--                                                                                                          1:1                                                                                  -->
-    <!--1:1 문의 현황-->
-    <select id="getInquiryList2" parameterType="SearchDTO" resultType="InquiryListDTO">
-
-        SELECT row_num AS 번호,
-        inquiry_key,
-        inquiry_type AS 유형,
-        user_name AS 이름,
-        user_id AS 이메일,
-        plan_name AS 플랜,
-        CASE
-        WHEN plan_type = 'M' THEN '월간'
-        WHEN plan_type = 'Y' THEN '연간'
-        ELSE plan_type
-        END AS 플랜구분,
-        inquiry_content AS 제목,
-        date_format(inquiry_date, '%Y.%m.%d') AS 문의일자,
-        CASE
-        WHEN inquiry_status = 'N' THEN '미답변'
-        WHEN inquiry_status = 'Y' THEN '답변완료'
-        ELSE inquiry_status
-        END AS 처리상태
-        FROM (SELECT ROW_NUMBER() OVER (ORDER BY c.inquiry_date) AS row_num, c.inquiry_key,
-        c.inquiry_type,
-        a.user_name,
-        a.user_id,
-        b.plan_name,
-        b.plan_type,
-        c.inquiry_content,
-        c.inquiry_date,
-        c.inquiry_status
-        FROM user a
-        INNER JOIN plan b ON a.plan_key = b.plan_key
-        INNER JOIN inquiry c ON a.user_key = c.user_key
-        INNER JOIN subscription d ON a.user_key = d.user_key
-
-        WHERE 1 = 1
-
-        <if test="userName != null and userName != ''">
-            AND user_name = #{userName}
-        </if>
-        <if test="planName != null and planName != '' and planName !='전체조회'">
-            AND inquiry_type = #{planName}
-        </if>
-        <if test="startDate != null and startDate != ''">
-            AND inquiry_date BETWEEN #{startDate} AND #{endDate}
-        </if>
-
-        ) AS subquery
-        ORDER BY row_num desc
-
-    </select>
-
-    <!--1:1 문의 세부 정보-->
-    <select id="getInquiryDetails" parameterType="InquiryDTO" resultType="InquiryDTO">
-
-        SELECT inquiry_key,
-               date_format(inquiry_date, '%Y.%m.%d') AS inquiryDate,
-               CASE
-                   WHEN inquiry_status = 'N' THEN
-                       '미답변'
-                   WHEN inquiry_status = 'Y' THEN
-                       '답변완료'
-                   ELSE
-                       inquiry_status
-                   END                               AS inquiryStatus,
-               inquiry_type,
-               user_name,
-               plan_name,
-               qna,
-               inquiry_content
-        FROM inquiry a
-                 INNER JOIN user b ON a.user_key = b.user_key
-                 INNER JOIN plan c ON b.plan_key = c.plan_key
-                 INNER JOIN subscription d ON a.user_key = d.user_key
-        WHERE inquiry_key = #{inquiryKey}
-
-    </select>
-
-    <!--1:1 문의 답변 등록-->
-    <update id="insertInquiryAnswer" parameterType="InquiryDTO">
-
-        UPDATE inquiry
-        SET qna            = #{qna},
-            inquiry_status ='Y'
-        WHERE inquiry_key = #{inquiryKey}
-
-    </update>
-
-
-
-
-
-    <!--                                                                                                          Notice                                                                                  -->
-    <!--공지사항 현황-->
-    <select id="getNoticeList" parameterType="SearchDTO" resultType="NoticeListDTO">
-
-        SELECT
-        notice_key,
-        row_num AS 번호,
-        notice_title AS 제목,
-        date_format(notice_date, '%Y.%m.%d') AS 등록일자,
-        notice_hits AS 조회수
-        FROM
-        (SELECT
-        ROW_NUMBER() OVER (ORDER BY notice_date) AS row_num,
-        notice_key ,
-        notice_title,
-        notice_date, '%Y.%m.%d',
-        notice_hits
-        FROM notice
-
-        <if test="startDate != null and startDate != ''">
-            WHERE notice_date BETWEEN #{startDate} AND #{endDate}
-        </if>
-
-        ) AS se
-
-        ORDER BY row_num DESC
-
-    </select>
-
-    <!--공지사항 세부 정보-->
-    <select id="getNoticeDetails" parameterType="NoticeDTO" resultType="NoticeDTO">
-
-        SELECT notice_key,
-               notice_title,
-               notice_content,
-               date_format(notice_date, '%Y.%m.%d') AS noticeDate,
-               notice_hits
-        FROM notice
-        WHERE notice_key = #{noticeKey}
-
-    </select>
-
-    <!--공지사항 등록-->
-    <insert id="insertNotice" parameterType="NoticeDTO">
-
-        INSERT INTO notice (notice_title,
-                            notice_content,
-                            notice_date,
-                            admin_key)
-        SELECT #{noticeTitle},
-               #{noticeContent},
-               NOW(),
-               (SELECT admin_key FROM admin WHERE admin_id = #{adminId})
-
-
-    </insert>
-
-    <!--공지사항 수정-->
-    <update id="updateNotice" parameterType="NoticeDTO">
-
-        UPDATE notice
-        SET notice_title  = #{noticeTitle},
-            notice_content= #{noticeContent}
-        WHERE notice_key = #{noticeKey}
-
-    </update>
-
-    <!--공지사항 삭제-->
-    <delete id="deleteNotice" parameterType="NoticeDTO">
-
-        DELETE
-        FROM notice
-        WHERE notice_key = #{noticeKey}
-
-    </delete>
-
-
-
-
-
-    <!--                                                                                                          FAQ                                                                                  -->
-    <!--FAQ 현황-->
-    <select id="getFaqList" parameterType="SearchDTO" resultType="FaqDTO">
-
-        SELECT faq_key,
-        faq_title,
-        faq_content,
-        faq_type
-        FROM faq
-        WHERE 1 = 1
-        <if test="keyword != null and keyword != ''">
-            AND faq_title LIKE CONCAT('%', #{keyword}, '%')
-            OR faq_content LIKE CONCAT('%', #{keyword}, '%')
-        </if>
-        <if test="searchType != null and searchType != '' and searchType != '전체조회'">
-            AND faq_type = #{searchType}
-        </if>
-        ORDER BY faq_key DESC
-
-    </select>
-
-    <!--FAQ 세부 정보-->
-    <select id="getFaq" parameterType="FaqDTO" resultType="FaqDTO">
-
-        SELECT faq_key,
-               faq_title,
-               faq_content,
-               faq_type
-        FROM faq
-        WHERE faq_key = #{faqKey}
-
-    </select>
-
-
-    <!--FAQ 등록-->
-    <insert id="insertFaq" parameterType="FaqDTO">
-
-        INSERT INTO faq (faq_title,
-                         faq_content,
-                         faq_type,
-                         admin_key)
-        SELECT #{faqTitle},
-               #{faqContent},
-               #{faqType},
-               (SELECT admin_key FROM admin WHERE admin_id = #{adminId})
-
-
-    </insert>
-
-    <!--FAQ 수정-->
-    <update id="updateFaq" parameterType="FaqDTO">
-
-        UPDATE faq
-        SET faq_title   = #{faqTitle},
-            faq_content = #{faqContent},
-            faq_type    = #{faqType}
-        WHERE faq_key = #{faqKey}
-
-    </update>
-
-    <!--FAQ 삭제-->
-    <delete id="deleteFaq" parameterType="FaqDTO">
-
-        DELETE
-        FROM faq
-        WHERE faq_key = #{faqKey}
-
-    </delete>
-
-
-
-
-
-    <!--                                                                                                          Terms                                                                                  -->
-    <!--Terms 세부정보-->
-    <select id="getTerms" resultType="TermsDTO">
-
-        SELECT
-            terms_key,
-            terms_use,
-            info_policy
-        FROM
-            terms
-
-    </select>
-
-    <!--Terms 수정-->
-    <update id="updateTerms" parameterType="TermsDTO">
-
-        UPDATE terms
-        SET
-
-        <if test="termsUse != null and termsUse != ''">
-            terms_use = #{termsUse}
-        </if>
-
-        <if test="infoPolicy != null and infoPolicy != ''">
-            info_policy =#{infoPolicy}
-        </if>
-
-    </update>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

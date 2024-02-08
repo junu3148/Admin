@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="admin_inquiry">
+
+    <!--                                                                                                          1:1                                                                                  -->
+    <!--1:1 문의 현황-->
+    <select id="getInquiryList2" parameterType="SearchDTO" resultType="InquiryListDTO">
+
+        SELECT row_num AS 번호,
+        inquiry_key,
+        inquiry_type AS 유형,
+        user_name AS 이름,
+        user_id AS 이메일,
+        plan_name AS 플랜,
+        CASE
+        WHEN plan_type = 'M' THEN '월간'
+        WHEN plan_type = 'Y' THEN '연간'
+        ELSE plan_type
+        END AS 플랜구분,
+        inquiry_content AS 제목,
+        date_format(inquiry_date, '%Y.%m.%d') AS 문의일자,
+        CASE
+        WHEN inquiry_status = 'N' THEN '미답변'
+        WHEN inquiry_status = 'Y' THEN '답변완료'
+        ELSE inquiry_status
+        END AS 처리상태
+        FROM (SELECT ROW_NUMBER() OVER (ORDER BY c.inquiry_date) AS row_num, c.inquiry_key,
+        c.inquiry_type,
+        a.user_name,
+        a.user_id,
+        b.plan_name,
+        b.plan_type,
+        c.inquiry_content,
+        c.inquiry_date,
+        c.inquiry_status
+        FROM user a
+        INNER JOIN plan b ON a.plan_key = b.plan_key
+        INNER JOIN inquiry c ON a.user_key = c.user_key
+        INNER JOIN subscription d ON a.user_key = d.user_key
+
+        WHERE 1 = 1
+
+        <if test="userName != null and userName != ''">
+            AND user_name = #{userName}
+        </if>
+        <if test="planName != null and planName != '' and planName !='전체조회'">
+            AND inquiry_type = #{planName}
+        </if>
+        <if test="startDate != null and startDate != ''">
+            AND inquiry_date BETWEEN #{startDate} AND #{endDate}
+        </if>
+
+        ) AS subquery
+        ORDER BY row_num desc
+
+    </select>
+
+    <!--1:1 문의 세부 정보-->
+    <select id="getInquiryDetails" parameterType="InquiryDTO" resultType="InquiryDTO">
+
+        SELECT inquiry_key,
+               date_format(inquiry_date, '%Y.%m.%d') AS inquiryDate,
+               CASE
+                   WHEN inquiry_status = 'N' THEN
+                       '미답변'
+                   WHEN inquiry_status = 'Y' THEN
+                       '답변완료'
+                   ELSE
+                       inquiry_status
+                   END                               AS inquiryStatus,
+               inquiry_type,
+               user_name,
+               plan_name,
+               qna,
+               inquiry_content
+        FROM inquiry a
+                 INNER JOIN user b ON a.user_key = b.user_key
+                 INNER JOIN plan c ON b.plan_key = c.plan_key
+                 INNER JOIN subscription d ON a.user_key = d.user_key
+        WHERE inquiry_key = #{inquiryKey}
+
+    </select>
+
+    <!--1:1 문의 답변 등록-->
+    <update id="insertInquiryAnswer" parameterType="InquiryDTO">
+
+        UPDATE inquiry
+        SET qna            = #{qna},
+            inquiry_status ='Y'
+        WHERE inquiry_key = #{inquiryKey}
+
+    </update>
+
+
+</mapper>

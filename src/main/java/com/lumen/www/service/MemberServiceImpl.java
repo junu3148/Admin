@@ -42,7 +42,7 @@ public class MemberServiceImpl implements MemberService {
     // 사용자 로그인을 처리하고, JWT 토큰을 생성하여 반환
     @Override
     @Transactional
-    public ResponseEntity<?> signInAndGenerateJwtToken(AdminUser adminUser) {
+    public ResponseEntity<JwtToken> signInAndGenerateJwtToken(AdminUser adminUser) {
         String username = adminUser.getUsername();
         String password = adminUser.getPassword();
 
@@ -52,6 +52,7 @@ public class MemberServiceImpl implements MemberService {
 
         try {
             JwtToken jwtToken = authenticateAndGenerateToken(username, password);
+
             return buildResponseWithToken(jwtToken);
         } catch (AuthenticationException e) {
             return unauthorizedResponse(INVALID_CREDENTIALS_MESSAGE);
@@ -65,7 +66,7 @@ public class MemberServiceImpl implements MemberService {
 
         try {
             if (!isValidRefreshToken(refreshToken)) {
-                return unauthorizedResponse(INVALID_TOKEN_MESSAGE);
+                return unauthorizedStringResponse(INVALID_TOKEN_MESSAGE);
             } else {
 
                 Optional<RefreshToken> refreshTokenOpt = tokenRepository.refreshTokenCK(refreshToken);
@@ -79,7 +80,7 @@ public class MemberServiceImpl implements MemberService {
             return internalServerErrorResponse();
         }
         // 토큰이 유효하지 않거나 조회되지 않는 경우, 적절한 응답 반환
-        return unauthorizedResponse(INVALID_TOKEN_MESSAGE);
+        return unauthorizedStringResponse(INVALID_TOKEN_MESSAGE);
     }
 
 
@@ -129,13 +130,24 @@ public class MemberServiceImpl implements MemberService {
     }
 
     // 잘못된 요청에 대한 응답을 생성하여 반환
-    private ResponseEntity<String> badRequestResponse() {
+    private ResponseEntity<JwtToken> badRequestResponse() {
         HttpHeaders httpHeaders = new HttpHeaders();
-        return new ResponseEntity<>(INVALID_EMAIL_MESSAGE, httpHeaders, HttpStatus.BAD_REQUEST);
+        JwtToken errorToken = new JwtToken();
+        errorToken.setErrorMessage(INVALID_EMAIL_MESSAGE);
+        // JwtToken 객체를 반환하도록 수정
+        return new ResponseEntity<>(errorToken, httpHeaders, HttpStatus.BAD_REQUEST);
     }
 
     // 인증되지 않은 요청에 대한 응답을 생성하여 반환
-    private ResponseEntity<String> unauthorizedResponse(String message) {
+    private ResponseEntity<JwtToken> unauthorizedResponse(String message) {
+        JwtToken errorToken = new JwtToken();
+        errorToken.setErrorMessage(message);
+        // JwtToken 객체를 반환하도록 수정
+        return new ResponseEntity<>(errorToken, HttpStatus.UNAUTHORIZED);
+    }
+
+    // 인증되지 않은 요청에 대한 문자열 응답을 생성하여 반환
+    private ResponseEntity<String> unauthorizedStringResponse(String message) {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(message);
     }
 
