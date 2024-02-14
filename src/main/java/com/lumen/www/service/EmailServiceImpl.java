@@ -4,6 +4,7 @@ import com.lumen.www.dao.AdminRepository;
 import com.lumen.www.dto.email.EmailMessage;
 import com.lumen.www.dto.promotion.PromotionsDTO;
 import com.lumen.www.dto.user.UserDTO;
+import com.lumen.www.exception.CustomException;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
@@ -58,7 +59,7 @@ public class EmailServiceImpl implements EmailService {
                             sendMailAsync(emailMessage, recipient);
                         } catch (MessagingException e) {
                             // 이메일 발송 중 예외 발생 시 RuntimeException으로 포장하여 던짐
-                            throw new RuntimeException("Failed to send email to " + recipient, e);
+                            throw new CustomException("Failed to send email to " + recipient, e);
                         }
                     }))
                     .toArray(CompletableFuture[]::new);
@@ -88,7 +89,7 @@ public class EmailServiceImpl implements EmailService {
             return "ok";
         } catch (MessagingException e) {
             // MessagingException 포함 모든 예외를 여기서 처리
-            throw new RuntimeException("Failed to send email", e);
+            throw new CustomException("Failed to send email", e);
         }
     }
 
@@ -131,7 +132,7 @@ public class EmailServiceImpl implements EmailService {
                 FileSystemResource res = new FileSystemResource(new File("C:/lumen" + imagePath.substring(1)));
                 mimeMessageHelper.addInline(cidMap.get(imagePath), res);
             } catch (MessagingException e) {
-                throw new RuntimeException("Failed to attach image", e);
+                throw new CustomException("Failed to attach image", e);
             }
         });
     }

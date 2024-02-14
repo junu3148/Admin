@@ -7,34 +7,19 @@
     <!--가입자 현황-->
     <select id="subscriberCount" resultType="int">
 
-        SELECT count(user_key)
+        SELECT COUNT(user_key)
         FROM user
         WHERE is_deleted = 0
-          AND accession_date > DATE_SUB(NOW(), INTERVAL 1 DAY)
+            AND YEAR (
+            accession_date) = YEAR (CURRENT_DATE ())
+          AND MONTH (accession_date) = MONTH (CURRENT_DATE ())
 
     </select>
 
     <!--메인페이지 월별가입자 그래프-->
     <select id="getMonthlySubscriber" resultType="java.util.Map">
 
-        WITH RECURSIVE date_generator AS (SELECT CURDATE() AS date -- 시작 날짜를 현재 달로 설정
-        UNION ALL
-        SELECT date - INTERVAL 1 MONTH
-        FROM date_generator
-        WHERE date
-            > CURDATE() - INTERVAL 11 MONTH
-            )
-            , months AS (
-        SELECT YEAR (date) AS year, MONTH (date) AS month
-        FROM date_generator
-            )
-        SELECT CONCAT(m.year, '년 ', m.month, '월') AS month,
-    COALESCE(COUNT(u.user_key), 0) AS subscribers_count
-        FROM months m
-            LEFT JOIN user u
-        ON YEAR (u.accession_date) = m.year AND MONTH (u.accession_date) = m.month AND u.is_deleted = 0
-        GROUP BY m.year, m.month
-        ORDER BY m.year, m.month
+        SELECT month, subscribers_count FROM v_monthly_subscribers
 
     </select>
 

@@ -26,12 +26,6 @@ public class LoggingAspect {
                 joinPoint.getSignature().toShortString());
     }
 
-  /*  // 메서드 실행 후, 반환값과 관계없이 로그 기록 (선택적)
-    @After("execution(* com.lumen.www.controller.*.*(..))")
-    public void logAfterMethodRegardless(JoinPoint joinPoint) {
-        log.info("Completed: {}", joinPoint.getSignature().toShortString());
-    }*/
-
     // 모든 컨트롤러의 메서드 실행 전후에 로그 기록 및 소요 시간 계산
     @Around("execution(* com.lumen.www.controller.*.*(..))")
     public Object logExecutionTime(ProceedingJoinPoint joinPoint) throws Throwable {

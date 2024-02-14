@@ -163,3 +163,27 @@ FROM
 WHERE
     YEAR(calculate_date) = 2024
   AND MONTH(calculate_date) BETWEEN 1 AND 3;
+
+
+
+
+-- 메인 그래프 뷰테이블
+CREATE VIEW v_monthly_subscribers AS
+WITH RECURSIVE date_generator AS (SELECT CURDATE() AS date -- 시작 날짜를 현재 달로 설정
+                                  UNION ALL
+                                  SELECT date - INTERVAL 1 MONTH
+                                  FROM date_generator
+                                  WHERE date
+                                            > CURDATE() - INTERVAL 11 MONTH
+)
+   , months AS (
+    SELECT YEAR (date) AS year, MONTH (date) AS month
+    FROM date_generator
+)
+SELECT CONCAT(m.year, '년 ', m.month, '월') AS month,
+       COALESCE(COUNT(u.user_key), 0) AS subscribers_count
+FROM months m
+         LEFT JOIN user u
+                   ON YEAR (u.accession_date) = m.year AND MONTH (u.accession_date) = m.month AND u.is_deleted = 0
+GROUP BY m.year, m.month
+ORDER BY m.year, m.month

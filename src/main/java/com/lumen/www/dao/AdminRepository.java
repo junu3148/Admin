@@ -25,303 +25,431 @@ import java.util.Optional;
 public interface AdminRepository {
 
     /**
-     * 주어진 adminId를 이용하여 관리자 사용자 정보를 조회합니다.
-     * 이 메서드는 adminId를 기반으로 데이터베이스에서 AdminUser 객체를 조회합니다.
-     * 조회된 관리자 정보가 존재하는 경우 Optional<AdminUser> 형태로 반환되며,
-     * 존재하지 않는 경우 Optional.empty()가 반환됩니다.
+     * 주어진 관리자 ID에 해당하는 관리자 사용자 정보를 조회합니다.
+     * <p>
+     * 이 메서드는 시스템 내에서 입력받은 관리자 ID와 일치하는 관리자 사용자 정보를
+     * 조회합니다. 조회된 관리자 사용자 정보는 {@code AdminUser} 객체로 반환되며,
+     * {@code Optional}로 감싸져 있어 정보가 존재하지 않는 경우를 안전하게 처리할 수 있습니다.
+     * 이를 통해 null 체크를 명시적으로 수행하지 않고도 존재하지 않는 사용자 정보에 대한
+     * 처리를 용이하게 합니다.
      *
-     * @param adminId 조회할 관리자 사용자의 ID.
-     * @return 조회된 AdminUser 객체를 포함하는 Optional 객체.
+     * @param adminId 조회하고자 하는 관리자의 ID를 나타내는 {@code String}.
+     *                이 값은 시스템에서 관리자를 유일하게 식별하는 데 사용됩니다.
+     * @return 조회된 관리자 사용자 정보를 담고 있는 {@code AdminUser} 객체를 담고 있는 {@code Optional}.
+     *         사용자 정보가 존재할 경우 해당 객체를 반환하며, 그렇지 않을 경우 비어 있는 {@code Optional}을 반환합니다.
      */
+
     Optional<AdminUser> findByUsername(String adminId);
 
     /**
-     * 주어진 adminId에 해당하는 관리자의 역할 정보를 조회합니다.
-     * 이 메서드는 adminId를 기반으로 해당 관리자의 역할을 데이터베이스에서 조회합니다.
-     * 조회된 역할 정보는 int 형태로 반환됩니다.
+     * 주어진 관리자 ID에 해당하는 사용자의 역할을 조회합니다.
+     * <p>
+     * 이 메서드는 시스템에 등록된 관리자의 ID를 기반으로 해당 관리자의 역할을
+     * 식별하는 정수 값을 반환합니다. 반환된 값은 시스템 내에서 정의된 역할에
+     * 대응되며, 각 역할은 특정 권한을 가지고 있습니다.
      *
-     * @param adminId 조회할 관리자 사용자의 ID.
-     * @return 조회된 관리자의 역할 정보.
+     * @param adminId 역할을 조회하고자 하는 관리자의 ID를 나타내는 {@code String}.
+     * @return 관리자의 역할을 식별하는 정수 값. 각 정수 값은 시스템 내에서 정의된 특정 역할에 대응됩니다.
      */
+
     int getRole(String adminId);
 
 
     /**
-     * 2차 로그인을 처리합니다.
+     * 관리자 로그인을 검증하고, 성공적으로 로그인한 경우 관리자 사용자 정보를 반환합니다.
+     * <p>
+     * 이 메서드는 입력받은 {@code AdminUser} 객체의 정보를 사용하여 로그인 시도를 검증합니다.
+     * 로그인 검증이 성공한 경우, 해당 관리자 사용자의 정보를 담고 있는 {@code AdminUser} 객체를
+     * {@code Optional}로 감싸서 반환합니다. 로그인 검증이 실패한 경우, 비어 있는 {@code Optional}을 반환하여
+     * 로그인 실패를 나타냅니다.
      *
-     * @param adminUser 로그인 시도하는 관리자 사용자 정보
-     * @return 로그인 성공 시 AdminUser 객체, 실패 시 null
+     * @param adminUser 로그인 검증을 시도할 관리자 사용자 정보를 담고 있는 {@code AdminUser} 객체.
+     * @return 로그인이 성공적으로 검증된 경우, 해당 관리자 사용자 정보를 담고 있는 {@code AdminUser} 객체를
+     *         담고 있는 {@code Optional}. 로그인 검증이 실패한 경우, 비어 있는 {@code Optional}을 반환합니다.
      */
+
     Optional<AdminUser> adminLoginCk(AdminUser adminUser);
 
 
     /**
-     * 주어진 관리자 사용자 정보를 바탕으로 해당 관리자 정보를 조회합니다.
+     * 주어진 관리자 ID에 해당하는 관리자 사용자 정보를 조회하고, {@code AdminDTO} 객체로 반환합니다.
+     * <p>
+     * 이 메서드는 입력받은 관리자 ID에 해당하는 관리자의 사용자 정보를 조회합니다.
+     * 조회된 정보는 {@code AdminDTO} 객체로 포맷되어 반환되며, 이 객체는 관리자의
+     * 주요 정보를 담고 있습니다. 조회할 수 없는 경우, 이 메서드는 예외를 발생시킬 수 있습니다.
      *
-     * @param adminId 조회할 관리자 사용자 정보
-     * @return 조회된 AdminUser 객체 또는 null
+     * @param adminId 조회하고자 하는 관리자의 ID를 나타내는 {@code String}.
+     * @return 조회된 관리자 사용자 정보를 담고 있는 {@code AdminDTO} 객체.
      */
+
     AdminDTO getAdminUser(String adminId);
 
     /**
-     * 관리자 사용자 정보를 업데이트하는 메서드입니다.
+     * 입력받은 {@code AdminUser} 객체의 정보로 관리자 사용자 정보를 업데이트합니다.
+     * <p>
+     * 이 메서드는 관리자 사용자의 정보를 최신 상태로 업데이트하는 기능을 수행합니다.
+     * 업데이트 과정에서는 {@code AdminUser} 객체에 담긴 정보를 사용하여 기존의 사용자 정보를
+     * 갱신합니다. 성공적으로 정보를 업데이트한 경우, 변경된 레코드의 수를 정수로 반환합니다.
      *
-     * @param adminUser 업데이트할 관리자 사용자 정보를 포함하는 AdminUser 객체
-     * @return 업데이트가 성공하면 1을 반환하고, 실패하면 0을 반환합니다.
+     * @param adminUser 업데이트할 관리자 사용자 정보를 담고 있는 {@code AdminUser} 객체.
+     * @return 업데이트된 레코드의 수를 나타내는 정수 값. 일반적으로 성공적인 업데이트 시 1을 반환합니다.
      */
+
     int updateAdminUser(AdminUser adminUser);
 
     /**
-     * 현재 가입자 수를 반환합니다.
+     * 시스템에 등록된 구독자의 총 수를 조회합니다.
+     * <p>
+     * 이 메서드는 시스템에 현재 등록된 구독자의 총 수를 정수로 반환합니다.
+     * 구독자 수는 시스템의 사용량 및 인기도를 파악하는 데 유용한 지표로 사용될 수 있습니다.
      *
-     * @return 가입자 수
+     * @return 등록된 구독자의 총 수를 나타내는 정수 값.
      */
+
     int subscriberCount();
 
     /**
-     * 월별 가입자 수를 반환합니다.
-     * 반환되는 Map의 구조는 월(month)과 해당 월의 가입자 수(subscribers_count)를 포함합니다.
+     * 최근 몇 개월간의 구독자 목록을 월별로 조회합니다.
+     * <p>
+     * 이 메서드는 최근 몇 개월 간에 걸쳐 각 월별로 구독한 사용자의 목록을 조회합니다.
+     * 반환되는 목록은 {@code Map<String, Object>}의 형태로, 각 월별 구독자 수,
+     * 구독 시작 날짜 등의 정보를 포함할 수 있습니다. 이 정보는 시스템의 성장 추세 분석이나
+     * 마케팅 전략 수립에 활용될 수 있습니다.
      *
-     * @return 월별 가입자 수 정보를 담은 Map 리스트
+     * @return 각 월별 구독자 목록을 담고 있는 {@code List<Map<String, Object>>} 객체.
      */
+
     List<Map<String, Object>> getMonthlySubscriber();
 
     /**
-     * 사용자 활동 현황을 조회합니다.
+     * 모든 사용자의 활동 목록을 조회합니다.
+     * <p>
+     * 이 메서드는 시스템에 등록된 모든 사용자의 활동(예: 로그인, 게시글 작성 등) 목록을 조회하여 반환합니다.
+     * 반환되는 목록은 {@code UserActivityDTO} 객체의 리스트 형태로, 각 활동의 상세 정보를 포함합니다.
      *
-     * @return 사용자 활동 정보를 담은 UserActivityDTO 리스트
+     * @return 사용자 활동 목록을 담고 있는 {@code UserActivityDTO} 객체의 리스트.
      */
+
     List<UserActivityDTO> getUserActivity();
 
     /**
-     * 최근 문의 사항 목록을 반환합니다.
+     * 사용자들로부터 접수된 모든 문의사항 목록을 조회합니다.
+     * <p>
+     * 이 메서드는 사용자들이 제출한 문의사항을 목록 형태로 조회하여 반환합니다.
+     * 반환되는 목록은 {@code InquiryDTO} 객체의 리스트 형태로, 각 문의사항의 상세 정보를 포함합니다.
      *
-     * @return 문의 사항 정보를 담은 InquiryDTO 리스트
+     * @return 문의사항 목록을 담고 있는 {@code InquiryDTO} 객체의 리스트.
      */
+
     List<InquiryDTO> getInquiryList();
 
     /**
-     * 검색 조건에 따라 가입자 리스트를 반환합니다.
-     * 이 메서드는 JoinSearchDTO에 정의된 조건을 기반으로 가입자 정보를 검색합니다.
-     * 결과는 JoinListDTO 객체의 리스트로 반환됩니다.
+     * 특정 조건에 따라 필터링된 사용자 가입 목록을 조회합니다.
+     * <p>
+     * 이 메서드는 입력받은 검색 조건({@code SearchDTO})에 따라 사용자 가입 목록을 필터링하여 조회합니다.
+     * 반환되는 목록은 {@code JoinListDTO} 객체의 리스트 형태로, 각 가입 정보의 상세를 포함합니다.
      *
-     * @param searchDTO 가입자 검색에 사용될 조건을 담은 DTO 객체.
-     * @return 조건에 맞는 가입자 정보를 담은 JoinListDTO 리스트.
+     * @param searchDTO 사용자 가입 목록을 필터링하기 위한 검색 조건을 담고 있는 {@code SearchDTO} 객체.
+     * @return 필터링된 사용자 가입 목록을 담고 있는 {@code JoinListDTO} 객체의 리스트.
      */
+
     List<JoinListDTO> getJoinList(SearchDTO searchDTO);
 
     /**
-     * 특정 사용자의 상세 정보를 반환합니다.
-     * 이 메서드는 UserDTO 객체에 포함된 식별 정보를 사용하여 사용자의 상세 정보를 조회합니다.
-     * 조회된 정보는 UserDTO 객체로 반환됩니다.
+     * 주어진 사용자의 상세 정보를 조회합니다.
+     * <p>
+     * 이 메서드는 입력받은 사용자 정보({@code UserDTO})를 기반으로 해당 사용자의 상세 정보를 조회하여 반환합니다.
+     * 반환되는 정보는 {@code UserDTO} 객체 형태로, 사용자의 상세 정보를 포함합니다.
      *
-     * @param userDTO 사용자 식별 정보를 포함한 DTO 객체.
-     * @return 조회된 사용자의 상세 정보를 담은 UserDTO 객체.
+     * @param userDTO 조회하고자 하는 사용자의 정보를 담고 있는 {@code UserDTO} 객체.
+     * @return 조회된 사용자의 상세 정보를 담고 있는 {@code UserDTO} 객체.
      */
+
     UserDTO getUserDetails(UserDTO userDTO);
 
     /**
-     * 특정 사용자를 강제로 탈퇴시킵니다.
-     * 이 메서드는 UserDTO 객체에 담긴 식별 정보를 사용하여 해당 사용자를 탈퇴 처리합니다.
-     * 처리 결과는 영향 받은 레코드 수로 반환됩니다.
+     * 관리자에 의한 사용자 가입 정보 삭제를 수행합니다.
+     * <p>
+     * 이 메서드는 입력받은 사용자 정보({@code UserDTO})를 기반으로 해당 사용자의 가입 정보를 시스템에서 삭제합니다.
+     * 성공적으로 정보를 삭제한 경우, 삭제된 레코드의 수를 정수로 반환합니다.
      *
-     * @param userDTO 강제 탈퇴시킬 사용자의 식별 정보를 담은 DTO 객체.
-     * @return 처리된 레코드의 수.
+     * @param userDTO 삭제할 사용자의 정보를 담고 있는 {@code UserDTO} 객체.
+     * @return 삭제된 레코드의 수를 나타내는 정수 값. 일반적으로 성공적인 삭제 시 1을 반환합니다.
      */
+
     int adminJoinUserDelete(UserDTO userDTO);
 
     /**
-     * 상태 변경일로부터 한 달이 지난 사용자를 삭제합니다.
-     * 이 메서드는 자동으로 한 달 이상 상태가 변경되지 않은 사용자를 삭제합니다.
-     * 삭제는 데이터베이스에서 직접 수행되며, 별도의 반환값은 없습니다.
+     * 한 달 이상 오래된 상태를 가진 사용자를 삭제합니다.
+     * <p>
+     * 이 메서드는 시스템에서 한 달 이상 변경되지 않은 상태를 가진 사용자를
+     * 자동으로 식별하여 삭제하는 기능을 수행합니다. 이는 시스템의 데이터를
+     * 최신 상태로 유지하기 위해 주기적으로 수행될 수 있습니다.
      */
+
     void deleteUsersWithStatusOlderThanOneMonth();
 
     /**
-     * 프로모션 수락 목록을 가져옵니다.
-     * 이 메서드는 프로모션 수락 목록을 가져와 List<String> 형태로 반환합니다.
+     * 사용자들이 수락한 프로모션 목록을 조회합니다.
+     * <p>
+     * 이 메서드는 시스템에서 사용자들이 수락한 다양한 프로모션의 목록을
+     * 조회하여 반환합니다. 반환되는 목록은 프로모션의 식별자나 이름을
+     * 담고 있는 문자열 리스트 형태입니다.
      *
-     * @return 프로모션 수락 목록
+     * @return 수락된 프로모션 목록을 담고 있는 문자열 리스트.
      */
+
     List<String> getPromotionsAccept();
 
     /**
-     * 가격 목록을 조회합니다.
-     * 이 메서드는 PriceSearchDTO 객체를 인자로 받아 해당 조건에 맞는 가격 목록을 조회합니다.
+     * 특정 조건에 따라 필터링된 가격 목록을 조회합니다.
+     * <p>
+     * 이 메서드는 입력받은 가격 검색 조건({@code PriceSearchDTO})에 따라
+     * 가격 목록을 필터링하여 조회합니다. 반환되는 목록은 {@code PriceListDTO} 객체의
+     * 리스트 형태로, 각 가격 정보의 상세를 포함합니다.
      *
-     * @param priceSearchDTO 가격 목록 조회에 사용되는 조건을 포함하는 데이터 전송 객체.
-     * @return 조회된 가격 목록을 포함하는 PriceListDTO 객체 리스트.
+     * @param priceSearchDTO 가격 목록을 필터링하기 위한 검색 조건을 담고 있는 {@code PriceSearchDTO} 객체.
+     * @return 필터링된 가격 목록을 담고 있는 {@code PriceListDTO} 객체의 리스트.
      */
+
     List<PriceListDTO> getPriceList(PriceSearchDTO priceSearchDTO);
 
     /**
-     * 사용자의 상태를 업데이트합니다.
-     * 이 메서드는 UserDTO 객체를 인자로 받아 사용자의 상태를 업데이트합니다.
+     * 주어진 사용자의 상태를 업데이트합니다.
+     * <p>
+     * 이 메서드는 입력받은 사용자 정보({@code UserDTO})에 기반하여
+     * 해당 사용자의 상태를 업데이트하는 기능을 수행합니다. 성공적으로 상태를
+     * 업데이트한 경우, 변경된 레코드의 수를 정수로 반환합니다.
      *
-     * @param userDTO 사용자 상태 업데이트에 필요한 정보를 포함하는 데이터 전송 객체.
-     * @return 업데이트된 행의 수를 나타내는 정수.
+     * @param userDTO 업데이트할 사용자의 정보를 담고 있는 {@code UserDTO} 객체.
+     * @return 업데이트된 레코드의 수를 나타내는 정수 값. 일반적으로 성공적인 업데이트 시 1을 반환합니다.
      */
+
     int updateUserStatus(UserDTO userDTO);
 
     /**
-     * 구독 종료 목록을 조회합니다.
-     * 이 메서드는 SearchDTO 객체를 인자로 받아 구독이 종료된 목록을 조회합니다.
+     * 구독 종료가 임박한 사용자 목록을 조회합니다.
+     * <p>
+     * 이 메서드는 입력받은 검색 조건({@code SearchDTO})에 따라
+     * 구독 종료가 임박한 사용자의 목록을 필터링하여 조회합니다. 반환되는 목록은
+     * {@code PayListDTO} 객체의 리스트 형태로, 각 사용자의 구독 정보의 상세를 포함합니다.
      *
-     * @param searchDTO 구독 종료 목록 조회에 사용되는 조건을 포함하는 데이터 전송 객체.
-     * @return 조회된 구독 종료 목록을 포함하는 PayListDTO 객체 리스트.
+     * @param searchDTO 사용자 목록을 필터링하기 위한 검색 조건을 담고 있는 {@code SearchDTO} 객체.
+     * @return 필터링된 구독 종료가 임박한 사용자 목록을 담고 있는 {@code PayListDTO} 객체의 리스트.
      */
+
     List<PayListDTO> getSubscriptionEndList(SearchDTO searchDTO);
 
     /**
-     * 청구서 목록을 조회합니다.
-     * 이 메서드는 SearchDTO 객체를 인자로 받아 해당 조건에 맞는 청구서 목록을 조회합니다.
+     * 특정 조건에 따라 필터링된 송장 목록을 조회합니다.
+     * <p>
+     * 이 메서드는 입력받은 검색 조건({@code SearchDTO})에 따라 송장 목록을
+     * 필터링하여 조회합니다. 반환되는 목록은 {@code InvoiceListDTO} 객체의 리스트 형태로,
+     * 각 송장의 상세 정보를 포함합니다.
      *
-     * @param searchDTO 청구서 목록 조회에 사용되는 조건을 포함하는 데이터 전송 객체.
-     * @return 조회된 청구서 목록을 포함하는 InvoiceListDTO 객체 리스트.
+     * @param searchDTO 송장 목록을 필터링하기 위한 검색 조건을 담고 있는 {@code SearchDTO} 객체.
+     * @return 필터링된 송장 목록을 담고 있는 {@code InvoiceListDTO} 객체의 리스트.
      */
+
     List<InvoiceListDTO> getInvoiceList(SearchDTO searchDTO);
 
     /**
-     * 청구서 세부 사항을 조회합니다.
-     * 이 메서드는 InvoiceDTO 객체를 인자로 받아 특정 청구서의 세부 사항을 조회합니다.
+     * 주어진 송장의 상세 정보를 조회합니다.
+     * <p>
+     * 이 메서드는 입력받은 송장 정보({@code InvoiceDTO})를 기반으로 해당 송장의
+     * 상세 정보를 조회하여 반환합니다. 반환되는 정보는 {@code InvoiceDTO} 객체 형태로,
+     * 송장의 상세 정보를 포함합니다.
      *
-     * @param invoiceDTO 청구서 세부 사항 조회에 필요한 정보를 포함하는 데이터 전송 객체.
-     * @return 조회된 청구서의 세부 정보를 포함하는 InvoiceDTO 객체.
+     * @param invoiceDTO 조회하고자 하는 송장의 정보를 담고 있는 {@code InvoiceDTO} 객체.
+     * @return 조회된 송장의 상세 정보를 담고 있는 {@code InvoiceDTO} 객체.
      */
+
     InvoiceDTO getInvoiceDetails(InvoiceDTO invoiceDTO);
 
     /**
-     * 1:1 문의 목록을 조회합니다.
-     * 이 메서드는 SearchDTO 객체를 인자로 받아 해당 조건에 맞는 1:1 문의 목록을 조회합니다.
+     * 특정 조건에 따라 필터링된 문의 목록을 조회합니다.
+     * <p>
+     * 이 메서드는 입력받은 검색 조건({@code SearchDTO})에 따라 문의 목록을
+     * 필터링하여 조회합니다. 반환되는 목록은 {@code InquiryListDTO} 객체의 리스트 형태로,
+     * 각 문의의 상세 정보를 포함합니다.
      *
-     * @param searchDTO 1:1 문의 목록 조회에 사용되는 조건을 포함하는 데이터 전송 객체.
-     * @return 조회된 1:1 문의 목록을 포함하는 InquiryDTO 객체 리스트.
+     * @param searchDTO 문의 목록을 필터링하기 위한 검색 조건을 담고 있는 {@code SearchDTO} 객체.
+     * @return 필터링된 문의 목록을 담고 있는 {@code InquiryListDTO} 객체의 리스트.
      */
+
     List<InquiryListDTO> getInquiryList(SearchDTO searchDTO);
 
     /**
-     * 1:1 문의 세부 사항을 조회합니다.
-     * 이 메서드는 InquiryDTO 객체를 인자로 받아 특정 1:1 문의의 세부 사항을 조회합니다.
+     * 주어진 문의의 상세 정보를 조회합니다.
+     * <p>
+     * 이 메서드는 입력받은 문의 정보({@code InquiryDTO})를 기반으로 해당 문의의
+     * 상세 정보를 조회하여 반환합니다. 반환되는 정보는 {@code InquiryDTO} 객체 형태로,
+     * 문의의 상세 정보를 포함합니다.
      *
-     * @param inquiryDTO 1:1 문의 세부 사항 조회에 필요한 정보를 포함하는 데이터 전송 객체.
-     * @return 조회된 1:1 문의의 세부 정보를 포함하는 InquiryDTO 객체.
+     * @param inquiryDTO 조회하고자 하는 문의의 정보를 담고 있는 {@code InquiryDTO} 객체.
+     * @return 조회된 문의의 상세 정보를 담고 있는 {@code InquiryDTO} 객체.
      */
+
     InquiryDTO getInquiryDetails(InquiryDTO inquiryDTO);
 
     /**
-     * 1:1 문의 답변을 등록합니다.
-     * 이 메서드는 InquiryDTO 객체를 인자로 받아 1:1 문의에 대한 답변을 등록합니다.
+     * 문의에 대한 답변을 시스템에 삽입합니다.
+     * <p>
+     * 이 메서드는 입력받은 문의 정보({@code InquiryDTO})에 답변을 추가하여 시스템에 저장하는
+     * 기능을 수행합니다. 답변이 성공적으로 삽입된 경우, 삽입된 레코드의 수를 정수로 반환합니다.
      *
-     * @param inquiryDTO 1:1 문의 답변 등록에 필요한 정보를 포함하는 데이터 전송 객체.
-     * @return 처리 결과를 나타내는 정수 (성공적으로 처리된 경우 1).
+     * @param inquiryDTO 답변을 추가할 문의의 정보를 담고 있는 {@code InquiryDTO} 객체.
+     * @return 삽입된 레코드의 수를 나타내는 정수 값. 일반적으로 성공적인 삽입 시 1을 반환합니다.
      */
+
     int insertInquiryAnswer(InquiryDTO inquiryDTO);
 
     /**
-     * 공지사항 목록을 조회합니다.
-     * 이 메서드는 SearchDTO 객체를 인자로 받아 해당 조건에 맞는 공지사항 목록을 조회합니다.
+     * 특정 조건에 따라 필터링된 공지 목록을 조회합니다.
+     * <p>
+     * 이 메서드는 입력받은 검색 조건({@code SearchDTO})에 따라 공지 목록을
+     * 필터링하여 조회합니다. 반환되는 목록은 {@code NoticeListDTO} 객체의 리스트 형태로,
+     * 각 공지의 상세 정보를 포함합니다.
      *
-     * @param searchDTO 공지사항 목록 조회에 사용되는 조건을 포함하는 데이터 전송 객체.
-     * @return 조회된 공지사항 목록을 포함하는 NoticeListDTO 객체 리스트.
+     * @param searchDTO 공지 목록을 필터링하기 위한 검색 조건을 담고 있는 {@code SearchDTO} 객체.
+     * @return 필터링된 공지 목록을 담고 있는 {@code NoticeListDTO} 객체의 리스트.
      */
+
     List<NoticeListDTO> getNoticeList(SearchDTO searchDTO);
 
     /**
-     * 공지사항 세부 사항을 조회합니다.
-     * 이 메서드는 NoticeDTO 객체를 인자로 받아 특정 공지사항의 세부 사항을 조회합니다.
+     * 주어진 공지의 상세 정보를 조회합니다.
+     * <p>
+     * 이 메서드는 입력받은 공지 정보({@code NoticeDTO})를 기반으로 해당 공지의
+     * 상세 정보를 조회하여 반환합니다. 반환되는 정보는 {@code NoticeDTO} 객체 형태로,
+     * 공지의 상세 정보를 포함합니다.
      *
-     * @param noticeDTO 공지사항 세부 사항 조회에 필요한 정보를 포함하는 데이터 전송 객체.
-     * @return 조회된 공지사항의 세부 정보를 포함하는 NoticeDTO 객체.
+     * @param noticeDTO 조회하고자 하는 공지의 정보를 담고 있는 {@code NoticeDTO} 객체.
+     * @return 조회된 공지의 상세 정보를 담고 있는 {@code NoticeDTO} 객체.
      */
+
     NoticeDTO getNoticeDetails(NoticeDTO noticeDTO);
 
     /**
-     * 공지사항을 등록합니다.
-     * 이 메서드는 NoticeDTO 객체를 인자로 받아 새로운 공지사항을 등록합니다.
+     * 새로운 공지를 시스템에 삽입합니다.
+     * <p>
+     * 이 메서드는 입력받은 공지 정보({@code NoticeDTO})를 사용하여 시스템에 새로운 공지를
+     * 삽입하는 기능을 수행합니다. 삽입이 성공적으로 이루어진 경우, 삽입된 레코드의 수를 정수로 반환합니다.
      *
-     * @param noticeDTO 공지사항 등록에 필요한 데이터를 포함하는 데이터 전송 객체.
-     * @return 처리 결과를 나타내는 정수 (성공적으로 처리된 경우 1).
+     * @param noticeDTO 삽입할 새로운 공지의 정보를 담고 있는 {@code NoticeDTO} 객체.
+     * @return 삽입된 레코드의 수를 나타내는 정수 값. 일반적으로 성공적인 삽입 시 1을 반환합니다.
      */
+
     int insertNotice(NoticeDTO noticeDTO);
 
     /**
-     * 공지사항을 업데이트합니다.
-     * 이 메서드는 NoticeDTO 객체를 인자로 받아 기존의 공지사항을 업데이트합니다.
+     * 기존의 공지 정보를 업데이트합니다.
+     * <p>
+     * 이 메서드는 입력받은 공지 정보({@code NoticeDTO})에 따라 기존의 공지 정보를
+     * 업데이트하는 기능을 수행합니다. 업데이트가 성공적으로 이루어진 경우, 변경된 레코드의 수를 정수로 반환합니다.
      *
-     * @param noticeDTO 공지사항 업데이트에 필요한 정보를 포함하는 데이터 전송 객체.
-     * @return 처리 결과를 나타내는 정수 (성공적으로 처리된 경우 1).
+     * @param noticeDTO 업데이트할 공지의 정보를 담고 있는 {@code NoticeDTO} 객체.
+     * @return 업데이트된 레코드의 수를 나타내는 정수 값. 일반적으로 성공적인 업데이트 시 1을 반환합니다.
      */
+
     int updateNotice(NoticeDTO noticeDTO);
 
     /**
-     * 공지사항을 삭제합니다.
-     * 이 메서드는 NoticeDTO 객체를 인자로 받아 특정 공지사항을 삭제합니다.
+     * 특정 공지를 시스템에서 삭제합니다.
+     * <p>
+     * 이 메서드는 입력받은 공지 정보({@code NoticeDTO})를 기반으로 해당 공지를
+     * 시스템에서 삭제하는 기능을 수행합니다. 삭제가 성공적으로 이루어진 경우, 삭제된 레코드의 수를 정수로 반환합니다.
      *
-     * @param noticeDTO 삭제할 공지사항의 정보를 포함하는 데이터 전송 객체.
-     * @return 처리 결과를 나타내는 정수 (성공적으로 처리된 경우 1).
+     * @param noticeDTO 삭제할 공지의 정보를 담고 있는 {@code NoticeDTO} 객체.
+     * @return 삭제된 레코드의 수를 나타내는 정수 값. 일반적으로 성공적인 삭제 시 1을 반환합니다.
      */
+
     int deleteNotice(NoticeDTO noticeDTO);
 
     /**
-     * 자주 묻는 질문(FAQ) 목록을 조회합니다.
-     * 이 메서드는 검색 조건을 담고 있는 SearchDTO 객체를 인자로 받아 해당 조건에 맞는 FAQ 목록을 조회합니다.
+     * 특정 조건에 따라 필터링된 FAQ 목록을 조회합니다.
+     * <p>
+     * 이 메서드는 입력받은 검색 조건({@code SearchDTO})에 따라 FAQ 목록을
+     * 필터링하여 조회합니다. 반환되는 목록은 {@code FaqDTO} 객체의 리스트 형태로,
+     * 각 FAQ의 상세 정보를 포함합니다.
      *
-     * @param searchDTO 검색 조건을 포함하는 데이터 전송 객체.
-     * @return 조회된 FAQ 목록을 담고 있는 List<FaqDTO> 객체.
+     * @param searchDTO FAQ 목록을 필터링하기 위한 검색 조건을 담고 있는 {@code SearchDTO} 객체.
+     * @return 필터링된 FAQ 목록을 담고 있는 {@code FaqDTO} 객체의 리스트.
      */
+
     List<FaqDTO> getFaqList(SearchDTO searchDTO);
 
     /**
-     * 특정 FAQ를 조회합니다.
-     * 이 메서드는 FaqDTO 객체를 인자로 받아 해당 객체에 지정된 조건에 맞는 FAQ 정보를 조회합니다.
+     * 주어진 FAQ의 상세 정보를 조회합니다.
+     * <p>
+     * 이 메서드는 입력받은 FAQ 정보({@code FaqDTO})를 기반으로 해당 FAQ의
+     * 상세 정보를 조회하여 반환합니다. 반환되는 정보는 {@code FaqDTO} 객체 형태로,
+     * FAQ의 상세 정보를 포함합니다.
      *
-     * @param faqDTO 조회할 FAQ의 정보를 포함하는 데이터 전송 객체.
-     * @return 조회된 FAQ 정보를 담고 있는 FaqDTO 객체.
+     * @param faqDTO 조회하고자 하는 FAQ의 정보를 담고 있는 {@code FaqDTO} 객체.
+     * @return 조회된 FAQ의 상세 정보를 담고 있는 {@code FaqDTO} 객체.
      */
+
     FaqDTO getFaq(FaqDTO faqDTO);
 
     /**
-     * 새로운 FAQ를 추가합니다.
-     * 이 메서드는 FaqDTO 객체를 인자로 받아 새로운 FAQ 정보를 데이터베이스에 추가합니다.
+     * 새로운 FAQ를 시스템에 삽입합니다.
+     * <p>
+     * 이 메서드는 입력받은 FAQ 정보({@code FaqDTO})를 사용하여 시스템에 새로운 FAQ를
+     * 삽입하는 기능을 수행합니다. 삽입이 성공적으로 이루어진 경우, 삽입된 레코드의 수를 정수로 반환합니다.
      *
-     * @param faqDTO 추가할 FAQ의 정보를 포함하는 데이터 전송 객체.
-     * @return 처리 결과를 나타내는 정수 (성공적으로 추가된 경우 1).
+     * @param faqDTO 삽입할 새로운 FAQ의 정보를 담고 있는 {@code FaqDTO} 객체.
+     * @return 삽입된 레코드의 수를 나타내는 정수 값. 일반적으로 성공적인 삽입 시 1을 반환합니다.
      */
+
     int insertFaq(FaqDTO faqDTO);
 
     /**
      * 기존의 FAQ 정보를 업데이트합니다.
-     * 이 메서드는 FaqDTO 객체를 인자로 받아 특정 FAQ의 정보를 업데이트합니다.
+     * <p>
+     * 이 메서드는 입력받은 FAQ 정보({@code FaqDTO})에 따라 기존의 FAQ 정보를
+     * 업데이트하는 기능을 수행합니다. 업데이트가 성공적으로 이루어진 경우, 변경된 레코드의 수를 정수로 반환합니다.
      *
-     * @param faqDTO 업데이트할 FAQ의 정보를 포함하는 데이터 전송 객체.
-     * @return 처리 결과를 나타내는 정수 (성공적으로 업데이트된 경우 1).
+     * @param faqDTO 업데이트할 FAQ의 정보를 담고 있는 {@code FaqDTO} 객체.
+     * @return 업데이트된 레코드의 수를 나타내는 정수 값. 일반적으로 성공적인 업데이트 시 1을 반환합니다.
      */
+
     int updateFaq(FaqDTO faqDTO);
 
     /**
-     * 특정 FAQ를 삭제합니다.
-     * 이 메서드는 FaqDTO 객체를 인자로 받아 특정 FAQ 정보를 데이터베이스에서 삭제합니다.
+     * 특정 FAQ를 시스템에서 삭제합니다.
+     * <p>
+     * 이 메서드는 입력받은 FAQ 정보({@code FaqDTO})를 기반으로 해당 FAQ를
+     * 시스템에서 삭제하는 기능을 수행합니다. 삭제가 성공적으로 이루어진 경우, 삭제된 레코드의 수를 정수로 반환합니다.
      *
-     * @param faqDTO 삭제할 FAQ의 정보를 포함하는 데이터 전송 객체.
-     * @return 처리 결과를 나타내는 정수 (성공적으로 삭제된 경우 1).
+     * @param faqDTO 삭제할 FAQ의 정보를 담고 있는 {@code FaqDTO} 객체.
+     * @return 삭제된 레코드의 수를 나타내는 정수 값. 일반적으로 성공적인 삭제 시 1을 반환합니다.
      */
+
     int deleteFaq(FaqDTO faqDTO);
 
     /**
-     * 현재 서비스 이용 약관을 조회합니다.
-     * 이 메서드는 서비스의 현재 이용 약관을 조회하여 반환합니다.
+     * 현재 적용되고 있는 이용 약관을 조회합니다.
+     * <p>
+     * 이 메서드는 시스템에 저장되어 있는 이용 약관의 내용을 조회하여 반환합니다.
+     * 반환되는 정보는 {@code TermsDTO} 객체 형태로, 현재 적용되고 있는 이용 약관의
+     * 상세 내용을 포함합니다.
      *
-     * @return 조회된 이용 약관 정보를 담고 있는 TermsDTO 객체.
+     * @return 현재 적용되고 있는 이용 약관의 내용을 담고 있는 {@code TermsDTO} 객체.
      */
+
     TermsDTO getTerms();
 
     /**
-     * 서비스 이용 약관을 업데이트합니다.
-     * 이 메서드는 TermsDTO 객체를 인자로 받아 서비스 이용 약관을 업데이트합니다.
+     * 이용 약관의 내용을 업데이트합니다.
+     * <p>
+     * 이 메서드는 입력받은 이용 약관 정보({@code TermsDTO})를 사용하여 현재 적용되고 있는
+     * 이용 약관을 업데이트하는 기능을 수행합니다. 업데이트가 성공적으로 이루어진 경우, 변경된 레코드의 수를 정수로 반환합니다.
      *
-     * @param termsDTO 업데이트할 이용 약관의 정보를 포함하는 데이터 전송 객체.
-     * @return 처리 결과를 나타내는 정수 (성공적으로 업데이트된 경우 1).
+     * @param termsDTO 업데이트할 이용 약관의 정보를 담고 있는 {@code TermsDTO} 객체.
+     * @return 업데이트된 레코드의 수를 나타내는 정수 값. 일반적으로 성공적인 업데이트 시 1을 반환합니다.
      */
+
     int updateTerms(TermsDTO termsDTO);
 
 

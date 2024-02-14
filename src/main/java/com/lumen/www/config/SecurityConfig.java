@@ -7,9 +7,13 @@ import com.lumen.www.jwt.JwtTokenProvider;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configurers.CsrfConfigurer;
+import org.springframework.security.config.annotation.web.configurers.HeadersConfigurer;
+import org.springframework.security.config.annotation.web.configurers.HttpBasicConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -46,16 +50,11 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 
-        // HTTP 기본 인증 비활성화
-        http.httpBasic().disable();
-        // CSRF 보호 기능 비활성화
-        http.csrf().disable();
+        http.httpBasic(HttpBasicConfigurer::disable);
+        http.csrf(CsrfConfigurer::disable);
+        http.sessionManagement(configurer -> configurer.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
+        http.cors(Customizer.withDefaults());
 
-        // 세션 관리를 STATELESS로 설정하여, 세션을 사용하지 않고 매 요청마다 인증
-        http.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
-
-        // CORS 설정을 적용
-        http.cors().configurationSource(corsConfigurationSource());
 
         // 요청 경로에 대한 권한 설정
         http.authorizeHttpRequests((authz) -> authz
@@ -63,25 +62,38 @@ public class SecurityConfig {
                 .requestMatchers("/admin/**").permitAll()
                 .anyRequest().authenticated());
 
-        // 인증 실패와 접근 거부 처리를 위한 핸들러 설정
-        http.exceptionHandling()
+        http.exceptionHandling(authenticationManager -> authenticationManager
                 .authenticationEntryPoint(jwtAuthenticationEntryPoint)
-                .accessDeniedHandler(jwtAccessDeniedHandler);
+                .accessDeniedHandler(jwtAccessDeniedHandler));
 
         // JWT 인증 필터를 UsernamePasswordAuthenticationFilter 전에 추가
         http.addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider), UsernamePasswordAuthenticationFilter.class);
 
+
         // CSP, Frame Options, HSTS 등의 보안 헤더 설정
         http.headers(headers -> headers
-                .contentSecurityPolicy(CSP_POLICY)
-                .and()
-                .frameOptions().deny()
+                .contentSecurityPolicy(csp -> csp.policyDirectives(CSP_POLICY))
+                .frameOptions(HeadersConfigurer.FrameOptionsConfig::deny)
                 .httpStrictTransportSecurity(hsts -> hsts
                         .includeSubDomains(true)
-                        .maxAgeInSeconds(31536000)));
+                        .maxAgeInSeconds(31536000)
+                        .preload(true))
+        );
+
+
+
+
+/*
 
         // https 만 접근허용 나중이야기
-        //http.requiresChannel().requestMatchers(r -> r.getHeader("X-Forwarded-Proto") != null).requiresSecure();
+        http
+                // HTTPS 강제 사용 구성
+                .requiresChannel(channel -> channel
+                        .requestMatchers(r -> "https".equals(r.getHeader("X-Forwarded-Proto")))
+                        .requiresSecure());
+
+*/
+
 
         // HttpSecurity 설정을 기반으로 SecurityFilterChain 빈 생성 및 반환
         return http.build();

@@ -18,7 +18,7 @@
         ROW_NUMBER() OVER (ORDER BY notice_date) AS row_num,
         notice_key ,
         notice_title,
-        notice_date, '%Y.%m.%d',
+        notice_date,
         notice_hits
         FROM notice
 
