@@ -36,7 +36,7 @@ public interface AdminRepository {
      * @param adminId 조회하고자 하는 관리자의 ID를 나타내는 {@code String}.
      *                이 값은 시스템에서 관리자를 유일하게 식별하는 데 사용됩니다.
      * @return 조회된 관리자 사용자 정보를 담고 있는 {@code AdminUser} 객체를 담고 있는 {@code Optional}.
-     *         사용자 정보가 존재할 경우 해당 객체를 반환하며, 그렇지 않을 경우 비어 있는 {@code Optional}을 반환합니다.
+     * 사용자 정보가 존재할 경우 해당 객체를 반환하며, 그렇지 않을 경우 비어 있는 {@code Optional}을 반환합니다.
      */
 
     Optional<AdminUser> findByUsername(String adminId);
@@ -49,10 +49,10 @@ public interface AdminRepository {
      * 대응되며, 각 역할은 특정 권한을 가지고 있습니다.
      *
      * @param adminId 역할을 조회하고자 하는 관리자의 ID를 나타내는 {@code String}.
-     * @return 관리자의 역할을 식별하는 정수 값. 각 정수 값은 시스템 내에서 정의된 특정 역할에 대응됩니다.
+     * @return 관리자의 처음 로그인을 식별하는 String 값을 반환합니다.
      */
 
-    int getRole(String adminId);
+    AdminUser firstLoginCk(String adminId);
 
 
     /**
@@ -65,11 +65,23 @@ public interface AdminRepository {
      *
      * @param adminUser 로그인 검증을 시도할 관리자 사용자 정보를 담고 있는 {@code AdminUser} 객체.
      * @return 로그인이 성공적으로 검증된 경우, 해당 관리자 사용자 정보를 담고 있는 {@code AdminUser} 객체를
-     *         담고 있는 {@code Optional}. 로그인 검증이 실패한 경우, 비어 있는 {@code Optional}을 반환합니다.
+     * 담고 있는 {@code Optional}. 로그인 검증이 실패한 경우, 비어 있는 {@code Optional}을 반환합니다.
      */
 
     Optional<AdminUser> adminLoginCk(AdminUser adminUser);
 
+    /**
+     * 관리자의 첫 로그인 시도를 처리하고 결과 상태를 반환합니다.
+     * <p>
+     * 이 메서드는 {@code AdminUser} 객체를 통해 전달된 관리자의 로그인 정보를 사용하여 첫 로그인 시도를 처리합니다.
+     * 처리 과정에는 관리자 계정의 초기 설정 적용, 로그인 시도 기록, 필요한 검증 수행 등이 포함될 수 있습니다.
+     * 처리 결과는 정수 형태의 상태 코드로 반환되며, 이 코드는 첫 로그인 시도의 성공, 실패 또는 그 외 상태를 나타냅니다.
+     * <p>
+     * @param adminUser 첫 로그인을 시도하는 관리자의 정보를 담고 있는 {@code AdminUser} 객체.
+     * @return 처리 결과를 나타내는 상태 코드. 일반적으로 0은 성공, 음수는 다양한 실패 상태를 나타냅니다.
+     */
+
+    int adminFirstLogin(AdminUser adminUser);
 
     /**
      * 주어진 관리자 ID에 해당하는 관리자 사용자 정보를 조회하고, {@code AdminDTO} 객체로 반환합니다.
@@ -106,7 +118,7 @@ public interface AdminRepository {
      * @return 등록된 구독자의 총 수를 나타내는 정수 값.
      */
 
-    int subscriberCount();
+    int getSubscriberCount();
 
     /**
      * 최근 몇 개월간의 구독자 목록을 월별로 조회합니다.
@@ -177,7 +189,7 @@ public interface AdminRepository {
      * @return 삭제된 레코드의 수를 나타내는 정수 값. 일반적으로 성공적인 삭제 시 1을 반환합니다.
      */
 
-    int adminJoinUserDelete(UserDTO userDTO);
+    int deleteUser(UserDTO userDTO);
 
     /**
      * 한 달 이상 오래된 상태를 가진 사용자를 삭제합니다.
@@ -390,7 +402,7 @@ public interface AdminRepository {
      * @return 조회된 FAQ의 상세 정보를 담고 있는 {@code FaqDTO} 객체.
      */
 
-    FaqDTO getFaq(FaqDTO faqDTO);
+    FaqDTO getFaqDetails(FaqDTO faqDTO);
 
     /**
      * 새로운 FAQ를 시스템에 삽입합니다.
@@ -438,7 +450,7 @@ public interface AdminRepository {
      * @return 현재 적용되고 있는 이용 약관의 내용을 담고 있는 {@code TermsDTO} 객체.
      */
 
-    TermsDTO getTerms();
+    TermsDTO getTermsDetails();
 
     /**
      * 이용 약관의 내용을 업데이트합니다.

@@ -5,7 +5,7 @@
 
     <!--                                                                                                          Main                                                                                  -->
     <!--가입자 현황-->
-    <select id="subscriberCount" resultType="int">
+    <select id="getSubscriberCount" resultType="int">
 
         SELECT COUNT(user_key)
         FROM user

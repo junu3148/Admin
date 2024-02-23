@@ -26,7 +26,7 @@
     </select>
 
     <!--FAQ 세부 정보-->
-    <select id="getFaq" parameterType="FaqDTO" resultType="FaqDTO">
+    <select id="getFaqDetails" parameterType="FaqDTO" resultType="FaqDTO">
 
         SELECT faq_key,
                faq_title,

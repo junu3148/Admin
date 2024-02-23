@@ -29,6 +29,20 @@ public interface AdminService {
     ResponseEntity<String> adminLoginCk(AdminUser adminUser);
 
     /**
+     * 관리자의 첫 로그인을 검증하는 메서드입니다.
+     * <p>
+     * 입력받은 {@code AdminUser} 객체의 정보를 사용하여 관리자의 첫 로그인을 검증합니다.
+     * 이 메서드는 관리자 계정이 최초 로그인하는 경우에 필요한 추가 검증 절차를 수행할 수 있습니다.
+     * 검증이 성공하면, 성공 메시지를 담은 {@code ResponseEntity<String>} 객체를 반환합니다.
+     * 검증에 실패하면, 실패 메시지를 담은 {@code ResponseEntity<String>} 객체를 반환합니다.
+     *
+     * @param adminUser 첫 로그인을 시도하는 관리자의 로그인 정보를 담고 있는 {@code AdminUser} 객체.
+     * @return 첫 로그인 검증 결과를 담은 {@code ResponseEntity<String>} 객체.
+     */
+
+    ResponseEntity<String> adminFirstLogin(AdminUser adminUser);
+
+    /**
      * 현재 세션에서 관리자 사용자 정보를 조회하는 메서드입니다.
      * <p>
      * HTTP 요청에서 관리자 사용자의 정보를 조회하여 {@code JsonResult} 형태로 반환합니다.
@@ -74,7 +88,7 @@ public interface AdminService {
      * @return 총 구독자 수를 담고 있는 {@code JsonResult} 객체.
      */
 
-    JsonResult subscriberCount();
+    JsonResult getSubscriberCount();
 
     /**
      * 월별 판매 차트 데이터를 조회합니다.
@@ -145,7 +159,7 @@ public interface AdminService {
      * @return 처리 결과를 담고 있는 {@code ResponseEntity<String>} 객체.
      */
 
-    ResponseEntity<String> adminJoinUserDelete(UserDTO userDTO);
+    ResponseEntity<String> deleteUser(UserDTO userDTO);
 
     /**
      * 특정 조건에 따른 가격 목록을 조회합니다.
@@ -336,7 +350,7 @@ public interface AdminService {
      * @return 조회된 FAQ의 상세 정보를 담고 있는 {@code JsonResult} 객체.
      */
 
-    JsonResult getFaq(FaqDTO faqDTO);
+    JsonResult getFaqDetails(FaqDTO faqDTO);
 
     /**
      * 새로운 FAQ를 등록합니다.
@@ -384,7 +398,7 @@ public interface AdminService {
      * @return 현재 서비스 이용 약관을 담고 있는 {@code JsonResult} 객체.
      */
 
-    JsonResult getTerms();
+    JsonResult getTermsDetails();
 
     /**
      * 서비스 이용 약관을 업데이트 합니다.

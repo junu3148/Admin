@@ -1,7 +1,7 @@
 
 package com.lumen.www.service;
 
-import com.itextpdf.io.font.FontConstants;
+import com.itextpdf.io.font.constants.StandardFonts;
 import com.itextpdf.io.image.ImageData;
 import com.itextpdf.io.image.ImageDataFactory;
 import com.itextpdf.kernel.colors.ColorConstants;
@@ -13,8 +13,8 @@ import com.itextpdf.layout.Document;
 import com.itextpdf.layout.borders.Border;
 import com.itextpdf.layout.borders.SolidBorder;
 import com.itextpdf.layout.element.*;
-import com.itextpdf.layout.property.TextAlignment;
-import com.itextpdf.layout.property.UnitValue;
+import com.itextpdf.layout.properties.TextAlignment;
+import com.itextpdf.layout.properties.UnitValue;
 import com.lumen.www.dao.AdminRepository;
 import com.lumen.www.dto.invoice.InvoiceDTO;
 import com.lumen.www.dto.invoice.InvoiceData;
@@ -53,7 +53,6 @@ public class InvoiceServiceImpl implements InvoiceService {
     public ResponseEntity<String> invoiceEmailShipment(InvoiceDTO invoiceDTO) {
 
         InvoiceDTO invoice = adminRepository.getInvoiceDetails(invoiceDTO);
-
         try {
 
             if (invoice.getStatementEmail().isEmpty()) {
@@ -112,9 +111,7 @@ public class InvoiceServiceImpl implements InvoiceService {
         String formattedDueDatePlusOneYear = dueDatePlusOneYear.format(outputFormatter);
 
         // 폰트 생성
-        PdfFont font = PdfFontFactory.createFont(FontConstants.HELVETICA);
-
-
+        PdfFont font = PdfFontFactory.createFont(StandardFonts.HELVETICA);
 
         float padding = 10; // 패딩 값 설정, 단위는 포인트(pt)
 
@@ -222,8 +219,8 @@ public class InvoiceServiceImpl implements InvoiceService {
         // 데이터 셀에 선 제거 적용
         table.addCell(new Cell().add(new Paragraph("LUMEN " + dto.getPlanName() + " (" + planType + ")\n" + formattedDueDate + " ~ " + formattedDueDatePlusOneYear + "\n\u00A0")).setBorder(Border.NO_BORDER).setPaddingTop(padding)).setBorderBottom(lightGrayBorder);
         table.addCell(new Cell().add(new Paragraph(String.valueOf(dto.getSubRound()))).setBorder(Border.NO_BORDER).setPaddingTop(padding)).setBorderBottom(lightGrayBorder);
-        table.addCell(new Cell().add(new Paragraph("$" + dto.getPlanPrice())).setBorder(Border.NO_BORDER).setPaddingTop(padding)).setBorderBottom(lightGrayBorder);
-        table.addCell(new Cell().add(new Paragraph("$" + dto.getPlanPrice()).setTextAlignment(TextAlignment.RIGHT).setPaddingTop(padding)).setBorder(Border.NO_BORDER));
+        table.addCell(new Cell().add(new Paragraph("$" + dto.getPlanPrice() + ".00")).setBorder(Border.NO_BORDER).setPaddingTop(padding)).setBorderBottom(lightGrayBorder);
+        table.addCell(new Cell().add(new Paragraph("$" + dto.getPlanPrice() + ".00").setTextAlignment(TextAlignment.RIGHT).setPaddingTop(padding)).setBorder(Border.NO_BORDER));
 
         document.add(table);
 

@@ -35,8 +35,8 @@ public class MemberServiceImpl implements MemberService {
     private static final String BEARER_PREFIX = "Bearer ";
     private static final String INVALID_TOKEN_MESSAGE = "Invalid or expired refresh token";
     private static final String ERROR_PROCESSING_MESSAGE = "An error occurred while processing the refresh token";
-    private static final String INVALID_CREDENTIALS_MESSAGE = "인증에 실패하였습니다.";
-    private static final String INVALID_EMAIL_MESSAGE = "아이디는 이메일 형식이어야 합니다.";
+    private static final String INVALID_CREDENTIALS_MESSAGE = "Authentication failed.";
+    private static final String INVALID_EMAIL_MESSAGE = "The ID must be in the form of an email.";
 
 
     // 사용자 로그인을 처리하고, JWT 토큰을 생성하여 반환
@@ -88,7 +88,11 @@ public class MemberServiceImpl implements MemberService {
     private JwtToken authenticateAndGenerateToken(String username, String password) {
         Authentication authentication = authenticateUser(username, password);
         JwtToken jwtToken = jwtTokenProvider.generateToken(authentication);
-        jwtToken.setRole(adminRepository.getRole(username));
+
+        AdminUser adminUser = adminRepository.firstLoginCk(username);
+
+        if (adminUser.getRole() == 1 && adminUser.getDepositor() == null) jwtToken.setStatus(1);
+
         return jwtToken;
     }
 

@@ -5,7 +5,7 @@
 
     <!--                                                                                                          Terms                                                                                  -->
     <!--Terms 세부정보-->
-    <select id="getTerms" resultType="TermsDTO">
+    <select id="getTermsDetails" resultType="TermsDTO">
 
         SELECT
             terms_key,

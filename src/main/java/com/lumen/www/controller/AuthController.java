@@ -25,10 +25,16 @@ public class AuthController {
         return memberService.signInAndGenerateJwtToken(adminUser);
     }
 
-    // 2차 로그인 추가정보 확인
+    // 2차 로그인
     @PostMapping("login-ck")
     public ResponseEntity<String> adminLoginCk(@RequestBody AdminUser adminUser) {
         return adminService.adminLoginCk(adminUser);
+    }
+
+    // 첫 2차 로그인 추가정보 등록
+    @PatchMapping("login-ck")
+    public ResponseEntity<String> adminFirstLogin(@RequestBody AdminUser adminUser) {
+        return adminService.adminFirstLogin(adminUser);
     }
 
     // 관리자 정보

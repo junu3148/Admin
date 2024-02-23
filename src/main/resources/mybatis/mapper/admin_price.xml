@@ -28,9 +28,6 @@
         <if test="userName != 'pass'">
             AND user_name = #{userName}
         </if>
-        <if test="planName != 'pass' and planName != 'All' ">
-            AND plan_name = #{planName}
-        </if>
         <if test="outInfo != 'pass'">
             AND out_info BETWEEN #{minNum} AND #{maxNum}
         </if>

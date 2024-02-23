@@ -16,25 +16,25 @@ public class AdminMainController {
 
     // 가입자 현황
     @GetMapping("subscriber")
-    public JsonResult subscriberCount() {
-        return adminService.subscriberCount();
+    public JsonResult getSubscriberCount() {
+        return adminService.getSubscriberCount();
     }
 
     // 메인페이지 월별가입자 그래프
     @GetMapping("chart")
-    public JsonResult monthlySalesChart() {
+    public JsonResult getMonthlySalesChart() {
         return adminService.getMonthlySalesChart();
     }
 
     // 메인페이지 현황지표
     @GetMapping("indicators")
-    public JsonResult currentSituation() {
+    public JsonResult getCurrentSituation() {
         return adminService.getCurrentSituation();
     }
 
     // 메인페이지 문의현황
     @GetMapping("inquiry")
-    public JsonResult mainInquiryList() {
+    public JsonResult getMainInquiryList() {
         return adminService.getMainInquiryList();
     }
 }

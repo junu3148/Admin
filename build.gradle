@@ -61,7 +61,7 @@ dependencies {
     implementation 'io.jsonwebtoken:jjwt-jackson:0.11.5'
 
     // PDF
-    implementation 'com.itextpdf:itext7-core:7.1.18'
+    implementation 'com.itextpdf:itext7-core:8.0.3'
 
     // AOP
     implementation 'org.springframework.boot:spring-boot-starter-aop'

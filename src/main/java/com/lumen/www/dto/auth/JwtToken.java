@@ -15,7 +15,7 @@ public class JwtToken{
     private String accessToken;
     private String refreshToken;
     private String errorMessage;
-    private int role;
+    private int status;
 
 
 }

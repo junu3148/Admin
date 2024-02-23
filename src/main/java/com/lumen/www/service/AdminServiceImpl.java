@@ -63,6 +63,21 @@ public class AdminServiceImpl implements AdminService {
         }
     }
 
+    @Override
+    public ResponseEntity<String> adminFirstLogin(AdminUser adminUser) {
+
+        // adminRepository를 사용하여 AdminUser 객체를 조회
+        int result = adminRepository.adminFirstLogin(adminUser);
+        // 결과가 존재하는 경우 (사용자가 있음)
+        if (result > 0) {
+            // HttpStatus.OK와 함께 사용자 객체 반환
+            return new ResponseEntity<>(HttpStatus.OK);
+        } else {
+            // 사용자가 없는 경우, HttpStatus.NOT_FOUND와 에러 메시지 반환
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found");
+        }
+    }
+
     // 관리자 세부 정보
     @Override
     @Transactional(readOnly = true) // 정보를 가져올수만 있음.
@@ -119,8 +134,8 @@ public class AdminServiceImpl implements AdminService {
     // 가입자 현황
     @Override
     @Transactional(readOnly = true)
-    public JsonResult subscriberCount() {
-        return createJsonResult(adminRepository.subscriberCount());
+    public JsonResult getSubscriberCount() {
+        return createJsonResult(adminRepository.getSubscriberCount());
     }
 
     // 메인페이지 월별가입자 그래프
@@ -183,7 +198,7 @@ public class AdminServiceImpl implements AdminService {
 
         createListWithDefaultValueIfEmpty(joinListDTOS, () -> {
             JoinListDTO joinListDTO = new JoinListDTO();
-            joinListDTO.set이메일(NO_INQUIRY_RESULTS); // 상수값
+            joinListDTO.set플랜(NO_INQUIRY_RESULTS); // 상수값
             return joinListDTO;
         });
 
@@ -200,9 +215,9 @@ public class AdminServiceImpl implements AdminService {
     // 가입자 강제 탈퇴
     @Override
     @Transactional
-    public ResponseEntity<String> adminJoinUserDelete(UserDTO userDTO) {
+    public ResponseEntity<String> deleteUser(UserDTO userDTO) {
 
-        int result = adminRepository.adminJoinUserDelete(userDTO);
+        int result = adminRepository.deleteUser(userDTO);
         if (result == 1) {
             // 삭제 성공
             return ResponseEntity.ok().body("User successfully deleted.");
@@ -244,7 +259,7 @@ public class AdminServiceImpl implements AdminService {
 
         createListWithDefaultValueIfEmpty(priceListDTOS, () -> {
             PriceListDTO priceListDTO = new PriceListDTO();
-            priceListDTO.set이메일(NO_INQUIRY_RESULTS); // 상수값
+            priceListDTO.set플랜(NO_INQUIRY_RESULTS); // 상수값
             return priceListDTO;
         });
 
@@ -271,7 +286,7 @@ public class AdminServiceImpl implements AdminService {
 
         createListWithDefaultValueIfEmpty(payListDTOS, () -> {
             PayListDTO payListDTO = new PayListDTO();
-            payListDTO.set이메일(NO_INQUIRY_RESULTS); // 상수값
+            payListDTO.set연락처(NO_INQUIRY_RESULTS); // 상수값
             return payListDTO;
         });
 
@@ -289,7 +304,7 @@ public class AdminServiceImpl implements AdminService {
 
         createListWithDefaultValueIfEmpty(invoiceDTOS, () -> {
             InvoiceListDTO invoiceListDTO = new InvoiceListDTO();
-            invoiceListDTO.set이메일(NO_INQUIRY_RESULTS); // 상수값
+            invoiceListDTO.set플랜(NO_INQUIRY_RESULTS); // 상수값
             return invoiceListDTO;
         });
 
@@ -314,7 +329,7 @@ public class AdminServiceImpl implements AdminService {
 
         createListWithDefaultValueIfEmpty(inquiryListDTOS, () -> {
             InquiryListDTO inquiryListDTO = new InquiryListDTO();
-            inquiryListDTO.set이메일(NO_INQUIRY_RESULTS); // 상수값
+            inquiryListDTO.set플랜구분(NO_INQUIRY_RESULTS); // 상수값
             return inquiryListDTO;
         });
 
@@ -416,8 +431,8 @@ public class AdminServiceImpl implements AdminService {
     // FAQ 세부 정보
     @Override
     @Transactional(readOnly = true)
-    public JsonResult getFaq(FaqDTO faqDTO) {
-        return createJsonResult(adminRepository.getFaq(faqDTO));
+    public JsonResult getFaqDetails(FaqDTO faqDTO) {
+        return createJsonResult(adminRepository.getFaqDetails(faqDTO));
     }
 
     // FAQ 등록
@@ -462,8 +477,8 @@ public class AdminServiceImpl implements AdminService {
 // Terms 정보
     @Override
     @Transactional(readOnly = true)
-    public JsonResult getTerms() {
-        return createJsonResult(adminRepository.getTerms());
+    public JsonResult getTermsDetails() {
+        return createJsonResult(adminRepository.getTermsDetails());
     }
 
     // Terms 수정

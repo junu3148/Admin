@@ -29,7 +29,7 @@ public class ImageUploader {
             uploadFile.transferTo(file);  // 파일을 지정된 경로에 저장
 
             mav.addObject("uploaded", true);  // 업로드 상태를 true로 설정하여 ModelAndView에 추가
-            mav.addObject("url", "./upload/" + newFileName);  // 업로드된 파일의 접근 경로를 ModelAndView에 추가
+            mav.addObject("url", "../upload/" + newFileName);  // 업로드된 파일의 접근 경로를 ModelAndView에 추가
         } catch (IOException e) {
             mav.addObject("uploaded", false);  // IOException 발생 시, 업로드 상태를 false로 설정
             mav.addObject("error", "File upload failed: " + e.getMessage());  // 오류 메시지를 ModelAndView에 추가

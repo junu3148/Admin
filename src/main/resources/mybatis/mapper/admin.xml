@@ -13,10 +13,11 @@
 
     </select>
 
-    <!--권한 조회-->
-    <select id="getRole" parameterType="String" resultType="int">
+    <!--첫 로그인 확인-->
+    <select id="FirstLoginCk" parameterType="String" resultType="AdminUser">
 
-        SELECT role
+        SELECT role,
+            depositor
         FROM ADMIN
         WHERE admin_id = #{adminId}
 
@@ -29,13 +30,16 @@
         FROM ADMIN
         WHERE admin_name = #{adminName}
 
-        <if test="bankName != null and depositor != null and accountNumber != null">
+    </select>
 
-            AND bank_name = #{bankName}
-            AND depositor = #{depositor}
-            AND account_number = #{accountNumber}
+    <!--첫 로그인 admin 정보 수정-->
+    <select id="adminFirstLogin" parameterType="AdminUser">
 
-        </if>
+        UPDATE admin
+        SET bank_name      = #{bankName},
+            depositor      = #{depositor},
+            account_number = #{accountNumber}
+        WHERE admin_name = #{adminName}
 
     </select>
 

@@ -37,16 +37,22 @@ public class AdminRepositoryImpl implements AdminRepository {
         return Optional.ofNullable(sqlSession.selectOne("admin.findByUsername", adminId));
     }
 
-    // 관리자 권한
+    // 첫 로그인 확인
     @Override
-    public int getRole(String adminId) {
-        return sqlSession.selectOne("admin.getRole", adminId);
+    public AdminUser firstLoginCk(String adminId) {
+        return sqlSession.selectOne("admin.FirstLoginCk", adminId);
     }
 
     // 2차 로그인
     @Override
     public Optional<AdminUser> adminLoginCk(AdminUser adminUser) {
         return Optional.ofNullable(sqlSession.selectOne("admin.adminLoginCk", adminUser));
+    }
+
+    // 첫 로그인 admin 정보 수정
+    @Override
+    public int adminFirstLogin(AdminUser adminUser) {
+        return sqlSession.update("admin.adminFirstLogin", adminUser);
     }
 
     // 관리자 세부 정보
@@ -63,8 +69,8 @@ public class AdminRepositoryImpl implements AdminRepository {
 
     // 가입자 현황
     @Override
-    public int subscriberCount() {
-        return sqlSession.selectOne("admin_main.subscriberCount");
+    public int getSubscriberCount() {
+        return sqlSession.selectOne("admin_main.getSubscriberCount");
     }
 
     // 메인페이지 월별가입자 그래프
@@ -99,8 +105,8 @@ public class AdminRepositoryImpl implements AdminRepository {
 
     // 가입자 강제 탈퇴
     @Override
-    public int adminJoinUserDelete(UserDTO userDTO) {
-        return sqlSession.update("admin_join.adminJoinUserDelete", userDTO);
+    public int deleteUser(UserDTO userDTO) {
+        return sqlSession.update("admin_join.deleteUser", userDTO);
     }
 
     // 탈퇴회원 30일 후 데이터 삭제
@@ -201,8 +207,8 @@ public class AdminRepositoryImpl implements AdminRepository {
 
     // FAQ 세부 정보
     @Override
-    public FaqDTO getFaq(FaqDTO faqDTO) {
-        return sqlSession.selectOne("admin_faq.getFaq", faqDTO);
+    public FaqDTO getFaqDetails(FaqDTO faqDTO) {
+        return sqlSession.selectOne("admin_faq.getFaqDetails", faqDTO);
     }
 
     // FAQ 등록
@@ -225,8 +231,8 @@ public class AdminRepositoryImpl implements AdminRepository {
 
     // Terms 정보
     @Override
-    public TermsDTO getTerms() {
-        return sqlSession.selectOne("admin_terms.getTerms");
+    public TermsDTO getTermsDetails() {
+        return sqlSession.selectOne("admin_terms.getTermsDetails");
     }
 
     // Terms 수정
@@ -234,7 +240,6 @@ public class AdminRepositoryImpl implements AdminRepository {
     public int updateTerms(TermsDTO termsDTO) {
         return sqlSession.update("admin_terms.updateTerms", termsDTO);
     }
-
 
 
 }
