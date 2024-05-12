@@ -16,6 +16,10 @@
 시작하기
 이 API를 사용하기 위해서는 필요한 인증 토큰과 권한이 있어야 합니다. 이 엔드포인트들은 관리자 사용자만을 위한 것이므로 접근 권한이 제한되어 있습니다.
 
+## 사용 기술
+
+Open JDK 17, Spring boot, Gradle, Mybatis, MySql, Restful API, GitHub, SMTP API
+
 ## <h2>사용자 관리</h2>
 
 ### 가입자 목록 조회
