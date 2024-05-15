@@ -11,7 +11,7 @@
 
 Open JDK 17, Spring boot, Gradle, Mybatis, MySql, Restful API, GitHub, SMTP API
 
-## <h2>사용자 관리</h2>
+## <h2>사용자 관리</h2> (기여도 100%)
 
 ### 가입자 목록 조회
 - **엔드포인트**: `GET /admin/join`
