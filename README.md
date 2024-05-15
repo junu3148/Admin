@@ -1,4 +1,4 @@
-# 생셩형 AI를 활용한 영상 편집 플랫폼 Admin
+# 생성형 AI를 활용한 영상 편집 플랫폼 Admin
 
 <h1>관리자 API 문서</h1>
 
@@ -67,7 +67,7 @@ Open JDK 17, Spring boot, Gradle, Mybatis, MySql, Restful API, GitHub, SMTP API
 
 ### 문의사항 답변 생성
 - **엔드포인트**: `PATCH /admin/inquiry`
-- **설명**: 특정 문의사항에 대한 답변을 게시합니다.
+- **설명**: 특정 문의사항에 대한 답변을 개시합니다.
 
 ## 공지사항
 
