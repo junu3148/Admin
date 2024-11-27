@@ -11,7 +11,7 @@
 
 ## 사용 기술
 
-Open JDK 17, Spring boot, Gradle, Mybatis, MySql, Restful API, GitHub, SMTP API
+Open JDK 17, Spring boot, Spring Security, Gradle, Mybatis, MySql, Restful API, GitHub, SMTP API
 
 ## <h2>사용자 관리 (기여도 100%) </h2>
 
